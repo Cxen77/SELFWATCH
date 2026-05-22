@@ -1,0 +1,52 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Runtime logs (auto-generated, not committed)
+logs/
+
+# Model weights (too large for git)
+weights/
+*.pth
+*.pt
+*.onnx
+*.engine
+
+# Dataset files (too large for git)
+datasets/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Experiment outputs (large files — commit only summaries)
+experiments/*/logs/
+experiments/*/metrics/*.json
+forensics/*/evidence/*.mp4
+forensics/*/evidence/*.jpg
+
+# Debug artifacts
+debug_frame.jpg
+*.bak
+
+# Distribution
+dist/
+build/
+*.egg-info/

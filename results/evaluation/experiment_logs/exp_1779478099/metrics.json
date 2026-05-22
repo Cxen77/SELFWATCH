@@ -1,0 +1,1354 @@
+{
+    "summary": {
+        "identity_stability_score": 0.900336792906729,
+        "visible_id_switches": 24,
+        "duplicate_box_frames": 128,
+        "teleportation_events": 11,
+        "fragmentation_count": 0
+    },
+    "detailed": {
+        "visible_switches": {
+            "visible_id_switches": 24,
+            "switch_events": [
+                {
+                    "frame": 215,
+                    "old_id": 10,
+                    "new_id": 15,
+                    "distance": 0.9603452606840052
+                },
+                {
+                    "frame": 252,
+                    "old_id": 4,
+                    "new_id": 12,
+                    "distance": 49.35166806079102
+                },
+                {
+                    "frame": 389,
+                    "old_id": 16,
+                    "new_id": 8,
+                    "distance": 20.62554168210688
+                },
+                {
+                    "frame": 400,
+                    "old_id": 16,
+                    "new_id": 7,
+                    "distance": 27.611151088552536
+                },
+                {
+                    "frame": 412,
+                    "old_id": 9,
+                    "new_id": 1,
+                    "distance": 17.9998379548987
+                },
+                {
+                    "frame": 452,
+                    "old_id": 14,
+                    "new_id": 15,
+                    "distance": 40.6615999773624
+                },
+                {
+                    "frame": 481,
+                    "old_id": 5,
+                    "new_id": 1,
+                    "distance": 28.654364290946944
+                },
+                {
+                    "frame": 513,
+                    "old_id": 13,
+                    "new_id": 14,
+                    "distance": 2.609598129470972
+                },
+                {
+                    "frame": 647,
+                    "old_id": 8,
+                    "new_id": 7,
+                    "distance": 3.4870568077091657
+                },
+                {
+                    "frame": 803,
+                    "old_id": 1,
+                    "new_id": 9,
+                    "distance": 22.101849965661465
+                },
+                {
+                    "frame": 807,
+                    "old_id": 7,
+                    "new_id": 9,
+                    "distance": 14.251586988413486
+                },
+                {
+                    "frame": 970,
+                    "old_id": 1,
+                    "new_id": 15,
+                    "distance": 38.36366077022251
+                },
+                {
+                    "frame": 971,
+                    "old_id": 15,
+                    "new_id": 1,
+                    "distance": 37.73375382077012
+                },
+                {
+                    "frame": 973,
+                    "old_id": 1,
+                    "new_id": 15,
+                    "distance": 38.820604655419054
+                },
+                {
+                    "frame": 1097,
+                    "old_id": 7,
+                    "new_id": 15,
+                    "distance": 29.932050919532692
+                },
+                {
+                    "frame": 1100,
+                    "old_id": 13,
+                    "new_id": 9,
+                    "distance": 21.7121125154378
+                },
+                {
+                    "frame": 1101,
+                    "old_id": 9,
+                    "new_id": 13,
+                    "distance": 21.28228825257802
+                },
+                {
+                    "frame": 1158,
+                    "old_id": 13,
+                    "new_id": 17,
+                    "distance": 43.58848168808967
+                },
+                {
+                    "frame": 1206,
+                    "old_id": 6,
+                    "new_id": 13,
+                    "distance": 29.57374992527432
+                },
+                {
+                    "frame": 1217,
+                    "old_id": 13,
+                    "new_id": 6,
+                    "distance": 34.111965199824375
+                },
+                {
+                    "frame": 1218,
+                    "old_id": 6,
+                    "new_id": 13,
+                    "distance": 35.430520002388754
+                },
+                {
+                    "frame": 1260,
+                    "old_id": 24,
+                    "new_id": 21,
+                    "distance": 49.54720329030204
+                },
+                {
+                    "frame": 1262,
+                    "old_id": 13,
+                    "new_id": 6,
+                    "distance": 45.26340310878867
+                },
+                {
+                    "frame": 1269,
+                    "old_id": 21,
+                    "new_id": 1,
+                    "distance": 42.75057140866093
+                }
+            ]
+        },
+        "duplicates": {
+            "duplicate_frame_count": 128,
+            "total_duplicate_events": 139,
+            "duplicate_events": [
+                {
+                    "frame": 101,
+                    "id1": 2,
+                    "state1": "ACTIVE",
+                    "id2": 4,
+                    "state2": "ACTIVE",
+                    "iou": 0.5171164853854561
+                },
+                {
+                    "frame": 103,
+                    "id1": 2,
+                    "state1": "ACTIVE",
+                    "id2": 4,
+                    "state2": "ACTIVE",
+                    "iou": 0.6455932906488367
+                },
+                {
+                    "frame": 109,
+                    "id1": 2,
+                    "state1": "ACTIVE",
+                    "id2": 4,
+                    "state2": "ACTIVE",
+                    "iou": 0.5273438429830745
+                },
+                {
+                    "frame": 111,
+                    "id1": 2,
+                    "state1": "ACTIVE",
+                    "id2": 4,
+                    "state2": "ACTIVE",
+                    "iou": 0.5435665182567576
+                },
+                {
+                    "frame": 113,
+                    "id1": 2,
+                    "state1": "ACTIVE",
+                    "id2": 4,
+                    "state2": "ACTIVE",
+                    "iou": 0.5665807861198321
+                },
+                {
+                    "frame": 147,
+                    "id1": 5,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.8262035688335118
+                },
+                {
+                    "frame": 158,
+                    "id1": 3,
+                    "state1": "ACTIVE",
+                    "id2": 11,
+                    "state2": "ACTIVE",
+                    "iou": 0.5365753694492295
+                },
+                {
+                    "frame": 168,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 9,
+                    "state2": "ACTIVE",
+                    "iou": 0.7672234748331355
+                },
+                {
+                    "frame": 185,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.5215803469738888
+                },
+                {
+                    "frame": 186,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.5414206110146474
+                },
+                {
+                    "frame": 187,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.5487844899777647
+                },
+                {
+                    "frame": 188,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.5516568605973594
+                },
+                {
+                    "frame": 189,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.5483176565541302
+                },
+                {
+                    "frame": 190,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.5576186499690323
+                },
+                {
+                    "frame": 191,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.5642764362229316
+                },
+                {
+                    "frame": 194,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.708115572305174
+                },
+                {
+                    "frame": 195,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.6559617327187532
+                },
+                {
+                    "frame": 196,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 2,
+                    "state2": "ACTIVE",
+                    "iou": 0.7915314789601038
+                },
+                {
+                    "frame": 196,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.6406950313759332
+                },
+                {
+                    "frame": 197,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.625682794495514
+                },
+                {
+                    "frame": 229,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 2,
+                    "state2": "ACTIVE",
+                    "iou": 0.6529984883786458
+                },
+                {
+                    "frame": 240,
+                    "id1": 4,
+                    "state1": "ACTIVE",
+                    "id2": 12,
+                    "state2": "ACTIVE",
+                    "iou": 0.7293169021221384
+                },
+                {
+                    "frame": 252,
+                    "id1": 2,
+                    "state1": "ACTIVE",
+                    "id2": 16,
+                    "state2": "ACTIVE",
+                    "iou": 0.8208256782197618
+                },
+                {
+                    "frame": 303,
+                    "id1": 5,
+                    "state1": "ACTIVE",
+                    "id2": 16,
+                    "state2": "ACTIVE",
+                    "iou": 0.6590983368021982
+                },
+                {
+                    "frame": 308,
+                    "id1": 8,
+                    "state1": "ACTIVE",
+                    "id2": 9,
+                    "state2": "ACTIVE",
+                    "iou": 0.7379845585258668
+                },
+                {
+                    "frame": 312,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 9,
+                    "state2": "ACTIVE",
+                    "iou": 0.5105260038639446
+                },
+                {
+                    "frame": 312,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 16,
+                    "state2": "ACTIVE",
+                    "iou": 0.5464976637139839
+                },
+                {
+                    "frame": 313,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 9,
+                    "state2": "ACTIVE",
+                    "iou": 0.5543135815649631
+                },
+                {
+                    "frame": 315,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 9,
+                    "state2": "ACTIVE",
+                    "iou": 0.643059805065214
+                },
+                {
+                    "frame": 317,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 10,
+                    "state2": "ACTIVE",
+                    "iou": 0.6108654342352606
+                },
+                {
+                    "frame": 317,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 9,
+                    "state2": "ACTIVE",
+                    "iou": 0.5121841817084304
+                },
+                {
+                    "frame": 318,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 9,
+                    "state2": "ACTIVE",
+                    "iou": 0.5353806867142848
+                },
+                {
+                    "frame": 319,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 10,
+                    "state2": "ACTIVE",
+                    "iou": 0.5330100276852333
+                },
+                {
+                    "frame": 323,
+                    "id1": 8,
+                    "state1": "ACTIVE",
+                    "id2": 16,
+                    "state2": "ACTIVE",
+                    "iou": 0.5292146529307574
+                },
+                {
+                    "frame": 332,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 16,
+                    "state2": "ACTIVE",
+                    "iou": 0.5181384887239412
+                },
+                {
+                    "frame": 333,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 16,
+                    "state2": "ACTIVE",
+                    "iou": 0.539604854482302
+                },
+                {
+                    "frame": 333,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.989789886552183
+                },
+                {
+                    "frame": 334,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 16,
+                    "state2": "ACTIVE",
+                    "iou": 0.5407387508914682
+                },
+                {
+                    "frame": 334,
+                    "id1": 2,
+                    "state1": "ACTIVE",
+                    "id2": 15,
+                    "state2": "ACTIVE",
+                    "iou": 0.5843204119709666
+                },
+                {
+                    "frame": 334,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.6696285417203844
+                },
+                {
+                    "frame": 335,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 16,
+                    "state2": "ACTIVE",
+                    "iou": 0.5414685477976015
+                },
+                {
+                    "frame": 335,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.5512171674894139
+                },
+                {
+                    "frame": 336,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 16,
+                    "state2": "ACTIVE",
+                    "iou": 0.9690313930564908
+                },
+                {
+                    "frame": 336,
+                    "id1": 9,
+                    "state1": "ACTIVE",
+                    "id2": 16,
+                    "state2": "ACTIVE",
+                    "iou": 0.5158790169304504
+                },
+                {
+                    "frame": 339,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 7,
+                    "state2": "ACTIVE",
+                    "iou": 0.5302144389792648
+                },
+                {
+                    "frame": 340,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 7,
+                    "state2": "ACTIVE",
+                    "iou": 0.9632908609605865
+                },
+                {
+                    "frame": 341,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 7,
+                    "state2": "ACTIVE",
+                    "iou": 0.7246060686722571
+                },
+                {
+                    "frame": 345,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 16,
+                    "state2": "ACTIVE",
+                    "iou": 0.5116647585120567
+                },
+                {
+                    "frame": 346,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 16,
+                    "state2": "ACTIVE",
+                    "iou": 0.5369268286505922
+                },
+                {
+                    "frame": 347,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 16,
+                    "state2": "ACTIVE",
+                    "iou": 0.5494629015697775
+                },
+                {
+                    "frame": 350,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 16,
+                    "state2": "ACTIVE",
+                    "iou": 0.5032963956539266
+                },
+                {
+                    "frame": 350,
+                    "id1": 2,
+                    "state1": "ACTIVE",
+                    "id2": 15,
+                    "state2": "ACTIVE",
+                    "iou": 0.5954679742199205
+                },
+                {
+                    "frame": 355,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 9,
+                    "state2": "ACTIVE",
+                    "iou": 0.5893941018900837
+                },
+                {
+                    "frame": 356,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 9,
+                    "state2": "ACTIVE",
+                    "iou": 0.5016271183727175
+                },
+                {
+                    "frame": 357,
+                    "id1": 8,
+                    "state1": "ACTIVE",
+                    "id2": 16,
+                    "state2": "ACTIVE",
+                    "iou": 0.539777472171751
+                },
+                {
+                    "frame": 362,
+                    "id1": 2,
+                    "state1": "ACTIVE",
+                    "id2": 15,
+                    "state2": "ACTIVE",
+                    "iou": 0.735547515386399
+                },
+                {
+                    "frame": 364,
+                    "id1": 2,
+                    "state1": "ACTIVE",
+                    "id2": 15,
+                    "state2": "ACTIVE",
+                    "iou": 0.9597401753414796
+                },
+                {
+                    "frame": 374,
+                    "id1": 2,
+                    "state1": "ACTIVE",
+                    "id2": 6,
+                    "state2": "ACTIVE",
+                    "iou": 0.5056806652088348
+                },
+                {
+                    "frame": 375,
+                    "id1": 2,
+                    "state1": "ACTIVE",
+                    "id2": 6,
+                    "state2": "ACTIVE",
+                    "iou": 0.6082751798290901
+                },
+                {
+                    "frame": 376,
+                    "id1": 2,
+                    "state1": "ACTIVE",
+                    "id2": 6,
+                    "state2": "ACTIVE",
+                    "iou": 0.6038043006882324
+                },
+                {
+                    "frame": 377,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 9,
+                    "state2": "ACTIVE",
+                    "iou": 0.5734129889736027
+                },
+                {
+                    "frame": 377,
+                    "id1": 2,
+                    "state1": "ACTIVE",
+                    "id2": 6,
+                    "state2": "ACTIVE",
+                    "iou": 0.559428322684083
+                },
+                {
+                    "frame": 378,
+                    "id1": 2,
+                    "state1": "ACTIVE",
+                    "id2": 6,
+                    "state2": "ACTIVE",
+                    "iou": 0.5518585684608396
+                },
+                {
+                    "frame": 379,
+                    "id1": 2,
+                    "state1": "ACTIVE",
+                    "id2": 6,
+                    "state2": "ACTIVE",
+                    "iou": 0.5449531232012922
+                },
+                {
+                    "frame": 380,
+                    "id1": 2,
+                    "state1": "ACTIVE",
+                    "id2": 6,
+                    "state2": "ACTIVE",
+                    "iou": 0.5453070771655164
+                },
+                {
+                    "frame": 381,
+                    "id1": 2,
+                    "state1": "ACTIVE",
+                    "id2": 6,
+                    "state2": "ACTIVE",
+                    "iou": 0.5397024817421048
+                },
+                {
+                    "frame": 382,
+                    "id1": 2,
+                    "state1": "ACTIVE",
+                    "id2": 6,
+                    "state2": "ACTIVE",
+                    "iou": 0.6459412942384647
+                },
+                {
+                    "frame": 383,
+                    "id1": 2,
+                    "state1": "ACTIVE",
+                    "id2": 6,
+                    "state2": "ACTIVE",
+                    "iou": 0.5619740346410393
+                },
+                {
+                    "frame": 392,
+                    "id1": 2,
+                    "state1": "ACTIVE",
+                    "id2": 6,
+                    "state2": "ACTIVE",
+                    "iou": 0.5280580285271067
+                },
+                {
+                    "frame": 393,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.5583475514688075
+                },
+                {
+                    "frame": 411,
+                    "id1": 13,
+                    "state1": "ACTIVE",
+                    "id2": 15,
+                    "state2": "ACTIVE",
+                    "iou": 0.6430750709953462
+                },
+                {
+                    "frame": 412,
+                    "id1": 13,
+                    "state1": "ACTIVE",
+                    "id2": 15,
+                    "state2": "ACTIVE",
+                    "iou": 0.7105879242004182
+                },
+                {
+                    "frame": 416,
+                    "id1": 13,
+                    "state1": "ACTIVE",
+                    "id2": 15,
+                    "state2": "ACTIVE",
+                    "iou": 0.7754873659954179
+                },
+                {
+                    "frame": 417,
+                    "id1": 13,
+                    "state1": "THINKING",
+                    "id2": 15,
+                    "state2": "THINKING",
+                    "iou": 0.7765346648582396
+                },
+                {
+                    "frame": 421,
+                    "id1": 13,
+                    "state1": "THINKING",
+                    "id2": 15,
+                    "state2": "THINKING",
+                    "iou": 0.7254336361450043
+                },
+                {
+                    "frame": 423,
+                    "id1": 13,
+                    "state1": "THINKING",
+                    "id2": 15,
+                    "state2": "THINKING",
+                    "iou": 0.6590370387941735
+                },
+                {
+                    "frame": 424,
+                    "id1": 13,
+                    "state1": "THINKING",
+                    "id2": 15,
+                    "state2": "THINKING",
+                    "iou": 0.6590370387941735
+                },
+                {
+                    "frame": 436,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.7405600771130844
+                },
+                {
+                    "frame": 437,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.7968394112339724
+                },
+                {
+                    "frame": 438,
+                    "id1": 14,
+                    "state1": "ACTIVE",
+                    "id2": 15,
+                    "state2": "ACTIVE",
+                    "iou": 0.5422714193088237
+                },
+                {
+                    "frame": 440,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.8448144296061496
+                },
+                {
+                    "frame": 454,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.8838086008179616
+                },
+                {
+                    "frame": 455,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.862592180048228
+                },
+                {
+                    "frame": 492,
+                    "id1": 14,
+                    "state1": "ACTIVE",
+                    "id2": 15,
+                    "state2": "ACTIVE",
+                    "iou": 0.5980905483390995
+                },
+                {
+                    "frame": 493,
+                    "id1": 14,
+                    "state1": "ACTIVE",
+                    "id2": 15,
+                    "state2": "ACTIVE",
+                    "iou": 0.6191598688511722
+                },
+                {
+                    "frame": 494,
+                    "id1": 13,
+                    "state1": "ACTIVE",
+                    "id2": 14,
+                    "state2": "ACTIVE",
+                    "iou": 0.5139412542529721
+                },
+                {
+                    "frame": 494,
+                    "id1": 14,
+                    "state1": "ACTIVE",
+                    "id2": 15,
+                    "state2": "ACTIVE",
+                    "iou": 0.5120561277106442
+                },
+                {
+                    "frame": 517,
+                    "id1": 13,
+                    "state1": "ACTIVE",
+                    "id2": 14,
+                    "state2": "ACTIVE",
+                    "iou": 0.6064169631477605
+                },
+                {
+                    "frame": 546,
+                    "id1": 2,
+                    "state1": "ACTIVE",
+                    "id2": 6,
+                    "state2": "ACTIVE",
+                    "iou": 0.5591456386731852
+                },
+                {
+                    "frame": 577,
+                    "id1": 13,
+                    "state1": "ACTIVE",
+                    "id2": 14,
+                    "state2": "ACTIVE",
+                    "iou": 0.5318089741343571
+                },
+                {
+                    "frame": 578,
+                    "id1": 13,
+                    "state1": "ACTIVE",
+                    "id2": 14,
+                    "state2": "ACTIVE",
+                    "iou": 0.5286493850105493
+                },
+                {
+                    "frame": 580,
+                    "id1": 13,
+                    "state1": "ACTIVE",
+                    "id2": 14,
+                    "state2": "ACTIVE",
+                    "iou": 0.7683448773548749
+                },
+                {
+                    "frame": 581,
+                    "id1": 13,
+                    "state1": "ACTIVE",
+                    "id2": 14,
+                    "state2": "ACTIVE",
+                    "iou": 0.660996534951832
+                },
+                {
+                    "frame": 595,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.5584179743100657
+                },
+                {
+                    "frame": 597,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.580615831205888
+                },
+                {
+                    "frame": 598,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.6037818779212135
+                },
+                {
+                    "frame": 599,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.611682188691312
+                },
+                {
+                    "frame": 600,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.5808825529540543
+                },
+                {
+                    "frame": 601,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.5558905475787608
+                },
+                {
+                    "frame": 602,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.5311887680035039
+                },
+                {
+                    "frame": 603,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.5168528075305702
+                },
+                {
+                    "frame": 604,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.517365928259027
+                },
+                {
+                    "frame": 605,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.5158337951081317
+                },
+                {
+                    "frame": 606,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.5041381081560129
+                },
+                {
+                    "frame": 699,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 8,
+                    "state2": "ACTIVE",
+                    "iou": 0.8149561865817654
+                },
+                {
+                    "frame": 758,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 9,
+                    "state2": "ACTIVE",
+                    "iou": 0.5547862971372404
+                },
+                {
+                    "frame": 801,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 9,
+                    "state2": "ACTIVE",
+                    "iou": 0.531977778493014
+                },
+                {
+                    "frame": 805,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 7,
+                    "state2": "ACTIVE",
+                    "iou": 0.5373872141973638
+                },
+                {
+                    "frame": 809,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 9,
+                    "state2": "ACTIVE",
+                    "iou": 0.8492694768440149
+                },
+                {
+                    "frame": 840,
+                    "id1": 7,
+                    "state1": "ACTIVE",
+                    "id2": 9,
+                    "state2": "ACTIVE",
+                    "iou": 0.8721406089142312
+                },
+                {
+                    "frame": 924,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 15,
+                    "state2": "ACTIVE",
+                    "iou": 0.6594357037573997
+                },
+                {
+                    "frame": 993,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 15,
+                    "state2": "ACTIVE",
+                    "iou": 0.9450142375744667
+                },
+                {
+                    "frame": 1025,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 15,
+                    "state2": "ACTIVE",
+                    "iou": 0.5123384581918139
+                },
+                {
+                    "frame": 1026,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 15,
+                    "state2": "ACTIVE",
+                    "iou": 0.5248522009520016
+                },
+                {
+                    "frame": 1027,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 15,
+                    "state2": "ACTIVE",
+                    "iou": 0.5488533055668428
+                },
+                {
+                    "frame": 1073,
+                    "id1": 15,
+                    "state1": "ACTIVE",
+                    "id2": 21,
+                    "state2": "ACTIVE",
+                    "iou": 0.5787382759073721
+                },
+                {
+                    "frame": 1089,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 15,
+                    "state2": "ACTIVE",
+                    "iou": 0.8193920830059603
+                },
+                {
+                    "frame": 1091,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 15,
+                    "state2": "ACTIVE",
+                    "iou": 0.5477776846892644
+                },
+                {
+                    "frame": 1105,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 21,
+                    "state2": "ACTIVE",
+                    "iou": 0.5498510948627797
+                },
+                {
+                    "frame": 1106,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 21,
+                    "state2": "ACTIVE",
+                    "iou": 0.5725489399709528
+                },
+                {
+                    "frame": 1109,
+                    "id1": 9,
+                    "state1": "ACTIVE",
+                    "id2": 13,
+                    "state2": "ACTIVE",
+                    "iou": 0.6765398186240349
+                },
+                {
+                    "frame": 1116,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 21,
+                    "state2": "ACTIVE",
+                    "iou": 0.8010820887277456
+                },
+                {
+                    "frame": 1118,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 21,
+                    "state2": "ACTIVE",
+                    "iou": 0.6729675985749537
+                },
+                {
+                    "frame": 1123,
+                    "id1": 9,
+                    "state1": "ACTIVE",
+                    "id2": 14,
+                    "state2": "ACTIVE",
+                    "iou": 0.5943007733999625
+                },
+                {
+                    "frame": 1124,
+                    "id1": 9,
+                    "state1": "ACTIVE",
+                    "id2": 14,
+                    "state2": "ACTIVE",
+                    "iou": 0.5021884722945661
+                },
+                {
+                    "frame": 1138,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 21,
+                    "state2": "ACTIVE",
+                    "iou": 0.8381069968168272
+                },
+                {
+                    "frame": 1218,
+                    "id1": 13,
+                    "state1": "ACTIVE",
+                    "id2": 14,
+                    "state2": "ACTIVE",
+                    "iou": 0.695651186841177
+                },
+                {
+                    "frame": 1219,
+                    "id1": 13,
+                    "state1": "ACTIVE",
+                    "id2": 14,
+                    "state2": "ACTIVE",
+                    "iou": 0.6896107477415592
+                },
+                {
+                    "frame": 1221,
+                    "id1": 13,
+                    "state1": "ACTIVE",
+                    "id2": 14,
+                    "state2": "ACTIVE",
+                    "iou": 0.6618547892068379
+                },
+                {
+                    "frame": 1222,
+                    "id1": 13,
+                    "state1": "ACTIVE",
+                    "id2": 14,
+                    "state2": "ACTIVE",
+                    "iou": 0.6791357282035749
+                },
+                {
+                    "frame": 1240,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 5,
+                    "state2": "ACTIVE",
+                    "iou": 0.5334269280098988
+                },
+                {
+                    "frame": 1242,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 5,
+                    "state2": "ACTIVE",
+                    "iou": 0.5490312855509742
+                },
+                {
+                    "frame": 1244,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 5,
+                    "state2": "ACTIVE",
+                    "iou": 0.5954015269733329
+                },
+                {
+                    "frame": 1248,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 5,
+                    "state2": "ACTIVE",
+                    "iou": 0.5364432607734001
+                },
+                {
+                    "frame": 1252,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 5,
+                    "state2": "ACTIVE",
+                    "iou": 0.7148097943857814
+                },
+                {
+                    "frame": 1256,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 5,
+                    "state2": "ACTIVE",
+                    "iou": 0.6261626559433546
+                },
+                {
+                    "frame": 1262,
+                    "id1": 6,
+                    "state1": "ACTIVE",
+                    "id2": 14,
+                    "state2": "ACTIVE",
+                    "iou": 0.859482134515539
+                },
+                {
+                    "frame": 1264,
+                    "id1": 6,
+                    "state1": "THINKING",
+                    "id2": 14,
+                    "state2": "THINKING",
+                    "iou": 0.8937760001522189
+                },
+                {
+                    "frame": 1269,
+                    "id1": 1,
+                    "state1": "ACTIVE",
+                    "id2": 24,
+                    "state2": "ACTIVE",
+                    "iou": 0.5166995817366593
+                }
+            ]
+        },
+        "teleportation": {
+            "teleportation_count": 11,
+            "impossible_velocity_events": 11,
+            "teleportation_events": [
+                {
+                    "frame": 277,
+                    "global_id": 10,
+                    "distance": 196.28244136959853,
+                    "max_speed_allowed": 100.0
+                },
+                {
+                    "frame": 288,
+                    "global_id": 16,
+                    "distance": 186.51547544504336,
+                    "max_speed_allowed": 100.0
+                },
+                {
+                    "frame": 295,
+                    "global_id": 16,
+                    "distance": 186.66745241140728,
+                    "max_speed_allowed": 100.0
+                },
+                {
+                    "frame": 302,
+                    "global_id": 16,
+                    "distance": 156.00704036826957,
+                    "max_speed_allowed": 100.0
+                },
+                {
+                    "frame": 303,
+                    "global_id": 1,
+                    "distance": 744.6801885434259,
+                    "max_speed_allowed": 100.0
+                },
+                {
+                    "frame": 317,
+                    "global_id": 1,
+                    "distance": 188.3450377036568,
+                    "max_speed_allowed": 100.0
+                },
+                {
+                    "frame": 329,
+                    "global_id": 1,
+                    "distance": 182.01128226091362,
+                    "max_speed_allowed": 100.0
+                },
+                {
+                    "frame": 755,
+                    "global_id": 7,
+                    "distance": 107.86509694789001,
+                    "max_speed_allowed": 100.0
+                },
+                {
+                    "frame": 914,
+                    "global_id": 15,
+                    "distance": 385.2184176172271,
+                    "max_speed_allowed": 100.0
+                },
+                {
+                    "frame": 1089,
+                    "global_id": 6,
+                    "distance": 121.3290862394878,
+                    "max_speed_allowed": 100.0
+                },
+                {
+                    "frame": 1156,
+                    "global_id": 15,
+                    "distance": 250.9194821532265,
+                    "max_speed_allowed": 100.0
+                }
+            ]
+        },
+        "fragmentation": {
+            "fragmentation_count": 0,
+            "short_lived_bursts": 7
+        }
+    }
+}
