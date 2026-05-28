@@ -117,36 +117,51 @@ def export_onnx(nn_model, resolution: int, onnx_path: str, device: str):
 
     print(f"[EXPORT] Tracing with dummy input shape: {dummy.shape}")
 
-    # Dynamic axes: batch dimension (0) is dynamic for both input and outputs
-    dynamic_axes = {
-        "pixel_values": {0: "batch_size"},
-        "pred_logits":  {0: "batch_size"},
-        "pred_boxes":   {0: "batch_size"},
-    }
+    print(f"[EXPORT] Exporting to ONNX (opset {OPSET}, STATIC shape, Dynamo disabled) …")
+    
+    # CRITICAL FIX for PyTorch 2.11+:
+    # 1. We MUST set `dynamo=False` to force the legacy TorchScript-based exporter.
+    # 2. We disable `dynamic_axes` entirely. Deformable Attention tracing is notoriously
+    #    fragile with dynamic axes (causes Split/Reshape hardcoding bugs in ONNX graph).
+    #    We prioritize a successful, exact static export first.
+    
+    import torch.nn.functional as Fnn
+    orig_interpolate = Fnn.interpolate
 
-    print(f"[EXPORT] Exporting to ONNX (opset {OPSET}) …")
-    with torch.no_grad():
-        torch.onnx.export(
-            wrapper,
-            dummy,
-            onnx_path,
-            export_params=True,
-            opset_version=OPSET,
-            do_constant_folding=True,
-            input_names=["pixel_values"],
-            output_names=["pred_logits", "pred_boxes"],
-            dynamic_axes=dynamic_axes,
-            verbose=False,
-        )
+    def patched_interpolate(*args, **kwargs):
+        if "antialias" in kwargs:
+            del kwargs["antialias"]
+        return orig_interpolate(*args, **kwargs)
 
-    print(f"[EXPORT] ✓ Saved: {onnx_path}")
+    print(f"[EXPORT] Patching F.interpolate to bypass 'antialias' unsupported ONNX op …")
+    Fnn.interpolate = patched_interpolate
+
+    try:
+        with torch.no_grad():
+            torch.onnx.export(
+                wrapper,
+                dummy,
+                onnx_path,
+                export_params=True,
+                opset_version=OPSET,
+                do_constant_folding=True,
+                input_names=["pixel_values"],
+                output_names=["pred_logits", "pred_boxes"],
+                # dynamic_axes=dynamic_axes,  # <-- DISABLED FOR STABILITY
+                dynamo=False,  # <-- CRITICAL for RF-DETR deformable attention
+                verbose=False,
+            )
+    finally:
+        Fnn.interpolate = orig_interpolate
+
+    print(f"[EXPORT] OK Saved: {onnx_path}")
 
     # ── Quick sanity check ────────────────────────────────────────────────────
     print("[EXPORT] Validating ONNX graph …")
     model_onnx = onnx.load(onnx_path)
     onnx.checker.check_model(model_onnx)
     file_mb = os.path.getsize(onnx_path) / 1e6
-    print(f"[EXPORT] ✓ Graph valid. File size: {file_mb:.1f} MB")
+    print(f"[EXPORT] OK Graph valid. File size: {file_mb:.1f} MB")
     return model_onnx
 
 
@@ -163,10 +178,10 @@ def simplify_onnx(onnx_path: str, simplified_path: str):
         model_simplified, check = simplify(model)
         if check:
             onnx.save(model_simplified, simplified_path)
-            print(f"[EXPORT] ✓ Simplified ONNX saved: {simplified_path}")
+            print(f"[EXPORT] OK Simplified ONNX saved: {simplified_path}")
             return True
         else:
-            print("[EXPORT] ✗ onnx-simplifier check failed — using original ONNX")
+            print("[EXPORT] FAIL onnx-simplifier check failed — using original ONNX")
             return False
     except ImportError:
         print("[EXPORT] onnxsim not installed — skipping simplification")
@@ -216,9 +231,9 @@ def verify_onnx_runtime(onnx_path: str, nn_model, resolution: int, device: str):
 
     TOLERANCE = 1e-3
     if logits_err < TOLERANCE and boxes_err < TOLERANCE:
-        print(f"[VERIFY] ✓ ONNX output matches PyTorch (tol={TOLERANCE})")
+        print(f"[VERIFY] OK ONNX output matches PyTorch (tol={TOLERANCE})")
     else:
-        print(f"[VERIFY] ⚠ Error exceeds tolerance {TOLERANCE} — "
+        print(f"[VERIFY] WARN Error exceeds tolerance {TOLERANCE} — "
               f"check for FP16 accumulation issues")
 
 
