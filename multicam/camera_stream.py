@@ -227,7 +227,9 @@ class CameraStream:
     # ═══════════════════════════════════════════════════════════════════
 
     def process_frame(self, frame: np.ndarray,
-                      cross_camera_matcher=None) -> Tuple[np.ndarray, Dict[str, Any]]:
+                      cross_camera_matcher=None,
+                      _precomputed_det=None,
+                      _precomputed_emb=None) -> Tuple[np.ndarray, Dict[str, Any]]:
         """
         Run one frame through the local pipeline and synchronize
         with the global identity system.
@@ -235,6 +237,10 @@ class CameraStream:
         Args:
             frame: BGR image
             cross_camera_matcher: CrossCameraReIDMatcher (optional)
+            _precomputed_det: DetectionResult from batched GPU pass (Phase 5).
+                              When provided, skips internal detector call.
+            _precomputed_emb: np.ndarray (N,512) from batched ReID (Phase 5).
+                              When provided, skips internal ReID call.
 
         Returns:
             (annotated_frame, stats_dict)
@@ -242,9 +248,19 @@ class CameraStream:
         t0 = time.perf_counter()
 
         # ── Run local pipeline ──────────────────────────────────────────
-        processed_frame, stats = self.pipeline.process_frame(
-            frame, frame_delta=1, frame_index=self.frame_index,
-            color_map=self._pipeline_gid_to_global)
+        if _precomputed_det is not None or _precomputed_emb is not None:
+            # Phase 5 batched path: inject pre-computed GPU results
+            processed_frame, stats = self.pipeline.process_frame_with_precomputed(
+                frame,
+                det_result=_precomputed_det,
+                embeddings=_precomputed_emb,
+                frame_delta=1, frame_index=self.frame_index,
+                color_map=self._pipeline_gid_to_global)
+        else:
+            # Normal single-camera path (unchanged)
+            processed_frame, stats = self.pipeline.process_frame(
+                frame, frame_delta=1, frame_index=self.frame_index,
+                color_map=self._pipeline_gid_to_global)
 
         # ── Synchronize with global identity system ─────────────────────
         current_active_gids = set()

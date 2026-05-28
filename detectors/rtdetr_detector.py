@@ -350,3 +350,117 @@ class RTDETRDetector(BaseDetector):
 
     def get_name(self) -> str:
         return self._name
+
+    # ──────────────────────────────────────────────────────────────────────
+    #  Phase 5: Batched multi-camera detection
+    # ──────────────────────────────────────────────────────────────────────
+
+    def detect_batch(
+        self,
+        frames: list,                    # List[np.ndarray] — BGR uint8, one per camera
+        conf_threshold: float = 0.3,
+        target_classes: list = None,     # List[int] e.g. [0] for person
+    ) -> list:
+        """
+        Run RF-DETR on a batch of BGR frames in ONE GPU forward pass.
+
+        Instead of calling detect() N times (N GPU launches, N PCIe transfers),
+        this method:
+          1. Preprocesses all frames into a single (N, 3, R, R) tensor  [CPU]
+          2. Transfers the whole batch to GPU once                        [1x PCIe]
+          3. Runs the model forward pass once                             [1x GPU launch]
+          4. Decodes and splits results back per-frame                    [GPU]
+          5. Returns a List[DetectionResult] with one entry per input frame
+
+        Args:
+            frames:           List of N BGR numpy arrays (H, W, 3) uint8.
+            conf_threshold:   Minimum confidence score to keep.
+            target_classes:   0-indexed COCO class IDs to keep (e.g. [0] for person).
+
+        Returns:
+            List[DetectionResult] — same length as `frames`.
+        """
+        if not frames:
+            return []
+
+        n = len(frames)
+
+        # ── 1. Preprocess all frames into one batch tensor ──────────────────
+        preprocessed = []
+        frame_dims = []  # (h, w) per frame for box rescaling
+        for frame in frames:
+            h, w = frame.shape[:2]
+            frame_dims.append((h, w))
+            t = self._preprocess_frame(frame)  # (1, 3, R, R) float32 GPU
+            preprocessed.append(t)
+
+        # Stack into (N, 3, R, R) — all already on GPU
+        batch = torch.cat(preprocessed, dim=0)  # (N, 3, R, R)
+
+        # ── 2. Ensure model is on GPU (lazy-load guard) ─────────────────────
+        if not getattr(self, '_model_on_device', False):
+            try:
+                from rfdetr.detr import _ensure_model_on_device
+                _ensure_model_on_device(self._model.model)
+            except ImportError:
+                self._model.model.model.to(self._device)
+            self._model_on_device = True
+
+        # ── 3. Single batched forward pass ──────────────────────────────────
+        internal = self._model.model
+        with torch.no_grad():
+            is_opt = getattr(self._model, '_is_optimized_for_inference', False)
+            if is_opt and internal.inference_model is not None:
+                predictions = internal.inference_model(
+                    batch.to(dtype=self._inf_dtype))
+            else:
+                predictions = internal.model(batch)
+
+            if isinstance(predictions, tuple):
+                predictions = {
+                    "pred_logits": predictions[1],
+                    "pred_boxes":  predictions[0],
+                }
+
+            # Postprocess all N images: each entry in target_sizes = (h, w)
+            target_sizes = torch.tensor(
+                frame_dims, device=self._device, dtype=torch.long)  # (N, 2)
+            results = internal.postprocess(predictions, target_sizes=target_sizes)
+
+        # ── 4. Split results per frame ──────────────────────────────────────
+        output: list = []
+        for i, result in enumerate(results):
+            keep = result["scores"] > conf_threshold
+
+            boxes_t  = result["boxes"][keep]
+            scores_t = result["scores"][keep]
+            labels_t = result["labels"][keep]
+
+            boxes_np  = boxes_t.float().cpu().numpy().astype(np.float32)
+            scores_np = scores_t.float().cpu().numpy().astype(np.float32)
+            raw_ids   = labels_t.cpu().numpy().astype(np.int32)
+
+            if len(boxes_np) == 0:
+                output.append(DetectionResult.empty())
+                continue
+
+            # Remap 1-indexed RF-DETR labels → 0-indexed COCO
+            class_ids = raw_ids - 1
+            labels = [_RFDETR_COCO_NAMES.get(int(rid), "object") for rid in raw_ids]
+
+            # Filter by target class
+            if target_classes is not None:
+                mask = np.isin(class_ids, target_classes)
+                boxes_np  = boxes_np[mask]
+                scores_np = scores_np[mask]
+                class_ids = class_ids[mask]
+                labels    = [l for l, m in zip(labels, mask) if m]
+
+            output.append(DetectionResult(
+                boxes=boxes_np,
+                scores=scores_np,
+                class_ids=class_ids,
+                labels=labels,
+            ))
+
+        return output

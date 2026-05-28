@@ -105,6 +105,10 @@ class SelfWatchPipeline:
         }
         self._prof_count = 0
 
+        # Phase 5: side-channel for batched multi-camera inference injection
+        self._injected_det = None   # DetectionResult from shared GPU batch
+        self._injected_emb = None   # np.ndarray (N,512) from shared ReID batch
+
     # ══════════════════════════════════════════════════════════════════
     #  IDENTITY STATE HELPERS
     # ══════════════════════════════════════════════════════════════════
@@ -159,6 +163,26 @@ class SelfWatchPipeline:
     #  MAIN FRAME PROCESSING
     # ══════════════════════════════════════════════════════════════════
 
+    def process_frame_with_precomputed(
+        self, frame, det_result, embeddings,
+        frame_delta=1, frame_index=None, color_map=None
+    ):
+        """
+        Phase 5: Entry point for batched multi-camera inference.
+
+        Sets side-channel attributes that process_frame() reads to skip its
+        internal detector.detect() and reid.extract_batch() calls. All
+        cognitive, tracking, and identity logic runs unchanged.
+        """
+        self._injected_det = det_result
+        self._injected_emb = embeddings
+        try:
+            return self.process_frame(frame, frame_delta=frame_delta,
+                                      frame_index=frame_index, color_map=color_map)
+        finally:
+            self._injected_det = None
+            self._injected_emb = None
+
     def process_frame(self, frame, frame_delta=1, frame_index=None, color_map=None):
         loop_start = time.perf_counter()
         
@@ -172,23 +196,30 @@ class SelfWatchPipeline:
         )
         h, w = frame.shape[:2]
 
+        # ── Phase 5: use batched detection if injected, else run internally ──
         DETECTOR_INTERVAL = getattr(config, 'DETECTOR_INTERVAL', 2)
-        if self.frame_count % DETECTOR_INTERVAL == 0 or self.frame_count <= 2:
-            t0 = time.perf_counter()
+        _inj_det = self._injected_det  # None means: run detector locally
+        run_detector = (_inj_det is None and
+                        (self.frame_count % DETECTOR_INTERVAL == 0 or self.frame_count <= 2))
+
+        t0 = time.perf_counter()
+        if _inj_det is not None:
+            # Batched path: results come from shared GPU forward pass
+            raw_boxes = [list(b) for b in _inj_det.boxes]
+            raw_scores = list(_inj_det.scores)
+        elif run_detector:
             det_result = self.detector.detect(
                 frame, conf_threshold=0.35, target_classes=[PERSON_CLASS])
             raw_boxes = [list(b) for b in det_result.boxes]
             raw_scores = list(det_result.scores)
-            t1 = time.perf_counter()
         else:
-            t0 = time.perf_counter()
             raw_boxes = []
             raw_scores = []
             for track in self.tracker.tracks:
                 if track.is_confirmed and track.time_since_update <= 1:
                     raw_boxes.append(track.smooth_box.tolist())
                     raw_scores.append(track.score)
-            t1 = time.perf_counter()
+        t1 = time.perf_counter()
 
         boxes, scores = [], []
         raw_crops = []  # Store crops for fingerprint color histograms
@@ -206,9 +237,18 @@ class SelfWatchPipeline:
                     raw_crops.append(None)
 
         # ── Layer 1B: ReID Embeddings ────────────────────────────────
+        # Phase 5: use batched embeddings if injected, else run internally
+        _inj_emb = self._injected_emb  # None means: run ReID locally
         t_reid0 = time.perf_counter()
         if len(boxes) > 0:
-            if is_reid_frame:
+            if _inj_emb is not None and is_reid_frame:
+                # Batched path: use the slice already computed for this camera
+                if len(_inj_emb) == len(boxes):
+                    embeddings = _inj_emb
+                else:
+                    # Shape mismatch fallback (shouldn't happen in normal flow)
+                    embeddings = self._reuse_embeddings(boxes)
+            elif is_reid_frame:
                 crops = []
                 for box in boxes:
                     x1, y1, x2, y2 = map(int, box)

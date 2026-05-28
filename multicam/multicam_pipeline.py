@@ -332,61 +332,56 @@ class MultiCameraPipeline:
 
     def step(self) -> Optional[List[Tuple[Optional[np.ndarray], Optional[Dict[str, Any]]]]]:
         """
-        Process one frame from each camera (for external loop control).
+        Phase 5: Batched multi-camera inference step.
 
-        Sequential non-blocking batching:
-          - Eliminates Python GIL contention and PyTorch CUDA context switching 
-            overhead that caused 1.3 FPS drop with ThreadPoolExecutor.
-          - Each camera gets up to 50ms to deliver a frame.
-          - If a camera has no frame ready, reuse its last result.
-          - A slow camera NEVER blocks a healthy camera.
+        Instead of calling camera.process_frame() sequentially (N GPU launches),
+        this method:
+          1. Collects the latest raw frame from each camera.
+          2. Resizes all frames to the shared inference resolution.
+          3. Calls detector.detect_batch() once  →  1 GPU forward pass for N cameras.
+          4. Extracts all ReID crops across all cameras into one list.
+          5. Calls reid.extract_batch() once        →  1 GPU forward pass for N cameras.
+          6. Slices the combined embeddings back per-camera.
+          7. Feeds per-camera det_result + embeddings to process_frame_with_precomputed()
+             which runs the independent StrongSORT+/cognitive/identity pipeline unchanged.
 
-        Returns list of (frame, stats) per camera, or None if ALL streams are ended.
+        One slow camera never blocks healthy cameras (timeout=0.05s).
+        Returns list of (frame, stats) per camera, or None if ALL streams ended.
         """
+        import time as _time
         self._frame_count += 1
         num_cams = len(self.cameras)
-        results = []
         all_ended = True
 
-        for i, cam in enumerate(self.cameras):
+        # ── 1. Collect latest frames from each camera ───────────────────────
+        t_collate0 = _time.perf_counter()
+        cam_frames = []   # raw BGR frames, one per camera (or None)
+        cam_active = []   # bool: camera produced a frame this step
+        for cam in self.cameras:
             if not cam.is_open and not cam._capture_running:
-                results.append((None, None))
+                cam_frames.append(None)
+                cam_active.append(False)
                 continue
-
             if cam._stream_ended and len(cam._frame_buf) == 0:
-                results.append((None, None))
+                cam_frames.append(None)
+                cam_active.append(False)
                 continue
-
-            # If we reach here, this camera is still active
             all_ended = False
-
-            # Non-blocking read with short timeout
-            # Prevents head-of-line blocking from slow cameras
             ret, frame = cam.read_frame(timeout=0.05)
-
             if not ret and frame is None:
-                # Stream ended permanently during read
-                results.append((None, None))
+                cam_frames.append(None)
+                cam_active.append(False)
                 continue
-
             if frame is None:
-                # Camera is alive but no new frame — reuse last result
-                # This prevents stalling the entire pipeline
-                last = self._last_results.get(i)
-                if last is not None:
-                    results.append(last)
-                else:
-                    results.append((None, None))
-                continue
-
-            # Process the frame sequentially (fastest for PyTorch + GIL)
-            processed_frame, stats = cam.process_frame(
-                frame, cross_camera_matcher=self.cross_camera_matcher)
-            result = (processed_frame, stats)
-            results.append(result)
-
-            # Cache this result for frame-reuse
-            self._last_results[i] = result
+                # Camera alive but no new frame — skip batched inference for it
+                cam_frames.append(None)
+                cam_active.append(False)
+            else:
+                # Pre-resize here so the batch is uniform
+                frame = cv2.resize(frame, (960, 540))
+                cam_frames.append(frame)
+                cam_active.append(True)
+        t_collate1 = _time.perf_counter()
 
         if all_ended:
             return None
@@ -395,7 +390,139 @@ class MultiCameraPipeline:
         if self._frame_count % 30 == 0:
             self.global_registry.decay_dormant()
 
+        # ── 2. Determine which cameras need detection this step ─────────────
+        # (mirrors the DETECTOR_INTERVAL logic in process_frame)
+        DETECTOR_INTERVAL = getattr(config, 'DETECTOR_INTERVAL', 2)
+
+        frames_to_detect = []  # (cam_index, frame) for cameras needing detection
+        for i, (cam, frame) in enumerate(zip(self.cameras, cam_frames)):
+            if not cam_active[i]:
+                continue
+            # Peek at the pipeline's frame_count BEFORE it increments
+            next_fc = cam.pipeline.frame_count + 1
+            needs_detect = (next_fc % DETECTOR_INTERVAL == 0 or next_fc <= 2)
+            if needs_detect:
+                frames_to_detect.append((i, frame))
+
+        # ── 3. Batched detection — ONE GPU forward pass ─────────────────────
+        t_det0 = _time.perf_counter()
+        batch_det_results = {}  # cam_index -> DetectionResult | None
+        if frames_to_detect and self._detector is not None:
+            try:
+                batch_frames = [f for _, f in frames_to_detect]
+                batch_results = self._detector.detect_batch(
+                    batch_frames, conf_threshold=0.35, target_classes=[0])  # 0=person
+                for (cam_idx, _), result in zip(frames_to_detect, batch_results):
+                    batch_det_results[cam_idx] = result
+            except Exception as e:
+                print(f"[MULTICAM] detect_batch failed ({e}), falling back to sequential")
+                for cam_idx, frame in frames_to_detect:
+                    try:
+                        batch_det_results[cam_idx] = self._detector.detect(
+                            frame, conf_threshold=0.35, target_classes=[0])
+                    except Exception as e2:
+                        print(f"[MULTICAM] sequential detect also failed ({e2})")
+        t_det1 = _time.perf_counter()
+
+        # ── 4. Collect all ReID crops across all cameras ────────────────────
+        # Determine which cameras are on a ReID frame
+        REID_INTERVAL_VAL = 12  # mirrors engine/pipeline.py REID_INTERVAL constant
+        cam_needs_reid = {}
+        all_reid_crops = []        # flat list of all crops from all cameras
+        cam_crop_slices = {}       # cam_index -> (start_idx, end_idx) in all_reid_crops
+
+        for i, (cam, frame) in enumerate(zip(self.cameras, cam_frames)):
+            if not cam_active[i] or frame is None:
+                continue
+            next_fc = cam.pipeline.frame_count + 1
+            is_reid = (next_fc % REID_INTERVAL_VAL == 0 or next_fc <= 2)
+            cam_needs_reid[i] = is_reid
+            if not is_reid:
+                continue
+            # Get the detection result for this camera (may be None = skip frame)
+            det = batch_det_results.get(i)
+            if det is None:
+                continue
+            h, w = frame.shape[:2]
+            start = len(all_reid_crops)
+            for box in det.boxes:
+                bx1, by1, bx2, by2 = box
+                if (by2 - by1) < 60 or (bx2 - bx1) < 25:
+                    continue  # will be filtered by process_frame anyway
+                x1, y1 = max(0, int(bx1)), max(0, int(by1))
+                x2, y2 = min(w, int(bx2)), min(h, int(by2))
+                if x2 > x1 and y2 > y1:
+                    crop = cv2.resize(frame[y1:y2, x1:x2], (128, 128))
+                    all_reid_crops.append(crop)
+                else:
+                    all_reid_crops.append(np.zeros((128, 128, 3), dtype=np.uint8))
+            end = len(all_reid_crops)
+            cam_crop_slices[i] = (start, end)
+
+        # ── 5. Batched ReID — ONE GPU forward pass ──────────────────────────
+        t_reid0 = _time.perf_counter()
+        all_embeddings = None
+        if all_reid_crops and self._reid is not None:
+            try:
+                all_embeddings = self._reid.extract_batch(all_reid_crops)
+            except Exception as e:
+                print(f"[MULTICAM] batched reid failed ({e})")
+                all_embeddings = None
+        t_reid1 = _time.perf_counter()
+
+        # ── 6. Dispatch per-camera with sliced embeddings ───────────────────
+        t_track0 = _time.perf_counter()
+        results = []
+        for i, cam in enumerate(self.cameras):
+            if not cam_active[i]:
+                # Reuse last result for cameras with no new frame
+                last = self._last_results.get(i)
+                results.append(last if last is not None else (None, None))
+                continue
+
+            frame = cam_frames[i]
+            det_result = batch_det_results.get(i)  # None if not a detect frame
+
+            # Slice the embeddings for this camera
+            emb_slice = None
+            if all_embeddings is not None and i in cam_crop_slices:
+                s, e = cam_crop_slices[i]
+                if e > s:
+                    emb_slice = all_embeddings[s:e]
+
+            try:
+                processed_frame, stats = cam.process_frame(
+                    frame,
+                    cross_camera_matcher=self.cross_camera_matcher,
+                    _precomputed_det=det_result,
+                    _precomputed_emb=emb_slice,
+                )
+                result = (processed_frame, stats)
+            except Exception as e:
+                print(f"[MULTICAM] CAM{cam.camera_id} process_frame error: {e}")
+                last = self._last_results.get(i)
+                result = last if last is not None else (None, None)
+
+            results.append(result)
+            self._last_results[i] = result
+        t_track1 = _time.perf_counter()
+
+        # Diagnostic print every 60 frames
+        if self._frame_count % 60 == 0:
+            n_det = len(frames_to_detect)
+            n_crops = len(all_reid_crops)
+            det_ms = (t_det1 - t_det0) * 1000.0
+            reid_ms = (t_reid1 - t_reid0) * 1000.0
+            collate_ms = (t_collate1 - t_collate0) * 1000.0
+            track_ms = (t_track1 - t_track0) * 1000.0
+            print(f"\n[BATCH] F#{self._frame_count}: "
+                  f"collate={collate_ms:.1f}ms "
+                  f"det_batch({n_det} cams)={det_ms:.1f}ms "
+                  f"reid_batch({n_crops} crops)={reid_ms:.1f}ms "
+                  f"track={track_ms:.1f}ms")
+
         return results
+
 
     # ═══════════════════════════════════════════════════════════════════
     #  DISPLAY HELPERS
