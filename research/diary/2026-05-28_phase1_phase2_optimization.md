@@ -96,3 +96,36 @@ While the O(N×M) loops were vectorized, the tracker still consumes 17ms, likely
 The next big performance jumps will come from:
 1. **Phase 5 (Multi-Camera Batched Detection):** Running the detector once for all cameras as a batched tensor, drastically reducing GPU launch overhead.
 2. **Phase 3 (Render Decoupling):** Further decoupling `cv2.resize` and `cv2.putText` away from the hot path.
+
+---
+
+## PHASE 3: Render Decoupling & UI Pipeline Stabilization
+
+### Problem
+Before Phase 3, the `engine/pipeline.py` performed extensive OpenCV drawing (bounding boxes, trajectories, labels, HUD, forensic diagnostics) directly inside the inference thread. Additionally, `app.py` performed expensive `cv2.cvtColor` and `cv2.resize` operations every 33ms tick, even when the frame hadn't changed. This caused:
+- Inference stuttering (inference thread blocked by `cv2.polylines` and `cv2.putText`).
+- UI threading bottlenecks (duplicate resize operations eating Tkinter thread time).
+- Jittery camera output since the display could only advance when inference was completely done drawing.
+
+### Implementation
+1. **`OverlayRenderer` Decoupling:**
+   - Removed all OpenCV drawing logic from `engine/pipeline.py`.
+   - `pipeline.py` now populates a lightweight `rendering_metadata` dictionary.
+   - Created `ui/overlay_renderer.py` which takes the raw frame + metadata and applies all annotations (boxes, HUD, forensic layers).
+   - The drawing is now executed purely inside `app.py`'s `_display_tick()` or `_update_ui_from_cache()` methods.
+2. **Stale Frame Skipping:**
+   - Updated `VideoPlayer.update_frame()` to cache `self._last_frame_id`.
+   - If the same numpy array is submitted multiple times, the UI skips the expensive `cv2.cvtColor`, `cv2.resize`, and PIL conversion completely.
+3. **Resize & Display Optimizations:**
+   - `VideoPlayer` caches target dimensions on `<Configure>` events, avoiding slow Tkinter `winfo_width()` IPC queries on the hot path.
+   - BGR→RGB conversion is now a fast numpy slice (`[::-1]`).
+4. **Independent Metrics:**
+   - `app.py` now tracks `_render_fps` completely separate from `_inference_fps`.
+
+### Rollback
+Revert git commit `Phase 3: render decoupling - VideoPlayer caching + render FPS diagnostics` and `Phase 3: Decoupled OverlayRenderer implementation` to restore synchronous drawing.
+
+### Expected Gain
+- Removes ~2–5ms of OpenCV drawing overhead from the inference hot path.
+- Tkinter UI remains buttery smooth at 30FPS regardless of inference drops.
+- `VideoPlayer` CPU usage drops drastically when inference runs < 30FPS (due to skipped duplicate frames).

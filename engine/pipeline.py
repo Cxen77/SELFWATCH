@@ -790,160 +790,84 @@ class SelfWatchPipeline:
         n_thinking = sum(1 for _, (_, s, *_) in display.items() if s == STATE_THINKING)
         self.metrics.update_stability(n_active, n_thinking, n_duplicates)
 
-        # Draw suppression regions (faint red)
-        if self.layer_manager.is_enabled("forensic") and self.layer_manager.is_enabled("for_suppress"):
-            for rbox in suppress_regions:
-                rx1, ry1, rx2, ry2 = map(int, rbox)
-                cv2.rectangle(frame, (rx1, ry1), (rx2, ry2), (0, 0, 100), 2)
-                cv2.putText(frame, "SUPPRESS", (rx1, ry1-5), cv2.FONT_HERSHEY_PLAIN, 0.8, (0,0,100), 1)
+        # ── Phase 3: Decoupled Render Metadata Generation ────────────────
+        # Instead of drawing directly in the inference thread, collect all data needed by OverlayRenderer
+        
+        layer_flags = {
+            "forensic": self.layer_manager.is_enabled("forensic"),
+            "for_suppress": self.layer_manager.is_enabled("for_suppress"),
+            "for_failure": self.layer_manager.is_enabled("for_failure"),
+            "motion": self.layer_manager.is_enabled("motion"),
+            "motion_prediction": self.layer_manager.is_enabled("motion_prediction"),
+            "motion_velocity": self.layer_manager.is_enabled("motion_velocity"),
+            "cognitive": self.layer_manager.is_enabled("cognitive"),
+            "cog_frozen": self.layer_manager.is_enabled("cog_frozen"),
+            "cog_thinking": self.layer_manager.is_enabled("cog_thinking"),
+            "tracking": self.layer_manager.is_enabled("tracking"),
+            "tracking_ids": self.layer_manager.is_enabled("tracking_ids"),
+            "tracking_age": self.layer_manager.is_enabled("tracking_age"),
+            "association": self.layer_manager.is_enabled("association"),
+            "assoc_method": self.layer_manager.is_enabled("assoc_method"),
+            "assoc_cost": self.layer_manager.is_enabled("assoc_cost"),
+            "assoc_cbiou": self.layer_manager.is_enabled("assoc_cbiou"),
+        }
 
-        # Phantoms: draw trajectory cones and predicted positions
-        if self.layer_manager.is_enabled("motion") and self.layer_manager.is_enabled("motion_prediction"):
+        phantoms_meta = []
+        if layer_flags["motion"] and layer_flags["motion_prediction"]:
             for pt in self.phantom_tracker.phantoms.values():
-                px1, py1, px2, py2 = map(int, pt.position)
-                # Draw predicted bounding box (dashed gray)
-                cv2.rectangle(frame, (px1, py1), (px2, py2), (150, 150, 150), 1, lineType=cv2.LINE_AA)
-                conf_pct = int(pt.confidence * 100)
-                cv2.putText(frame, f"P:{pt.track_id} ({conf_pct}%)", (px1, py1 - 5),
-                            cv2.FONT_HERSHEY_PLAIN, 0.7, (150, 150, 150), 1)
+                cone = pt.get_cone_tip_and_edges()
+                phantoms_meta.append({
+                    "position": pt.position,
+                    "track_id": pt.track_id,
+                    "confidence": int(pt.confidence * 100),
+                    "cone": cone,
+                    "velocity": pt.initial_velocity
+                })
 
-                # Draw trajectory cone (green semi-transparent triangle)
-                cone_data = pt.get_cone_tip_and_edges()
-                if cone_data is not None:
-                    tip, left, right = cone_data
-                    pts_arr = np.array([
-                        [int(tip[0]), int(tip[1])],
-                        [int(left[0]), int(left[1])],
-                        [int(right[0]), int(right[1])],
-                    ], dtype=np.int32)
-                    # Semi-transparent cone overlay
-                    overlay = frame.copy()
-                    cv2.fillPoly(overlay, [pts_arr], (0, 180, 0))
-                    cv2.addWeighted(overlay, 0.15, frame, 0.85, 0, frame)
-                    cv2.polylines(frame, [pts_arr], True, (0, 200, 0), 1, cv2.LINE_AA)
-
-                    # Direction arrow from center
-                    tcx, tcy = int(tip[0]), int(tip[1])
-                    dir_end = (int(tip[0] + pt.initial_velocity[0] * 15),
-                               int(tip[1] + pt.initial_velocity[1] * 15))
-                    cv2.arrowedLine(frame, (tcx, tcy), dir_end, (0, 255, 0), 2, tipLength=0.4)
-
+        display_items = {}
         for gid, (tbox, state, lid, vel, age, assoc_data) in display.items():
-            x1, y1, x2, y2 = map(int, tbox)
-            color_id = color_map[gid] if (color_map and gid in color_map) else gid
-            color = id_color(color_id)
-            cx = int((x1 + x2) / 2)
-            cy = int((y1 + y2) / 2)
-            
-            # Formatting labels
-            frozen_flag = " [FROZEN]" if (gid in frozen_gids and self.layer_manager.is_enabled("cognitive") and self.layer_manager.is_enabled("cog_frozen")) else ""
-            
-            if state == STATE_THINKING and not (self.layer_manager.is_enabled("cognitive") and self.layer_manager.is_enabled("cog_thinking")):
-                continue  # Skip drawing thinking tracks if layer is off
-                
-            if state == STATE_THINKING:
-                # Faded rendering for THINKING state
-                lbl_parts = []
-                if self.layer_manager.is_enabled("tracking"):
-                    if self.layer_manager.is_enabled("tracking_ids"): lbl_parts.append(f"G:{gid}|L:{lid}")
-                    lbl_parts.append(f"(T){frozen_flag}")
-                    if self.layer_manager.is_enabled("tracking_age"): lbl_parts.append(f"A:{age}")
-                else:
-                    lbl_parts.append(f"(T){frozen_flag}")
-                lbl = " ".join(lbl_parts).strip()
-                # Thinner, dashed-style box
-                cv2.rectangle(frame, (x1, y1), (x2, y2), color, 1)
-            else:
-                lbl_parts = []
-                if self.layer_manager.is_enabled("tracking"):
-                    if self.layer_manager.is_enabled("tracking_ids"): lbl_parts.append(f"G:{gid}|L:{lid}")
-                    lbl_parts.append(f"{frozen_flag}")
-                    if self.layer_manager.is_enabled("tracking_age"): lbl_parts.append(f"A:{age}")
-                else:
-                    lbl_parts.append(f"{frozen_flag}")
-                lbl = " ".join(lbl_parts).strip()
-                cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
-                
-                # Draw forensic details under the box
-                if assoc_data and self.debug_overlay.enabled and self.layer_manager.is_enabled("association"):
-                    parts = []
-                    if self.layer_manager.is_enabled("assoc_method"):
-                        parts.append(assoc_data.get("method", "NEW"))
-                    if self.layer_manager.is_enabled("assoc_cost"):
-                        c = assoc_data.get("cost", 0.0)
-                        parts.append(f"Cost: {c:.2f}")
-                    if self.layer_manager.is_enabled("assoc_cbiou"):
-                        cb = assoc_data.get("cbiou", 0)
-                        if cb > 0:
-                            parts.append(f"C-BIoU: {cb}px")
-                    
-                    if parts:
-                        detail_lbl = " | ".join(parts)
-                        cv2.putText(frame, detail_lbl, (x1, y2 + 15), cv2.FONT_HERSHEY_PLAIN, 0.9, (255, 255, 0), 1)
+            display_items[gid] = {
+                "box": tbox,
+                "state": state,
+                "lid": lid,
+                "vel": vel,
+                "age": age,
+                "assoc": assoc_data
+            }
 
-            # Draw velocity vector
-            if vel is not None and len(vel) == 2 and self.layer_manager.is_enabled("motion") and self.layer_manager.is_enabled("motion_velocity"):
-                vx, vy = float(vel[0]), float(vel[1])
-                end_pt = (int(cx + vx * 10), int(cy + vy * 10))
-                cv2.arrowedLine(frame, (cx, cy), end_pt, color, 2, tipLength=0.3)
-
-            (tw, th), _ = cv2.getTextSize(
-                lbl, cv2.FONT_HERSHEY_SIMPLEX, 0.55, 2)
-            cv2.rectangle(
-                frame, (x1, y1 - 22), (x1 + tw + 6, y1), color, -1)
-            cv2.putText(
-                frame, lbl, (x1 + 3, y1 - 6),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 0, 0), 2)
-
-        # Draw Failure Events (Forensic Layer)
-        if frame_id_switches and self.layer_manager.is_enabled("forensic") and self.layer_manager.is_enabled("for_failure"):
-            warn_msg = f"FAILURE EVENT: {len(frame_id_switches)} ID SWITCH(ES)"
-            (ww, wh), _ = cv2.getTextSize(warn_msg, cv2.FONT_HERSHEY_SIMPLEX, 1.2, 3)
-            fw = frame.shape[1]
-            wx = (fw - ww) // 2
-            wy = 50
-            cv2.rectangle(frame, (wx - 10, wy - wh - 10), (wx + ww + 10, wy + 10), (0, 0, 200), -1)
-            cv2.putText(frame, warn_msg, (wx, wy), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 3)
-
-        # Draw Rebinding Rejections (Forensic Layer)
-        if self.layer_manager.is_enabled("forensic") and self.layer_manager.is_enabled("for_failure"):
+        recent_rejects_msgs = []
+        if layer_flags["forensic"] and layer_flags["for_failure"]:
             rebind_log = self.global_id_manager.get_rebind_log()
-            recent_rejects = [e for e in rebind_log
-                              if "REJECT" in e.get("decision", "")
-                              and e.get("frame", 0) >= self.frame_count - 3]
-            if recent_rejects:
-                ry = 80
-                for rej in recent_rejects[-3:]:  # Show last 3
-                    msg = (f"BLOCKED: gid={rej['proposed_gid']} "
-                           f"src={rej['source']} "
-                           f"{rej['decision']} "
-                           f"dot={rej['direction_dot']:.2f} "
-                           f"dist={rej['trajectory_dist']:.0f}px")
-                    cv2.putText(frame, msg, (10, ry),
-                                cv2.FONT_HERSHEY_PLAIN, 0.9, (0, 100, 255), 1)
-                    ry += 15
+            recent_rejects = [e for e in rebind_log if "REJECT" in e.get("decision", "") and e.get("frame", 0) >= self.frame_count - 3]
+            for rej in recent_rejects[-3:]:
+                recent_rejects_msgs.append(
+                    f"BLOCKED: gid={rej['proposed_gid']} src={rej['source']} "
+                    f"{rej['decision']} dot={rej['direction_dot']:.2f} dist={rej['trajectory_dist']:.0f}px"
+                )
 
-        # Count states for HUD
-        n_thinking = sum(1 for d in self._id_states.values()
-                         if d["state"] == STATE_THINKING)
-        n_phantom = self.phantom_tracker.count
+        hud_meta = {
+            "tracked": len(display),
+            "active": self.tracker.confirmed_count,
+            "thinking": n_thinking,
+            "phantom": self.phantom_tracker.count,
+            "occlusion": self.occlusion_manager.count,
+            "warm": self.warm_memory.count,
+            "reid_tag": "ReID" if is_reid_frame else "cached",
+            "frame_count": self.frame_count
+        }
 
-        cv2.putText(
-            frame, f"Tracked: {len(display)}", (10, 50),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
-        cv2.putText(
-            frame,
-            f"Active:{self.tracker.confirmed_count}  "
-            f"Think:{n_thinking}  "
-            f"Ph:{n_phantom}  "
-            f"Occ:{self.occlusion_manager.count}  "
-            f"Wm:{self.warm_memory.count}",
-            (10, 75),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
-        reid_tag = "ReID" if is_reid_frame else "cached"
-        cv2.putText(
-            frame, f"[{reid_tag}] F#{self.frame_count}", (10, 100),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
+        rendering_metadata = {
+            "layer_flags": layer_flags,
+            "suppress_regions": suppress_regions if layer_flags["forensic"] and layer_flags["for_suppress"] else [],
+            "phantoms": phantoms_meta,
+            "frozen_gids": frozen_gids,
+            "display_items": display_items,
+            "color_map": color_map,
+            "id_switches": len(frame_id_switches) if frame_id_switches else 0,
+            "recent_rejects": recent_rejects_msgs,
+            "debug_enabled": self.debug_overlay.enabled,
+            "hud": hud_meta
+        }
 
         t_draw1 = time.perf_counter()
 
@@ -1012,6 +936,7 @@ class SelfWatchPipeline:
             "id_switches": frame_id_switches,
             "suppress_regions": suppress_regions,
             "frozen_gids": list(frozen_gids),
+            "rendering_metadata": rendering_metadata,
         }
 
     # ── Crop Lookup ────────────────────────────────────────────────────

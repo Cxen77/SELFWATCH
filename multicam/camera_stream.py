@@ -377,30 +377,9 @@ class CameraStream:
                            active_dict: dict,
                            stats: dict) -> np.ndarray:
         """
-        Add multi-camera overlay to the frame.
-
-        Shows: CAM_ID | LID (local) | GID (global)
+        Phase 3: Overlay logic decoupled to UI thread.
+        This function now just passes the frame through untouched.
         """
-        h, w = frame.shape[:2]
-
-        # Camera label header
-        cam_label = f"CAM{self.camera_id} | {self.label}"
-        cv2.putText(frame, cam_label, (w - 250, 25),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 200, 255), 2)
-
-        # Per-track global ID annotation
-        for pipeline_gid, box in active_dict.items():
-            global_id = self._pipeline_gid_to_global.get(pipeline_gid)
-            if global_id is None:
-                continue
-
-            x1, y1, x2, y2 = map(int, box)
-            # Draw global ID label below existing annotation
-            gid_label = f"CAM{self.camera_id} | LID{pipeline_gid} | GID{global_id}"
-            cv2.putText(frame, gid_label, (x1, y2 + 30),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.45,
-                        (0, 255, 200), 1)
-
         return frame
 
     # ═══════════════════════════════════════════════════════════════════

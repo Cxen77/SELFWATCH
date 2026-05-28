@@ -12,6 +12,7 @@ from ui.video_player import VideoPlayer
 from ui.side_panel import SidePanel
 from ui.timeline import Timeline
 from ui.overlay_panel import OverlayPanel
+from ui.overlay_renderer import OverlayRenderer
 from engine.async_state_cache import AsyncStateCache
 import engine.async_state_cache as _async_cache_mod
 from evaluation.evaluator import SELFWATCHEvaluator
@@ -34,6 +35,7 @@ class SelfWatchApp(ctk.CTk):
         # ΓöÇΓöÇ Core State ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         self.multicam_pipeline = None
         self.state_cache = AsyncStateCache(max_frames=300, jpeg_quality=70)
+        self.overlay_renderer = OverlayRenderer()
         
         self.sources = [] # list of sources (int or str)
         
@@ -393,8 +395,12 @@ class SelfWatchApp(ctk.CTk):
     def _update_ui_from_cache(self, frames, metas):
         if frames:
             for i, f in enumerate(frames):
-                if i < len(self.video_players):
-                    self.video_players[i].update_frame(f)
+                if i < len(self.video_players) and f is not None:
+                    meta = metas[i] if (metas and i < len(metas) and metas[i]) else {}
+                    render_meta = meta.get("rendering_metadata", {})
+                    cam_label = meta.get("camera_label", f"CAM{i}")
+                    annotated = self.overlay_renderer.render(f, render_meta, cam_label, i)
+                    self.video_players[i].update_frame(annotated)
                     
         # Update metrics using first active camera's stats for now
         # A true shared evaluator will aggregate these later
@@ -591,7 +597,11 @@ class SelfWatchApp(ctk.CTk):
         if new_frames is not None:
             for i, f in enumerate(new_frames):
                 if i < len(self.video_players) and f is not None:
-                    self.video_players[i].update_frame(f)
+                    meta = new_stats[i] if (new_stats and i < len(new_stats) and new_stats[i]) else {}
+                    render_meta = meta.get("rendering_metadata", {})
+                    cam_label = meta.get("camera_label", f"CAM{i}")
+                    annotated = self.overlay_renderer.render(f, render_meta, cam_label, i)
+                    self.video_players[i].update_frame(annotated)
 
         # ΓöÇΓöÇ Update side panel metrics ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         if new_stats is not None:
