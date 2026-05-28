@@ -788,6 +788,7 @@ class SelfWatchPipeline:
         # Update stability score
         n_active = sum(1 for _, (_, s, *_) in display.items() if s == STATE_ACTIVE)
         n_thinking = sum(1 for _, (_, s, *_) in display.items() if s == STATE_THINKING)
+        n_phantom = self.phantom_tracker.count
         self.metrics.update_stability(n_active, n_thinking, n_duplicates)
 
         # ── Phase 3: Decoupled Render Metadata Generation ────────────────
