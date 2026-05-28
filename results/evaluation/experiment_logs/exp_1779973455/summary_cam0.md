@@ -1,0 +1,11 @@
+# Experiment exp_1779973455 Summary_cam0
+
+## Core Stability Metrics
+- **Identity Stability Score:** 1.0000
+- **Total Visible Switches:** 0
+- **Duplicate Box Frames:** 0
+- **Teleportation Events:** 0
+- **Fragmentation Count:** 0
+
+---
+*Generated automatically by SELFWATCH Evaluation Suite.*

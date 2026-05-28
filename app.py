@@ -13,6 +13,7 @@ from ui.side_panel import SidePanel
 from ui.timeline import Timeline
 from ui.overlay_panel import OverlayPanel
 from engine.async_state_cache import AsyncStateCache
+import engine.async_state_cache as _async_cache_mod
 from evaluation.evaluator import SELFWATCHEvaluator
 from evaluation.experiment_logs.experiment_tracker import ResearchExperimentTracker
 
@@ -27,10 +28,10 @@ ctk.set_default_color_theme("blue")
 class SelfWatchApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("SELFWATCH — Multi-Camera Cognitive Tracking Lab")
+        self.title("SELFWATCH ΓÇö Multi-Camera Cognitive Tracking Lab")
         self.geometry("1600x900")
 
-        # ── Core State ──────────────────────────────────────────────
+        # ΓöÇΓöÇ Core State ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         self.multicam_pipeline = None
         self.state_cache = AsyncStateCache(max_frames=300, jpeg_quality=70)
         
@@ -44,18 +45,21 @@ class SelfWatchApp(ctk.CTk):
         self._inference_thread = None
         self._display_timer = None
 
-        # ── Inference → Display: lock-free latest-state handoff ───────
+        # ΓöÇΓöÇ Inference ΓåÆ Display: lock-free latest-state handoff ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         # The inference thread writes here; the display thread reads.
-        # No mutex needed — Python's GIL makes single-reference
+        # No mutex needed ΓÇö Python's GIL makes single-reference
         # assignment atomic. We use overwrite semantics.
         self._latest_frames = None       # latest list of annotated frames
         self._latest_stats = None        # latest list of stats dicts
         self._new_data_ready = False      # flag: new data since last display
 
-        # ── Counters ────────────────────────────────────────────────
+        # ΓöÇΓöÇ Counters ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         self._raw_frame_index = 0
         self._inference_fps = 0.0
         self._render_fps = 0.0
+        # Phase 3: independent render FPS rolling window
+        self._render_fps_window = []
+        self._last_render_time = 0.0
 
         self.video_players = []
         
@@ -63,7 +67,7 @@ class SelfWatchApp(ctk.CTk):
         self.experiment_tracker = None
         self.evaluation_enabled = True
 
-        # ── Diagnostics ─────────────────────────────────────────────
+        # ΓöÇΓöÇ Diagnostics ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         self._diag_ram_mb = 0.0
         self._diag_q_sizes = ""
         self._diag_drops = 0
@@ -72,9 +76,9 @@ class SelfWatchApp(ctk.CTk):
 
         self._build_ui()
 
-    # ════════════════════════════════════════════════════════════════
+    # ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
     #  UI CONSTRUCTION
-    # ════════════════════════════════════════════════════════════════
+    # ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
 
     def _build_ui(self):
         self.grid_columnconfigure(1, weight=1)
@@ -121,7 +125,7 @@ class SelfWatchApp(ctk.CTk):
         self.lbl_diag.pack(pady=(15, 2), padx=10, anchor="w")
         self.lbl_memory = ctk.CTkLabel(
             self.side_panel_scroll,
-            text="RAM: -- | Inf: -- | Render: --",
+            text="RAM: -- | Inf: --fps | Rnd: --fps",
             text_color="gray", font=ctk.CTkFont(family="Consolas", size=11))
         self.lbl_memory.pack(pady=2, padx=10, anchor="w")
         self.lbl_queues = ctk.CTkLabel(
@@ -141,7 +145,7 @@ class SelfWatchApp(ctk.CTk):
         self.sources_textbox = ctk.CTkTextbox(self.side_panel_scroll, height=60)
         self.sources_textbox.pack(fill="x", padx=10, pady=2)
         
-        self.btn_start = ctk.CTkButton(self.side_panel_scroll, text="▶ Start Multi-Camera", command=self.start_multi_camera, fg_color="#2b7b3b", hover_color="#1e5c2a")
+        self.btn_start = ctk.CTkButton(self.side_panel_scroll, text="Γû╢ Start Multi-Camera", command=self.start_multi_camera, fg_color="#2b7b3b", hover_color="#1e5c2a")
         self.btn_start.pack(pady=10, padx=10, fill="x")
 
         # Event Log
@@ -180,9 +184,9 @@ class SelfWatchApp(ctk.CTk):
             
         self.after(0, self._log_event, msg)
 
-    # ════════════════════════════════════════════════════════════════
+    # ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
     #  SOURCE CONTROL
-    # ════════════════════════════════════════════════════════════════
+    # ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
 
     def add_camera_source(self):
         # Count existing integer sources to auto-increment webcam ID
@@ -292,7 +296,7 @@ class SelfWatchApp(ctk.CTk):
 
         self.is_playing = True
         self.timeline.is_playing = True
-        self.timeline.btn_play_pause.configure(text="⏸ Pause")
+        self.timeline.btn_play_pause.configure(text="ΓÅ╕ Pause")
 
         # Thread B: Inference (decoupled from display)
         self._inference_thread = threading.Thread(
@@ -340,9 +344,9 @@ class SelfWatchApp(ctk.CTk):
             if not self.is_playing and self._latest_frames:
                 self.scrub_to(self.timeline.slider_var.get())
 
-    # ════════════════════════════════════════════════════════════════
+    # ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
     #  PLAYBACK & SCRUBBING
-    # ════════════════════════════════════════════════════════════════
+    # ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
 
     def play(self):
         self.is_playing = True
@@ -408,13 +412,13 @@ class SelfWatchApp(ctk.CTk):
         self.evaluation_enabled = state
         self._log_event(f"Evaluator {'ENABLED' if state else 'DISABLED'}")
 
-    # ════════════════════════════════════════════════════════════════
+    # ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
     #  THREAD B: INFERENCE (decoupled from display)
-    # ════════════════════════════════════════════════════════════════
+    # ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
 
     def _inference_loop(self):
         """
-        Inference thread — processes frames as fast as GPU allows.
+        Inference thread ΓÇö processes frames as fast as GPU allows.
 
         Architecture:
           - Reads latest frames from camera capture threads (Thread A)
@@ -432,7 +436,7 @@ class SelfWatchApp(ctk.CTk):
         diag_interval = 20  # Update diagnostics every N frames
         
         while self.is_running:
-            # Check pause state — if playing from cache, don't run inference
+            # Check pause state ΓÇö if playing from cache, don't run inference
             playing_from_cache = self.is_playing and (
                 self.state_cache.current_index < self.state_cache.total_frames - 1)
             if not self.is_playing or playing_from_cache:
@@ -504,14 +508,14 @@ class SelfWatchApp(ctk.CTk):
             # Append to state cache for scrubbing
             self.state_cache.append(frames, stats_list)
 
-            # ── Atomic handoff to display thread ────────────────────
+            # ΓöÇΓöÇ Atomic handoff to display thread ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
             # No lock needed: Python GIL makes reference assignment atomic.
             # Display thread reads these; if it misses one, it gets the next.
             self._latest_frames = frames
             self._latest_stats = stats_list
             self._new_data_ready = True
                 
-            # ── Update diagnostics periodically ─────────────────────
+            # ΓöÇΓöÇ Update diagnostics periodically ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
             if self._raw_frame_index % diag_interval == 0:
                 try:
                     self._diag_ram_mb = proc.memory_info().rss / 1e6
@@ -524,9 +528,9 @@ class SelfWatchApp(ctk.CTk):
                 except Exception:
                     pass
 
-    # ════════════════════════════════════════════════════════════════
+    # ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
     #  THREAD C: DISPLAY (main thread, paced at 30fps)
-    # ════════════════════════════════════════════════════════════════
+    # ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
 
     # Target: 30 FPS render cadence (33ms intervals)
     TARGET_RENDER_FPS = 30
@@ -542,7 +546,7 @@ class SelfWatchApp(ctk.CTk):
 
     def _display_tick(self):
         """
-        Display thread tick — runs on the main/UI thread.
+        Display thread tick ΓÇö runs on the main/UI thread.
 
         Architecture:
           - Reads latest frames/stats from inference thread (atomic)
@@ -556,6 +560,16 @@ class SelfWatchApp(ctk.CTk):
 
         t_render_start = time.perf_counter()
 
+        # ── Phase 3: Independent render FPS ──────────────────────────
+        if self._last_render_time > 0:
+            render_dt = t_render_start - self._last_render_time
+            self._render_fps_window.append(render_dt)
+            if len(self._render_fps_window) > 30:
+                self._render_fps_window.pop(0)
+            avg_rdt = sum(self._render_fps_window) / len(self._render_fps_window)
+            self._render_fps = 1.0 / (avg_rdt + 1e-6)
+        self._last_render_time = t_render_start
+
         # If playing from cache (scrubbing)
         if self.is_playing and self.state_cache.current_index < self.state_cache.total_frames - 1:
             self.state_cache.current_index += 1
@@ -564,7 +578,7 @@ class SelfWatchApp(ctk.CTk):
             self.timeline.is_playing = True
             return
 
-        # ── Read latest data (non-blocking, no lock) ────────────────
+        # ΓöÇΓöÇ Read latest data (non-blocking, no lock) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         if self._new_data_ready:
             new_frames = self._latest_frames
             new_stats = self._latest_stats
@@ -573,13 +587,13 @@ class SelfWatchApp(ctk.CTk):
             new_frames = None
             new_stats = None
 
-        # ── Render frames to video players ──────────────────────────
+        # ΓöÇΓöÇ Render frames to video players ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         if new_frames is not None:
             for i, f in enumerate(new_frames):
                 if i < len(self.video_players) and f is not None:
                     self.video_players[i].update_frame(f)
 
-        # ── Update side panel metrics ───────────────────────────────
+        # ΓöÇΓöÇ Update side panel metrics ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         if new_stats is not None:
             try:
                 reg_stats = self.multicam_pipeline.global_registry.get_stats()
@@ -595,32 +609,32 @@ class SelfWatchApp(ctk.CTk):
             except Exception:
                 pass
 
-        # ── Update timeline ─────────────────────────────────────────
+        # ΓöÇΓöÇ Update timeline ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         if self.state_cache.total_frames > 0:
             self.timeline.update_state(
                 self.state_cache.current_index,
                 max(0, self.state_cache.total_frames - 1),
                 self.is_playing)
 
-        # ── Update diagnostics (cheap, every tick) ──────────────────
+        # ΓöÇΓöÇ Update diagnostics (cheap, every tick) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         t_render_end = time.perf_counter()
         self._diag_render_ms = (t_render_end - t_render_start) * 1000
 
         try:
             self.lbl_memory.configure(
                 text=f"RAM: {self._diag_ram_mb:.0f}MB | "
-                     f"Inf: {self._diag_inf_ms:.0f}ms "
-                     f"({self._inference_fps:.0f}fps) | "
-                     f"Render: {self._diag_render_ms:.0f}ms")
+                     f"Inf: {self._inference_fps:.0f}fps "
+                     f"({self._diag_inf_ms:.0f}ms) | "
+                     f"Rnd: {self._render_fps:.0f}fps")
             self.lbl_queues.configure(
                 text=f"Q: [{self._diag_q_sizes}] | "
-                     f"Drops: {self._diag_drops}")
-            # Phase 1: Async encoder diagnostics
-            from engine.async_state_cache import AsyncStateCache
+                     f"Drops: {self._diag_drops} | "
+                     f"RndMs: {self._diag_render_ms:.1f}ms")
+            # Phase 1+3: Async encoder diagnostics (module-level import, no overhead)
             self.lbl_encoder.configure(
-                text=f"Enc: {AsyncStateCache.encode_ms_avg:.1f}ms | "
-                     f"EncQ: {AsyncStateCache.encode_queue_size} | "
-                     f"EncDrops: {AsyncStateCache.encode_drops}")
+                text=f"Enc: {_async_cache_mod.AsyncStateCache.encode_ms_avg:.1f}ms | "
+                     f"EncQ: {_async_cache_mod.AsyncStateCache.encode_queue_size} | "
+                     f"EncDrops: {_async_cache_mod.AsyncStateCache.encode_drops}")
         except Exception:
             pass
 
