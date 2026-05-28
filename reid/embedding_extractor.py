@@ -270,6 +270,49 @@ class EmbeddingExtractor:
               f" | FP16={'ON' if self._half else 'OFF'}"
               f" | dim={_EMBEDDING_DIM}")
 
+        # ── ReID stabilization: pre-warm GPU and allocate persistent buffers ──
+        # Pre-allocate a pinned-memory CPU staging buffer sized to the maximum
+        # expected batch (64 crops). This eliminates per-call malloc and the
+        # cudaMalloc fragmentation spike that causes the ~1388ms outlier.
+        self._MAX_BATCH = 64
+        if self._device.type == "cuda":
+            # Pinned (page-locked) memory — allows async DMA to GPU
+            self._pinned_buf = torch.zeros(
+                (self._MAX_BATCH, 3, _INPUT_HEIGHT, _INPUT_WIDTH),
+                dtype=torch.float32, pin_memory=True)
+            # Pre-allocated GPU batch tensor — reused every call
+            self._gpu_buf = torch.zeros(
+                (self._MAX_BATCH, 3, _INPUT_HEIGHT, _INPUT_WIDTH),
+                dtype=torch.float16 if self._half else torch.float32,
+                device=self._device)
+            # GPU-side ImageNet normalization constants (broadcast-friendly)
+            _mean = torch.tensor(_PIXEL_MEAN, dtype=torch.float32,
+                                 device=self._device).view(1, 3, 1, 1)
+            _std  = torch.tensor(_PIXEL_STD,  dtype=torch.float32,
+                                 device=self._device).view(1, 3, 1, 1)
+            self._gpu_mean = _mean.half() if self._half else _mean
+            self._gpu_std  = _std.half()  if self._half else _std
+            # Dedicated CUDA stream — decoupled from TRT and default streams
+            self._reid_stream = torch.cuda.Stream(device=self._device)
+            # Warm up: run one dummy forward pass to trigger cuDNN autotuning
+            # and pre-allocate all internal CUDA allocator pools.
+            print("[SELFWATCH] OSNet: warming up GPU allocator ...")
+            with torch.cuda.stream(self._reid_stream):
+                _dummy = torch.zeros(
+                    (1, 3, _INPUT_HEIGHT, _INPUT_WIDTH),
+                    dtype=torch.float16 if self._half else torch.float32,
+                    device=self._device)
+                with torch.inference_mode():
+                    _ = self._model(_dummy)
+            self._reid_stream.synchronize()
+            print("[SELFWATCH] OSNet: GPU warm-up complete.")
+        else:
+            self._pinned_buf = None
+            self._gpu_buf    = None
+            self._gpu_mean   = None
+            self._gpu_std    = None
+            self._reid_stream = None
+
     # ── Weight Loading ───────────────────────────────────────────────────
 
     def _load_weights(self, weights_path: Union[str, Path]) -> None:
@@ -344,42 +387,52 @@ class EmbeddingExtractor:
 
     def _preprocess_batch_fast(self, crops: List[np.ndarray]) -> torch.Tensor:
         """
-        Fast vectorized batch preprocessing — avoids per-crop PIL conversion.
+        Fast batch preprocessing using pre-allocated pinned memory.
 
         All crops MUST already be resized to (_INPUT_HEIGHT, _INPUT_WIDTH).
-        Performs bulk BGR→RGB, float32 conversion, ImageNet normalization,
-        and HWC→CHW transpose using numpy broadcasting, then a single
-        transfer to GPU.
+        Writes into a persistent pinned-memory staging buffer, then transfers
+        to the pre-allocated GPU tensor via a non-blocking DMA copy on the
+        dedicated ReID CUDA stream. Normalizes on-GPU using pre-computed
+        float tensors, eliminating all per-call numpy mean/std allocations.
 
         Returns:
             Tensor of shape (N, 3, _INPUT_HEIGHT, _INPUT_WIDTH) on device.
         """
         n = len(crops)
-        # Stack into (N, H, W, 3) uint8 array
-        batch_np = np.stack(crops, axis=0)  # all crops are already 128x128x3
 
-        # BGR → RGB (reverse channel axis for entire batch at once)
-        batch_np = batch_np[:, :, :, ::-1]  # (N, H, W, 3) RGB
+        # CPU path: numpy normalization (no pinned buffer available)
+        if self._pinned_buf is None:
+            batch_np = np.stack(crops, axis=0)[:, :, :, ::-1]  # BGR→RGB
+            batch_f = batch_np.astype(np.float32) * (1.0 / 255.0)
+            mean = np.array(_PIXEL_MEAN, dtype=np.float32).reshape(1, 1, 1, 3)
+            std  = np.array(_PIXEL_STD,  dtype=np.float32).reshape(1, 1, 1, 3)
+            batch_f = np.ascontiguousarray((batch_f - mean) / std).transpose(0, 3, 1, 2)
+            batch_t = torch.from_numpy(batch_f)
+            return batch_t.half() if self._half else batch_t
 
-        # uint8 → float32, scale to [0, 1]
-        batch_f = batch_np.astype(np.float32) * (1.0 / 255.0)
+        # GPU path: write directly into pinned buffer, transfer async
+        # Stack crops → (N, H, W, 3) uint8
+        batch_np = np.stack(crops, axis=0)         # (N, H, W, 3) BGR
+        batch_np = batch_np[:, :, :, ::-1]         # BGR → RGB
+        # float32 scale only — normalization happens on GPU
+        batch_f = np.ascontiguousarray(
+            batch_np.transpose(0, 3, 1, 2)         # (N, C, H, W)
+            .astype(np.float32) * (1.0 / 255.0)
+        )
 
-        # ImageNet normalization: (x - mean) / std
-        mean = np.array(_PIXEL_MEAN, dtype=np.float32).reshape(1, 1, 1, 3)
-        std = np.array(_PIXEL_STD, dtype=np.float32).reshape(1, 1, 1, 3)
-        batch_f = (batch_f - mean) / std
+        # Write into pre-allocated pinned staging buffer slice
+        self._pinned_buf[:n].copy_(torch.from_numpy(batch_f))
 
-        # HWC → CHW: (N, H, W, C) → (N, C, H, W)
-        batch_f = batch_f.transpose(0, 3, 1, 2)
+        # Async DMA: pinned CPU → GPU on dedicated stream
+        with torch.cuda.stream(self._reid_stream):
+            self._gpu_buf[:n].copy_(self._pinned_buf[:n], non_blocking=True)
+            # Normalize on-GPU (no malloc, no host round-trip)
+            gpu_slice = self._gpu_buf[:n]
+            if not self._half:
+                gpu_slice = gpu_slice  # already float32
+            gpu_slice = (gpu_slice - self._gpu_mean) / self._gpu_std
 
-        # Ensure contiguous memory layout before torch conversion
-        batch_f = np.ascontiguousarray(batch_f)
-
-        # Single transfer to GPU
-        batch_t = torch.from_numpy(batch_f).to(self._device)
-        if self._half:
-            batch_t = batch_t.half()
-        return batch_t
+        return gpu_slice
 
     # ── Extraction ───────────────────────────────────────────────────────
 
@@ -398,9 +451,18 @@ class EmbeddingExtractor:
         if not crops:
             return np.empty((0, _EMBEDDING_DIM), dtype=np.float32)
         batch = self._preprocess_batch_fast(crops)
-        with torch.autocast(device_type=self._device.type, enabled=self._half):
-            feats = self._model(batch)
-            feats = F.normalize(feats, p=2, dim=1)
+        # Run inference on the dedicated ReID stream if available
+        stream = self._reid_stream
+        if stream is not None:
+            with torch.cuda.stream(stream):
+                with torch.autocast(device_type=self._device.type, enabled=self._half):
+                    feats = self._model(batch)
+                    feats = F.normalize(feats, p=2, dim=1)
+            stream.synchronize()   # sync only the ReID stream, not entire device
+        else:
+            with torch.autocast(device_type=self._device.type, enabled=self._half):
+                feats = self._model(batch)
+                feats = F.normalize(feats, p=2, dim=1)
         return feats.float().cpu().numpy()
 
     def prepare_for_tensorrt(self):

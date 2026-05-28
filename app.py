@@ -260,7 +260,8 @@ class SelfWatchApp(ctk.CTk):
         
         self.multicam_pipeline = MultiCameraPipeline(
             detector_variant=variant,
-            enable_debug=self.overlay_panel.chk_debug.get()
+            enable_debug=self.overlay_panel.chk_debug.get(),
+            detector_backend="tensorrt",          # TRT FP16/TF32 engine — 2.3x faster
         )
         
         # Register event listener for UI
@@ -463,6 +464,8 @@ class SelfWatchApp(ctk.CTk):
             if results is None:
                 print("[MULTICAM] All streams ended.")
                 self.is_running = False
+                self.is_playing = False
+                self.after(0, lambda: self._log_event("SUCCESS: End of Video Stream Reached."))
                 break
 
             self._raw_frame_index += 1

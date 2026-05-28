@@ -50,3 +50,33 @@ debug_frame.jpg
 dist/
 build/
 *.egg-info/
+venv/
+trt_env/
+**pycache**/
+*.pyc
+
+# TensorRT / ONNX
+
+*.engine
+*.onnx
+
+# Model weights
+
+*.pth
+*.pt
+
+# Logs / outputs
+
+results/
+runs/
+logs/
+
+# Benchmarks
+
+models/benchmark_results.json
+
+# Videos
+
+*.mp4
+*.avi
+*.mov

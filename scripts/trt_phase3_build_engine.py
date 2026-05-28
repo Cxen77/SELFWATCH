@@ -56,8 +56,14 @@ def build_engine(onnx_path: str, engine_path: str):
     print()
 
     builder = trt.Builder(TRT_LOGGER)
-    network_flags = 1 << int(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH)
-    network = builder.create_network(network_flags)
+    
+    # TRT 10/11 compatibility: EXPLICIT_BATCH was removed because it is now default.
+    try:
+        network_flags = 1 << int(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH)
+        network = builder.create_network(network_flags)
+    except AttributeError:
+        # TensorRT >= 10.0
+        network = builder.create_network()
     parser  = trt.OnnxParser(network, TRT_LOGGER)
 
     # ── Parse ONNX ─────────────────────────────────────────────────────────
@@ -75,24 +81,40 @@ def build_engine(onnx_path: str, engine_path: str):
     config.set_memory_pool_limit(trt.MemoryPoolType.WORKSPACE, 2 << 30)  # 2 GB
 
     # FP16 mode — mandatory for tensor core acceleration on RTX 4060
-    if builder.platform_has_fast_fp16:
+    # FP16 / Tensor Core mode
+    # TRT 11 removed BuilderFlag.FP16 because it requires Strongly Typed networks
+    # (via offline ModelOpt). To preserve tensor-core optimization safely without
+    # rewriting the ONNX model, we fall back to TF32 for TRT 11+.
+    try:
         config.set_flag(trt.BuilderFlag.FP16)
         print("[TRT] ✓ FP16 enabled (tensor core acceleration)")
+    except AttributeError:
+        config.set_flag(trt.BuilderFlag.TF32)
+        print("[TRT] ⚠ BuilderFlag.FP16 removed in TRT 11 (requires ModelOpt).")
+        print("[TRT] ✓ TF32 optimization enabled instead (preserves tensor core speed).")
+
+    # ── Batch profile (Dynamic vs Static) ───────────────────────────────────
+    input_tensor = network.get_input(0)
+    input_name = input_tensor.name
+    input_shape = input_tensor.shape
+    print(f"[TRT] Input tensor '{input_name}' shape: {input_shape}")
+
+    # If the batch dimension is dynamic (-1), we must provide an optimization profile.
+    if input_shape[0] == -1:
+        print(f"[TRT] Detected DYNAMIC batch ONNX. Building profile (min={MIN_BATCH}, opt={OPT_BATCH}, max={MAX_BATCH}).")
+        profile = builder.create_optimization_profile()
+        profile.set_shape(
+            input_name,
+            min=(MIN_BATCH, 3, RESOLUTION, RESOLUTION),
+            opt=(OPT_BATCH, 3, RESOLUTION, RESOLUTION),
+            max=(MAX_BATCH, 3, RESOLUTION, RESOLUTION),
+        )
+        config.add_optimization_profile(profile)
     else:
-        print("[TRT] ⚠ FP16 not available — building FP32 engine")
-
-    # ── Dynamic batch profile ───────────────────────────────────────────────
-    profile = builder.create_optimization_profile()
-    input_name = network.get_input(0).name
-    print(f"[TRT] Input tensor name: '{input_name}'")
-
-    profile.set_shape(
-        input_name,
-        min=(MIN_BATCH, 3, RESOLUTION, RESOLUTION),
-        opt=(OPT_BATCH, 3, RESOLUTION, RESOLUTION),
-        max=(MAX_BATCH, 3, RESOLUTION, RESOLUTION),
-    )
-    config.add_optimization_profile(profile)
+        static_batch = input_shape[0]
+        print(f"[TRT] Detected STATIC batch={static_batch} ONNX. Skipping dynamic profile.")
+        # TensorRT automatically infers the static shape from the parsed graph.
+        # No optimization profile is needed.
 
     # ── Build engine ────────────────────────────────────────────────────────
     print("[TRT] Building engine (this takes 2–10 minutes, normal for first build) …")

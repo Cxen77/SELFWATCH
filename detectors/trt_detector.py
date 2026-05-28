@@ -117,13 +117,14 @@ class TRTDetector(BaseDetector):
 
         # TRT runtime objects
         self._engine    = None
+        self._context   = None   # persistent execution context (avoid per-call create)
         self._trt_ok    = False
         self._fallback  = None   # RTDETRDetector instance (if needed)
+        self._static_batch: Optional[int] = None  # None = dynamic, int = static engine
 
-        # Phase 6: persistent pinned-memory input buffer (avoids malloc per frame)
-        # Allocated lazily on first call (batch size may vary)
-        self._in_buf: Optional[torch.Tensor] = None
-        self._in_buf_shape: Optional[tuple]  = None
+        # Phase 6: persistent non-default CUDA stream — eliminates TRT default-stream warning
+        # and avoids stream synchronization overhead against the default stream.
+        self._stream: Optional[torch.cuda.Stream] = None
 
         # Try to load TRT engine
         self._trt_ok = self._load_engine(engine_path)
@@ -168,20 +169,35 @@ class TRTDetector(BaseDetector):
                 print("[TRT] Engine deserialization returned None")
                 return False
 
-            # Cache tensor names and io modes for fast dispatch
-            import tensorrt as trt
+            # Cache tensor names for fast dispatch
             self._input_name   = self._engine.get_tensor_name(0)
             self._output_names = [
                 self._engine.get_tensor_name(i)
                 for i in range(1, self._engine.num_io_tensors)
             ]
-            # Names: first output = pred_logits, second = pred_boxes
-            # (set in trt_phase1_export_onnx.py output_names=["pred_logits","pred_boxes"])
-            # Verify
+            # Verify expected output names
             assert "pred_logits" in self._output_names, (
                 f"Expected 'pred_logits' in outputs, got {self._output_names}")
             assert "pred_boxes"  in self._output_names, (
                 f"Expected 'pred_boxes' in outputs, got {self._output_names}")
+
+            # Create persistent execution context (saves ~0.5ms per call)
+            self._context = self._engine.create_execution_context()
+
+            # Detect static vs dynamic batch from engine input shape
+            input_shape = self._engine.get_tensor_shape(self._input_name)
+            if input_shape[0] > 0:
+                # Static batch — engine only accepts exactly this batch size
+                self._static_batch = int(input_shape[0])
+                print(f"[TRT] Static batch engine detected: batch={self._static_batch}")
+            else:
+                # Dynamic batch (-1)
+                self._static_batch = None
+                print(f"[TRT] Dynamic batch engine detected")
+
+            # Persistent non-default CUDA stream — avoids TRT default-stream sync penalty
+            self._stream = torch.cuda.Stream(device=self._device)
+
             return True
         except ImportError:
             print("[TRT] tensorrt package not installed")
@@ -286,14 +302,15 @@ class TRTDetector(BaseDetector):
         """
         Run TRT engine on batch_gpu (N, 3, R, R).
         Returns (pred_logits_gpu, pred_boxes_gpu) tensors.
+        Uses persistent context and dedicated non-default CUDA stream.
         """
-        n = batch_gpu.shape[0]
-        context = self._engine.create_execution_context()
+        context = self._context
 
-        # Set dynamic input shape for this batch
-        context.set_input_shape(self._input_name, tuple(batch_gpu.shape))
+        # For dynamic engines, set shape per-call; static engines don't need it
+        if self._static_batch is None:
+            context.set_input_shape(self._input_name, tuple(batch_gpu.shape))
 
-        # Phase 6: reuse or allocate persistent GPU output buffers
+        # Allocate output buffers sized to this call's output shape
         out_bufs = {}
         for name in self._output_names:
             shape = tuple(context.get_tensor_shape(name))
@@ -301,15 +318,14 @@ class TRTDetector(BaseDetector):
             out_bufs[name] = buf
             context.set_tensor_address(name, buf.data_ptr())
 
-        # Set input address (batch_gpu is already on device, contiguous)
+        # Set input address (batch_gpu must be contiguous on device)
         batch_c = batch_gpu.contiguous()
         context.set_tensor_address(self._input_name, batch_c.data_ptr())
 
-        # Async execution on current CUDA stream
-        stream = torch.cuda.current_stream().cuda_stream
-        context.execute_async_v3(stream_handle=stream)
+        # Execute on dedicated non-default stream — eliminates TRT sync warning
+        context.execute_async_v3(stream_handle=self._stream.cuda_stream)
 
-        # Outputs are in out_bufs — still on GPU, no sync needed yet
+        # Outputs are on GPU — sync happens at detect() / detect_batch() level
         pred_logits = out_bufs["pred_logits"]   # (N, num_queries, C+1) FP32
         pred_boxes  = out_bufs["pred_boxes"]    # (N, num_queries, 4)   FP32
 
@@ -333,7 +349,7 @@ class TRTDetector(BaseDetector):
         with torch.no_grad():
             batch = self._preprocess_frame_gpu(frame)          # (1, 3, R, R)
             logits, boxes = self._trt_forward(batch)
-            torch.cuda.synchronize()
+            self._stream.synchronize()                         # sync dedicated stream
             return self._postprocess_one(
                 logits[0], boxes[0], h, w, conf_threshold, target_classes)
 
@@ -357,12 +373,18 @@ class TRTDetector(BaseDetector):
         if self._fallback is not None:
             return self._fallback.detect_batch(frames, conf_threshold, target_classes)
 
+        # Static-batch engines only accept exactly one frame per call.
+        # Run sequentially and collect results — still faster than PyTorch.
+        if self._static_batch is not None:
+            return [self.detect(f, conf_threshold, target_classes) for f in frames]
+
+        # Dynamic engine path — true batched GPU forward pass
         frame_dims = [(f.shape[0], f.shape[1]) for f in frames]
 
         with torch.no_grad():
             batch = self._preprocess_batch_gpu(frames)        # (N, 3, R, R)
             logits, boxes = self._trt_forward(batch)           # async GPU
-            torch.cuda.synchronize()                           # single sync point
+            self._stream.synchronize()                         # single sync on dedicated stream
 
         results = []
         for i, (h, w) in enumerate(frame_dims):

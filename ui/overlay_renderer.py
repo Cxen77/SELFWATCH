@@ -129,9 +129,10 @@ class OverlayRenderer:
                 if parts:
                     cv2.putText(disp, " | ".join(parts), (x1, y2 + 15), cv2.FONT_HERSHEY_PLAIN, 0.9, (255, 255, 0), 1)
 
-            # Velocity vector
-            if vel and len(vel) == 2 and layer_flags.get("motion") and layer_flags.get("motion_velocity"):
-                end_pt = (int(cx + vel[0] * 10), int(cy + vel[1] * 10))
+            # Velocity vector — guard against numpy truth-value ambiguity
+            if vel is not None and hasattr(vel, "__len__") and len(vel) == 2 and layer_flags.get("motion") and layer_flags.get("motion_velocity"):
+                vx, vy = float(vel[0]), float(vel[1])
+                end_pt = (int(cx + vx * 10), int(cy + vy * 10))
                 cv2.arrowedLine(disp, (cx, cy), end_pt, color, 2, tipLength=0.3)
                 
             # Camera level Global ID annotation (Moved from camera_stream.py)
