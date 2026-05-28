@@ -36,6 +36,7 @@ from typing import List, Dict, Optional, Any, Tuple
 
 import config
 from detectors import RTDETRDetector
+from detectors.trt_detector import TRTDetector
 from reid import EmbeddingExtractor
 from trackers import StrongSORTTracker
 from engine.pipeline import SelfWatchPipeline
@@ -64,7 +65,9 @@ class MultiCameraPipeline:
                  use_fp16: bool = True,
                  similarity_threshold: float = 0.70,
                  max_dormant_time: float = 300.0,
-                 enable_debug: bool = False):
+                 enable_debug: bool = False,
+                 detector_backend: str = "torch",
+                 engine_path: Optional[str] = None):
         """
         Args:
             detector_variant: RT-DETR variant (nano/medium/large)
@@ -73,11 +76,16 @@ class MultiCameraPipeline:
             similarity_threshold: Cross-camera ReID threshold
             max_dormant_time: Max seconds for dormant identity survival
             enable_debug: Enable debug overlay
+            detector_backend: "torch" (default) or "tensorrt"
+            engine_path: Path to .engine file (Phase 5, TRT only).
+                         Defaults to models/rfdetr_nano_384_fp16.engine
         """
         self._detector_variant = detector_variant
         self._detector_resolution = detector_resolution
         self._use_fp16 = use_fp16
         self._enable_debug = enable_debug
+        self._detector_backend = detector_backend     # "torch" or "tensorrt"
+        self._engine_path = engine_path               # path for TRT engine
 
         # ── Shared components ───────────────────────────────────────────
         self.global_registry = GlobalMultiCameraIdentityManager(
@@ -127,12 +135,32 @@ class MultiCameraPipeline:
         print(f"  SELFWATCH Multi-Camera — Initializing Shared Models")
         print(f"{'='*60}")
 
-        self._detector = RTDETRDetector(
-            variant=self._detector_variant,
-            resolution=self._detector_resolution,
-            use_amp=self._use_fp16,
-            compile_model=False,
-        )
+        # ── Construct detector (PyTorch or TensorRT) ────────────────────────
+        backend = self._detector_backend.lower().strip()
+        if backend == "tensorrt":
+            engine_path = self._engine_path
+            if engine_path is None:
+                import os
+                engine_path = os.path.join(
+                    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                    "models", "rfdetr_nano_384_fp16.engine")
+            print(f"[MULTICAM] Backend: TensorRT  engine={engine_path}")
+            self._detector = TRTDetector(
+                engine_path=engine_path,
+                resolution=self._detector_resolution,
+                fallback=True,              # auto-fallback to PyTorch if engine missing
+                fallback_variant=self._detector_variant,
+                fallback_use_amp=self._use_fp16,
+                fallback_compile=False,
+            )
+        else:
+            print(f"[MULTICAM] Backend: PyTorch (torch)")
+            self._detector = RTDETRDetector(
+                variant=self._detector_variant,
+                resolution=self._detector_resolution,
+                use_amp=self._use_fp16,
+                compile_model=False,
+            )
 
         self._reid = EmbeddingExtractor(
             weights_path=config.REID_WEIGHTS,

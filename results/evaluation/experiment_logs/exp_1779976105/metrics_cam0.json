@@ -1,0 +1,82 @@
+{
+    "summary": {
+        "identity_stability_score": 0.9939024390243902,
+        "visible_id_switches": 1,
+        "box_continuity_switches": 0,
+        "display_id_changes": 2,
+        "total_visible_switches": 3,
+        "switch_breakdown": {
+            "replace": 1,
+            "swap": 0,
+            "flicker": 0,
+            "box_continuity": 0,
+            "display_id_change": 2
+        },
+        "duplicate_box_frames": 0,
+        "teleportation_events": 0,
+        "fragmentation_count": 0
+    },
+    "detailed": {
+        "visible_switches": {
+            "visible_id_switches": 1,
+            "replace_switches": 1,
+            "swap_switches": 0,
+            "flicker_switches": 0,
+            "switch_events": [
+                {
+                    "frame": 639,
+                    "type": "replace",
+                    "old_id": 4,
+                    "new_id": 9,
+                    "distance": 12.9,
+                    "old_duration": 634
+                }
+            ]
+        },
+        "box_continuity": {
+            "box_continuity_switches": 0,
+            "box_births": 4,
+            "box_deaths": 0,
+            "display_id_changes": 2,
+            "total_visible_switches": 2,
+            "switch_events": [
+                {
+                    "frame": 639,
+                    "type": "display_id_change",
+                    "old_id": 4,
+                    "new_id": 9,
+                    "iou": 0.7339,
+                    "position": [
+                        435.6470489501953,
+                        263.5229187011719
+                    ]
+                },
+                {
+                    "frame": 640,
+                    "type": "display_id_change",
+                    "old_id": 9,
+                    "new_id": 8,
+                    "iou": 0.9579,
+                    "position": [
+                        437.1409912109375,
+                        264.3352584838867
+                    ]
+                }
+            ]
+        },
+        "duplicates": {
+            "duplicate_frame_count": 0,
+            "total_duplicate_events": 0,
+            "duplicate_events": []
+        },
+        "teleportation": {
+            "teleportation_count": 0,
+            "impossible_velocity_events": 0,
+            "teleportation_events": []
+        },
+        "fragmentation": {
+            "fragmentation_count": 0,
+            "short_lived_bursts": 1
+        }
+    }
+}
