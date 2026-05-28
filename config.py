@@ -9,6 +9,7 @@ DETECTOR_RESOLUTION = 384
 DETECTOR_CONF_THRESH = 0.45
 DETECTOR_COMPILE = False
 DETECTOR_AMP = True
+DETECTOR_INTERVAL = 3          # Run detector every N frames; tracker predicts on skipped frames
 
 # StrongSORT Tracker Settings
 TRACKER_TYPE = "strongsort"
@@ -17,8 +18,8 @@ TRACKER_LOW_THRESH = 0.1
 TRACKER_APPEARANCE_WEIGHT = 0.65   # Balance OSNet appearance with motion/IoU
 TRACKER_MAX_COSINE_DIST = 0.30     # Tighter gate for appearance matching
 TRACKER_IOU_THRESH = 0.15          # Lower gate for low-FPS/skipped-frame updates
-TRACKER_MAX_LOST = 120             # Keep lost tracks longer through detector gaps
-TRACKER_CONFIRM_THRESHOLD = 3     # 3 hits at ~5FPS = ~0.6s to confirm
+TRACKER_MAX_LOST = 300             # Keep lost tracks alive ~16s at 18fps through occlusion
+TRACKER_CONFIRM_THRESHOLD = 2     # 2 hits = fast confirmation, reduce tentative churn
 TRACKER_EMBEDDING_HISTORY = 10    # Rolling embedding buffer size
 TRACKER_MIN_QUALITY_SCORE = 0.4   # Min confidence to update embeddings
 
@@ -71,3 +72,19 @@ TOPOLOGY_MIN_OBSERVATIONS = 200    # Frames before topology is useful
 
 # Gait Signature
 GAIT_ENABLED = True                # Enable gait-based identity signal
+
+# ═══════════════════════════════════════════════════════════════════
+#  Multi-Camera Settings (Phase 1)
+# ═══════════════════════════════════════════════════════════════════
+
+# Cross-Camera ReID
+MULTICAM_SIMILARITY_THRESHOLD = 0.70   # Cosine similarity for cross-camera match
+MULTICAM_MAX_DORMANT_TIME = 300.0      # Max seconds for dormant identity survival
+MULTICAM_DORMANT_DECAY_RATE = 0.998    # Exponential decay rate per tick
+MULTICAM_DORMANT_MIN_CONFIDENCE = 0.05 # Min confidence before dormant expires
+MULTICAM_MAX_DORMANT = 200             # Max dormant identities in memory
+MULTICAM_SAME_CAMERA_MATCH = True      # Allow matching within same camera
+
+# Event Bus
+MULTICAM_EVENT_HISTORY = 10000         # Max events stored in bus
+MULTICAM_TRANSITION_MAX_GAP = 120.0    # Max seconds between exit→entry pair

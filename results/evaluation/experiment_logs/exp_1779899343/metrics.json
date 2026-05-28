@@ -1,0 +1,79 @@
+{
+    "summary": {
+        "identity_stability_score": 0.987792472024415,
+        "visible_id_switches": 0,
+        "box_continuity_switches": 0,
+        "display_id_changes": 0,
+        "total_visible_switches": 0,
+        "switch_breakdown": {
+            "replace": 0,
+            "swap": 0,
+            "flicker": 0,
+            "box_continuity": 0,
+            "display_id_change": 0
+        },
+        "duplicate_box_frames": 0,
+        "teleportation_events": 4,
+        "fragmentation_count": 0
+    },
+    "detailed": {
+        "visible_switches": {
+            "visible_id_switches": 0,
+            "replace_switches": 0,
+            "swap_switches": 0,
+            "flicker_switches": 0,
+            "switch_events": []
+        },
+        "box_continuity": {
+            "box_continuity_switches": 0,
+            "box_births": 4,
+            "box_deaths": 0,
+            "display_id_changes": 0,
+            "total_visible_switches": 0,
+            "switch_events": []
+        },
+        "duplicates": {
+            "duplicate_frame_count": 0,
+            "total_duplicate_events": 0,
+            "duplicate_events": []
+        },
+        "teleportation": {
+            "teleportation_count": 4,
+            "impossible_velocity_events": 4,
+            "teleportation_events": [
+                {
+                    "frame": 634,
+                    "global_id": 4,
+                    "distance": 103.3242015454269,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 636,
+                    "global_id": 4,
+                    "distance": 103.60894025131229,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 639,
+                    "global_id": 4,
+                    "distance": 102.56248095673193,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 640,
+                    "global_id": 4,
+                    "distance": 106.51437696386343,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                }
+            ]
+        },
+        "fragmentation": {
+            "fragmentation_count": 0,
+            "short_lived_bursts": 0
+        }
+    }
+}

@@ -1,0 +1,2369 @@
+{
+    "summary": {
+        "identity_stability_score": 0.3268330733229329,
+        "visible_id_switches": 139,
+        "duplicate_box_frames": 0,
+        "teleportation_events": 195,
+        "fragmentation_count": 0
+    },
+    "detailed": {
+        "visible_switches": {
+            "visible_id_switches": 139,
+            "switch_events": [
+                {
+                    "frame": 59,
+                    "old_id": 7,
+                    "new_id": 7,
+                    "distance": 28.491720775169302,
+                    "old_duration": 52
+                },
+                {
+                    "frame": 83,
+                    "old_id": 7,
+                    "new_id": 7,
+                    "distance": 0.0,
+                    "old_duration": 23
+                },
+                {
+                    "frame": 87,
+                    "old_id": 2,
+                    "new_id": 2,
+                    "distance": 5.62891749925899,
+                    "old_duration": 15
+                },
+                {
+                    "frame": 104,
+                    "old_id": 4,
+                    "new_id": 2,
+                    "distance": 22.827295572571675,
+                    "old_duration": 99
+                },
+                {
+                    "frame": 117,
+                    "old_id": 5,
+                    "new_id": 5,
+                    "distance": 2.07269354038435,
+                    "old_duration": 111
+                },
+                {
+                    "frame": 119,
+                    "old_id": 16,
+                    "new_id": 16,
+                    "distance": 0.8978621901387825,
+                    "old_duration": 21
+                },
+                {
+                    "frame": 136,
+                    "old_id": 18,
+                    "new_id": 18,
+                    "distance": 7.231214813395002,
+                    "old_duration": 19
+                },
+                {
+                    "frame": 148,
+                    "old_id": 4,
+                    "new_id": 4,
+                    "distance": 0.0,
+                    "old_duration": 34
+                },
+                {
+                    "frame": 153,
+                    "old_id": 5,
+                    "new_id": 5,
+                    "distance": 26.442384744102505,
+                    "old_duration": 21
+                },
+                {
+                    "frame": 154,
+                    "old_id": 7,
+                    "new_id": 7,
+                    "distance": 4.036003778192786,
+                    "old_duration": 30
+                },
+                {
+                    "frame": 169,
+                    "old_id": 20,
+                    "new_id": 15,
+                    "distance": 13.35343495387552,
+                    "old_duration": 33
+                },
+                {
+                    "frame": 170,
+                    "old_id": 17,
+                    "new_id": 17,
+                    "distance": 20.851102787338704,
+                    "old_duration": 22
+                },
+                {
+                    "frame": 170,
+                    "old_id": 20,
+                    "new_id": 20,
+                    "distance": 0.938705877898855,
+                    "old_duration": 33
+                },
+                {
+                    "frame": 171,
+                    "old_id": 5,
+                    "new_id": 5,
+                    "distance": 15.191787858345261,
+                    "old_duration": 17
+                },
+                {
+                    "frame": 192,
+                    "old_id": 6,
+                    "new_id": 6,
+                    "distance": 0.6015895057165086,
+                    "old_duration": 185
+                },
+                {
+                    "frame": 209,
+                    "old_id": 6,
+                    "new_id": 6,
+                    "distance": 0.0,
+                    "old_duration": 16
+                },
+                {
+                    "frame": 215,
+                    "old_id": 2,
+                    "new_id": 1,
+                    "distance": 6.175851867721316,
+                    "old_duration": 31
+                },
+                {
+                    "frame": 219,
+                    "old_id": 7,
+                    "new_id": 5,
+                    "distance": 5.193084694536773,
+                    "old_duration": 38
+                },
+                {
+                    "frame": 229,
+                    "old_id": 24,
+                    "new_id": 1,
+                    "distance": 15.27177255674822,
+                    "old_duration": 24
+                },
+                {
+                    "frame": 244,
+                    "old_id": 16,
+                    "new_id": 6,
+                    "distance": 30.710854222783297,
+                    "old_duration": 68
+                },
+                {
+                    "frame": 245,
+                    "old_id": 16,
+                    "new_id": 16,
+                    "distance": 28.405080086645825,
+                    "old_duration": 68
+                },
+                {
+                    "frame": 271,
+                    "old_id": 16,
+                    "new_id": 16,
+                    "distance": 9.39056012810684,
+                    "old_duration": 25
+                },
+                {
+                    "frame": 274,
+                    "old_id": 30,
+                    "new_id": 30,
+                    "distance": 6.708981496570326,
+                    "old_duration": 25
+                },
+                {
+                    "frame": 279,
+                    "old_id": 18,
+                    "new_id": 18,
+                    "distance": 4.278827763067218,
+                    "old_duration": 15
+                },
+                {
+                    "frame": 285,
+                    "old_id": 28,
+                    "new_id": 19,
+                    "distance": 25.421649423151177,
+                    "old_duration": 25
+                },
+                {
+                    "frame": 295,
+                    "old_id": 7,
+                    "new_id": 7,
+                    "distance": 5.580153451549005,
+                    "old_duration": 28
+                },
+                {
+                    "frame": 296,
+                    "old_id": 5,
+                    "new_id": 5,
+                    "distance": 0.0,
+                    "old_duration": 50
+                },
+                {
+                    "frame": 307,
+                    "old_id": 6,
+                    "new_id": 1,
+                    "distance": 11.783884219803015,
+                    "old_duration": 18
+                },
+                {
+                    "frame": 311,
+                    "old_id": 21,
+                    "new_id": 16,
+                    "distance": 6.637388291248588,
+                    "old_duration": 146
+                },
+                {
+                    "frame": 317,
+                    "old_id": 30,
+                    "new_id": 4,
+                    "distance": 30.701645916994114,
+                    "old_duration": 34
+                },
+                {
+                    "frame": 318,
+                    "old_id": 30,
+                    "new_id": 30,
+                    "distance": 2.5638582821265397,
+                    "old_duration": 34
+                },
+                {
+                    "frame": 325,
+                    "old_id": 7,
+                    "new_id": 7,
+                    "distance": 3.5122724492885697,
+                    "old_duration": 25
+                },
+                {
+                    "frame": 334,
+                    "old_id": 6,
+                    "new_id": 1,
+                    "distance": 19.303295564125794,
+                    "old_duration": 26
+                },
+                {
+                    "frame": 335,
+                    "old_id": 6,
+                    "new_id": 2,
+                    "distance": 18.64252012621687,
+                    "old_duration": 26
+                },
+                {
+                    "frame": 341,
+                    "old_id": 21,
+                    "new_id": 21,
+                    "distance": 0.0,
+                    "old_duration": 28
+                },
+                {
+                    "frame": 345,
+                    "old_id": 35,
+                    "new_id": 3,
+                    "distance": 8.896760135524543,
+                    "old_duration": 35
+                },
+                {
+                    "frame": 346,
+                    "old_id": 35,
+                    "new_id": 35,
+                    "distance": 2.4512424350582296,
+                    "old_duration": 35
+                },
+                {
+                    "frame": 347,
+                    "old_id": 35,
+                    "new_id": 3,
+                    "distance": 10.563198430920545,
+                    "old_duration": 35
+                },
+                {
+                    "frame": 356,
+                    "old_id": 2,
+                    "new_id": 2,
+                    "distance": 2.107511304710437,
+                    "old_duration": 20
+                },
+                {
+                    "frame": 383,
+                    "old_id": 30,
+                    "new_id": 30,
+                    "distance": 1.474295803595005,
+                    "old_duration": 52
+                },
+                {
+                    "frame": 389,
+                    "old_id": 7,
+                    "new_id": 7,
+                    "distance": 2.079163891705668,
+                    "old_duration": 51
+                },
+                {
+                    "frame": 406,
+                    "old_id": 9,
+                    "new_id": 9,
+                    "distance": 25.397899333400858,
+                    "old_duration": 22
+                },
+                {
+                    "frame": 407,
+                    "old_id": 38,
+                    "new_id": 35,
+                    "distance": 8.536211726802875,
+                    "old_duration": 15
+                },
+                {
+                    "frame": 408,
+                    "old_id": 17,
+                    "new_id": 17,
+                    "distance": 1.8500691901017,
+                    "old_duration": 33
+                },
+                {
+                    "frame": 410,
+                    "old_id": 5,
+                    "new_id": 5,
+                    "distance": 0.0,
+                    "old_duration": 94
+                },
+                {
+                    "frame": 419,
+                    "old_id": 3,
+                    "new_id": 12,
+                    "distance": 1.6171126736041876,
+                    "old_duration": 43
+                },
+                {
+                    "frame": 434,
+                    "old_id": 39,
+                    "new_id": 18,
+                    "distance": 13.42209004638211,
+                    "old_duration": 41
+                },
+                {
+                    "frame": 435,
+                    "old_id": 39,
+                    "new_id": 39,
+                    "distance": 3.4389475586908214,
+                    "old_duration": 41
+                },
+                {
+                    "frame": 438,
+                    "old_id": 17,
+                    "new_id": 8,
+                    "distance": 11.047613575748256,
+                    "old_duration": 24
+                },
+                {
+                    "frame": 448,
+                    "old_id": 30,
+                    "new_id": 30,
+                    "distance": 0.0,
+                    "old_duration": 49
+                },
+                {
+                    "frame": 451,
+                    "old_id": 5,
+                    "new_id": 27,
+                    "distance": 27.486188330376493,
+                    "old_duration": 41
+                },
+                {
+                    "frame": 452,
+                    "old_id": 5,
+                    "new_id": 5,
+                    "distance": 0.0,
+                    "old_duration": 41
+                },
+                {
+                    "frame": 457,
+                    "old_id": 6,
+                    "new_id": 1,
+                    "distance": 5.433092253419429,
+                    "old_duration": 79
+                },
+                {
+                    "frame": 458,
+                    "old_id": 6,
+                    "new_id": 21,
+                    "distance": 5.58758888012302,
+                    "old_duration": 79
+                },
+                {
+                    "frame": 459,
+                    "old_id": 6,
+                    "new_id": 6,
+                    "distance": 6.761704807329143,
+                    "old_duration": 79
+                },
+                {
+                    "frame": 464,
+                    "old_id": 3,
+                    "new_id": 3,
+                    "distance": 0.0,
+                    "old_duration": 45
+                },
+                {
+                    "frame": 468,
+                    "old_id": 4,
+                    "new_id": 2,
+                    "distance": 28.30566299289864,
+                    "old_duration": 20
+                },
+                {
+                    "frame": 470,
+                    "old_id": 4,
+                    "new_id": 1,
+                    "distance": 23.667576747614326,
+                    "old_duration": 20
+                },
+                {
+                    "frame": 489,
+                    "old_id": 6,
+                    "new_id": 11,
+                    "distance": 33.471900756665725,
+                    "old_duration": 16
+                },
+                {
+                    "frame": 490,
+                    "old_id": 6,
+                    "new_id": 30,
+                    "distance": 31.531335844489078,
+                    "old_duration": 16
+                },
+                {
+                    "frame": 514,
+                    "old_id": 6,
+                    "new_id": 2,
+                    "distance": 19.052485992022966,
+                    "old_duration": 16
+                },
+                {
+                    "frame": 515,
+                    "old_id": 6,
+                    "new_id": 6,
+                    "distance": 7.955315281827929,
+                    "old_duration": 16
+                },
+                {
+                    "frame": 523,
+                    "old_id": 17,
+                    "new_id": 17,
+                    "distance": 6.027071394628126,
+                    "old_duration": 18
+                },
+                {
+                    "frame": 524,
+                    "old_id": 1,
+                    "new_id": 1,
+                    "distance": 0.0,
+                    "old_duration": 31
+                },
+                {
+                    "frame": 558,
+                    "old_id": 30,
+                    "new_id": 30,
+                    "distance": 1.6012844882389148,
+                    "old_duration": 57
+                },
+                {
+                    "frame": 563,
+                    "old_id": 5,
+                    "new_id": 17,
+                    "distance": 30.48874277381445,
+                    "old_duration": 73
+                },
+                {
+                    "frame": 564,
+                    "old_id": 6,
+                    "new_id": 1,
+                    "distance": 3.1651776582973485,
+                    "old_duration": 19
+                },
+                {
+                    "frame": 565,
+                    "old_id": 5,
+                    "new_id": 5,
+                    "distance": 0.0,
+                    "old_duration": 73
+                },
+                {
+                    "frame": 591,
+                    "old_id": 8,
+                    "new_id": 27,
+                    "distance": 17.41102150737534,
+                    "old_duration": 62
+                },
+                {
+                    "frame": 592,
+                    "old_id": 12,
+                    "new_id": 38,
+                    "distance": 12.537827860253248,
+                    "old_duration": 22
+                },
+                {
+                    "frame": 593,
+                    "old_id": 12,
+                    "new_id": 12,
+                    "distance": 1.2157044350233965,
+                    "old_duration": 22
+                },
+                {
+                    "frame": 594,
+                    "old_id": 12,
+                    "new_id": 38,
+                    "distance": 18.850131850346948,
+                    "old_duration": 22
+                },
+                {
+                    "frame": 609,
+                    "old_id": 3,
+                    "new_id": 3,
+                    "distance": 0.0,
+                    "old_duration": 76
+                },
+                {
+                    "frame": 616,
+                    "old_id": 5,
+                    "new_id": 5,
+                    "distance": 8.49087823739273,
+                    "old_duration": 48
+                },
+                {
+                    "frame": 627,
+                    "old_id": 6,
+                    "new_id": 4,
+                    "distance": 0.6307736477773648,
+                    "old_duration": 22
+                },
+                {
+                    "frame": 628,
+                    "old_id": 6,
+                    "new_id": 2,
+                    "distance": 14.059825840420155,
+                    "old_duration": 22
+                },
+                {
+                    "frame": 629,
+                    "old_id": 6,
+                    "new_id": 20,
+                    "distance": 9.611699346269068,
+                    "old_duration": 22
+                },
+                {
+                    "frame": 630,
+                    "old_id": 30,
+                    "new_id": 30,
+                    "distance": 0.0,
+                    "old_duration": 26
+                },
+                {
+                    "frame": 647,
+                    "old_id": 6,
+                    "new_id": 2,
+                    "distance": 16.517341684312306,
+                    "old_duration": 17
+                },
+                {
+                    "frame": 650,
+                    "old_id": 9,
+                    "new_id": 9,
+                    "distance": 1.5604399942625506,
+                    "old_duration": 17
+                },
+                {
+                    "frame": 664,
+                    "old_id": 5,
+                    "new_id": 5,
+                    "distance": 14.345025528911911,
+                    "old_duration": 36
+                },
+                {
+                    "frame": 666,
+                    "old_id": 8,
+                    "new_id": 39,
+                    "distance": 32.977975328697816,
+                    "old_duration": 65
+                },
+                {
+                    "frame": 673,
+                    "old_id": 3,
+                    "new_id": 3,
+                    "distance": 6.322803321018894,
+                    "old_duration": 62
+                },
+                {
+                    "frame": 687,
+                    "old_id": 44,
+                    "new_id": 6,
+                    "distance": 6.617643100320352,
+                    "old_duration": 229
+                },
+                {
+                    "frame": 694,
+                    "old_id": 3,
+                    "new_id": 12,
+                    "distance": 34.7210667147547,
+                    "old_duration": 21
+                },
+                {
+                    "frame": 695,
+                    "old_id": 3,
+                    "new_id": 3,
+                    "distance": 12.072013735211334,
+                    "old_duration": 21
+                },
+                {
+                    "frame": 731,
+                    "old_id": 2,
+                    "new_id": 2,
+                    "distance": 1.8851476143861694,
+                    "old_duration": 83
+                },
+                {
+                    "frame": 736,
+                    "old_id": 12,
+                    "new_id": 38,
+                    "distance": 25.955500014128148,
+                    "old_duration": 26
+                },
+                {
+                    "frame": 743,
+                    "old_id": 44,
+                    "new_id": 44,
+                    "distance": 2.753401389796041,
+                    "old_duration": 33
+                },
+                {
+                    "frame": 758,
+                    "old_id": 12,
+                    "new_id": 18,
+                    "distance": 26.48205147148847,
+                    "old_duration": 21
+                },
+                {
+                    "frame": 824,
+                    "old_id": 5,
+                    "new_id": 5,
+                    "distance": 14.97418356252353,
+                    "old_duration": 159
+                },
+                {
+                    "frame": 834,
+                    "old_id": 9,
+                    "new_id": 17,
+                    "distance": 23.01884691006102,
+                    "old_duration": 26
+                },
+                {
+                    "frame": 835,
+                    "old_id": 9,
+                    "new_id": 9,
+                    "distance": 3.6838184492205706,
+                    "old_duration": 26
+                },
+                {
+                    "frame": 841,
+                    "old_id": 5,
+                    "new_id": 5,
+                    "distance": 1.408421110855761,
+                    "old_duration": 15
+                },
+                {
+                    "frame": 867,
+                    "old_id": 44,
+                    "new_id": 44,
+                    "distance": 27.686289585510796,
+                    "old_duration": 66
+                },
+                {
+                    "frame": 885,
+                    "old_id": 9,
+                    "new_id": 17,
+                    "distance": 8.3375400434694,
+                    "old_duration": 38
+                },
+                {
+                    "frame": 887,
+                    "old_id": 9,
+                    "new_id": 9,
+                    "distance": 2.854280609322067,
+                    "old_duration": 38
+                },
+                {
+                    "frame": 892,
+                    "old_id": 2,
+                    "new_id": 57,
+                    "distance": 4.430414616996033,
+                    "old_duration": 39
+                },
+                {
+                    "frame": 893,
+                    "old_id": 30,
+                    "new_id": 1,
+                    "distance": 22.463624208840347,
+                    "old_duration": 168
+                },
+                {
+                    "frame": 894,
+                    "old_id": 2,
+                    "new_id": 2,
+                    "distance": 3.515480665269412,
+                    "old_duration": 39
+                },
+                {
+                    "frame": 895,
+                    "old_id": 30,
+                    "new_id": 30,
+                    "distance": 3.735491660395506,
+                    "old_duration": 168
+                },
+                {
+                    "frame": 913,
+                    "old_id": 2,
+                    "new_id": 57,
+                    "distance": 12.579604916324802,
+                    "old_duration": 19
+                },
+                {
+                    "frame": 930,
+                    "old_id": 9,
+                    "new_id": 17,
+                    "distance": 3.4415486943049776,
+                    "old_duration": 30
+                },
+                {
+                    "frame": 941,
+                    "old_id": 5,
+                    "new_id": 5,
+                    "distance": 1.2017551079291768,
+                    "old_duration": 99
+                },
+                {
+                    "frame": 943,
+                    "old_id": 12,
+                    "new_id": 12,
+                    "distance": 3.852123039002823,
+                    "old_duration": 65
+                },
+                {
+                    "frame": 963,
+                    "old_id": 64,
+                    "new_id": 19,
+                    "distance": 2.9318416868096544,
+                    "old_duration": 55
+                },
+                {
+                    "frame": 971,
+                    "old_id": 5,
+                    "new_id": 5,
+                    "distance": 0.7464631025586647,
+                    "old_duration": 29
+                },
+                {
+                    "frame": 978,
+                    "old_id": 6,
+                    "new_id": 30,
+                    "distance": 27.3613540877747,
+                    "old_duration": 19
+                },
+                {
+                    "frame": 979,
+                    "old_id": 57,
+                    "new_id": 2,
+                    "distance": 1.9751355153760726,
+                    "old_duration": 66
+                },
+                {
+                    "frame": 979,
+                    "old_id": 6,
+                    "new_id": 6,
+                    "distance": 15.821226806917705,
+                    "old_duration": 19
+                },
+                {
+                    "frame": 980,
+                    "old_id": 57,
+                    "new_id": 57,
+                    "distance": 1.4073016197477537,
+                    "old_duration": 66
+                },
+                {
+                    "frame": 981,
+                    "old_id": 57,
+                    "new_id": 2,
+                    "distance": 3.128337472936064,
+                    "old_duration": 66
+                },
+                {
+                    "frame": 1005,
+                    "old_id": 30,
+                    "new_id": 6,
+                    "distance": 16.317403847618472,
+                    "old_duration": 18
+                },
+                {
+                    "frame": 1030,
+                    "old_id": 57,
+                    "new_id": 2,
+                    "distance": 5.724287681990823,
+                    "old_duration": 48
+                },
+                {
+                    "frame": 1031,
+                    "old_id": 57,
+                    "new_id": 57,
+                    "distance": 8.507728896958099,
+                    "old_duration": 48
+                },
+                {
+                    "frame": 1032,
+                    "old_id": 6,
+                    "new_id": 30,
+                    "distance": 22.77084144740512,
+                    "old_duration": 27
+                },
+                {
+                    "frame": 1033,
+                    "old_id": 6,
+                    "new_id": 6,
+                    "distance": 4.730313505414138,
+                    "old_duration": 27
+                },
+                {
+                    "frame": 1053,
+                    "old_id": 3,
+                    "new_id": 3,
+                    "distance": 5.94601462759334,
+                    "old_duration": 19
+                },
+                {
+                    "frame": 1062,
+                    "old_id": 12,
+                    "new_id": 57,
+                    "distance": 34.50433812064526,
+                    "old_duration": 30
+                },
+                {
+                    "frame": 1069,
+                    "old_id": 6,
+                    "new_id": 20,
+                    "distance": 13.033281979025855,
+                    "old_duration": 36
+                },
+                {
+                    "frame": 1074,
+                    "old_id": 5,
+                    "new_id": 5,
+                    "distance": 0.4072549661958102,
+                    "old_duration": 86
+                },
+                {
+                    "frame": 1078,
+                    "old_id": 57,
+                    "new_id": 2,
+                    "distance": 23.390280214943083,
+                    "old_duration": 16
+                },
+                {
+                    "frame": 1091,
+                    "old_id": 5,
+                    "new_id": 3,
+                    "distance": 34.177219508268756,
+                    "old_duration": 17
+                },
+                {
+                    "frame": 1102,
+                    "old_id": 62,
+                    "new_id": 3,
+                    "distance": 3.4582844407333537,
+                    "old_duration": 38
+                },
+                {
+                    "frame": 1103,
+                    "old_id": 62,
+                    "new_id": 62,
+                    "distance": 2.7456850364296415,
+                    "old_duration": 38
+                },
+                {
+                    "frame": 1116,
+                    "old_id": 17,
+                    "new_id": 17,
+                    "distance": 0.0,
+                    "old_duration": 19
+                },
+                {
+                    "frame": 1128,
+                    "old_id": 62,
+                    "new_id": 3,
+                    "distance": 4.852293706269982,
+                    "old_duration": 25
+                },
+                {
+                    "frame": 1129,
+                    "old_id": 62,
+                    "new_id": 62,
+                    "distance": 1.7886899388196404,
+                    "old_duration": 25
+                },
+                {
+                    "frame": 1130,
+                    "old_id": 62,
+                    "new_id": 3,
+                    "distance": 7.017983708256736,
+                    "old_duration": 25
+                },
+                {
+                    "frame": 1145,
+                    "old_id": 44,
+                    "new_id": 30,
+                    "distance": 4.814329135012222,
+                    "old_duration": 259
+                },
+                {
+                    "frame": 1151,
+                    "old_id": 64,
+                    "new_id": 64,
+                    "distance": 0.0,
+                    "old_duration": 40
+                },
+                {
+                    "frame": 1155,
+                    "old_id": 2,
+                    "new_id": 44,
+                    "distance": 6.904864603512481,
+                    "old_duration": 45
+                },
+                {
+                    "frame": 1182,
+                    "old_id": 81,
+                    "new_id": 69,
+                    "distance": 30.45214655601286,
+                    "old_duration": 28
+                },
+                {
+                    "frame": 1183,
+                    "old_id": 81,
+                    "new_id": 81,
+                    "distance": 3.5913188705294106,
+                    "old_duration": 28
+                },
+                {
+                    "frame": 1204,
+                    "old_id": 3,
+                    "new_id": 62,
+                    "distance": 2.251913382011713,
+                    "old_duration": 48
+                },
+                {
+                    "frame": 1206,
+                    "old_id": 17,
+                    "new_id": 17,
+                    "distance": 7.903736031229777,
+                    "old_duration": 47
+                },
+                {
+                    "frame": 1249,
+                    "old_id": 65,
+                    "new_id": 65,
+                    "distance": 8.975315115583722,
+                    "old_duration": 340
+                },
+                {
+                    "frame": 1264,
+                    "old_id": 57,
+                    "new_id": 57,
+                    "distance": 0.7587851005500821,
+                    "old_duration": 22
+                },
+                {
+                    "frame": 1281,
+                    "old_id": 8,
+                    "new_id": 8,
+                    "distance": 1.183827993557492,
+                    "old_duration": 27
+                }
+            ]
+        },
+        "duplicates": {
+            "duplicate_frame_count": 0,
+            "total_duplicate_events": 0,
+            "duplicate_events": []
+        },
+        "teleportation": {
+            "teleportation_count": 195,
+            "impossible_velocity_events": 195,
+            "teleportation_events": [
+                {
+                    "frame": 138,
+                    "global_id": 3,
+                    "distance": 100.32160947571815,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 194,
+                    "global_id": 6,
+                    "distance": 142.22225344753895,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 197,
+                    "global_id": 6,
+                    "distance": 148.15970193063046,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 201,
+                    "global_id": 6,
+                    "distance": 149.49205057272786,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 202,
+                    "global_id": 6,
+                    "distance": 149.49205057272786,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 212,
+                    "global_id": 6,
+                    "distance": 160.6737645464376,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 216,
+                    "global_id": 6,
+                    "distance": 114.56213018840951,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 270,
+                    "global_id": 2,
+                    "distance": 154.89259884332589,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 271,
+                    "global_id": 2,
+                    "distance": 156.50583454715954,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 272,
+                    "global_id": 2,
+                    "distance": 144.8144560503866,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 277,
+                    "global_id": 2,
+                    "distance": 113.10112918573162,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 278,
+                    "global_id": 2,
+                    "distance": 100.88452243870822,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 287,
+                    "global_id": 21,
+                    "distance": 267.43309631703437,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 291,
+                    "global_id": 21,
+                    "distance": 356.895804594079,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 300,
+                    "global_id": 2,
+                    "distance": 108.79719042526479,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 301,
+                    "global_id": 2,
+                    "distance": 108.79719042526479,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 312,
+                    "global_id": 21,
+                    "distance": 721.457314084205,
+                    "gap_frames": 2,
+                    "effective_threshold": 200.0
+                },
+                {
+                    "frame": 313,
+                    "global_id": 21,
+                    "distance": 726.2640761990664,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 317,
+                    "global_id": 21,
+                    "distance": 739.8034985599968,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 318,
+                    "global_id": 21,
+                    "distance": 739.5039491534876,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 367,
+                    "global_id": 6,
+                    "distance": 123.91112236444354,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 374,
+                    "global_id": 6,
+                    "distance": 123.23151188844592,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 383,
+                    "global_id": 6,
+                    "distance": 119.4003870148435,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 384,
+                    "global_id": 6,
+                    "distance": 118.7066273019414,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 385,
+                    "global_id": 6,
+                    "distance": 119.75171732867646,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 387,
+                    "global_id": 6,
+                    "distance": 123.58006750342604,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 392,
+                    "global_id": 6,
+                    "distance": 126.88795451626913,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 393,
+                    "global_id": 5,
+                    "distance": 158.76136532729754,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 394,
+                    "global_id": 5,
+                    "distance": 161.07750698415418,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 397,
+                    "global_id": 6,
+                    "distance": 125.93005191643907,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 400,
+                    "global_id": 6,
+                    "distance": 121.66843039129942,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 410,
+                    "global_id": 6,
+                    "distance": 137.09357108737188,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 413,
+                    "global_id": 3,
+                    "distance": 116.34238617167907,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 416,
+                    "global_id": 5,
+                    "distance": 173.82975306574934,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 417,
+                    "global_id": 12,
+                    "distance": 138.13039757004213,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 417,
+                    "global_id": 6,
+                    "distance": 146.46151363162483,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 442,
+                    "global_id": 5,
+                    "distance": 107.36267223621887,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 465,
+                    "global_id": 3,
+                    "distance": 116.93393494810891,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 469,
+                    "global_id": 3,
+                    "distance": 115.81145930491607,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 472,
+                    "global_id": 12,
+                    "distance": 102.47349459544975,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 473,
+                    "global_id": 12,
+                    "distance": 102.47349459544975,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 474,
+                    "global_id": 12,
+                    "distance": 119.96284085648306,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 476,
+                    "global_id": 12,
+                    "distance": 131.3764097746392,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 477,
+                    "global_id": 3,
+                    "distance": 129.9339532276438,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 484,
+                    "global_id": 5,
+                    "distance": 109.65989696868735,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 484,
+                    "global_id": 3,
+                    "distance": 133.95625601774702,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 502,
+                    "global_id": 8,
+                    "distance": 168.4706843644483,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 503,
+                    "global_id": 3,
+                    "distance": 134.5201463764768,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 509,
+                    "global_id": 8,
+                    "distance": 175.1404455000349,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 511,
+                    "global_id": 8,
+                    "distance": 180.8475525737195,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 514,
+                    "global_id": 8,
+                    "distance": 183.89006278631425,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 514,
+                    "global_id": 12,
+                    "distance": 221.59913293225839,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 515,
+                    "global_id": 12,
+                    "distance": 221.77218734628568,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 522,
+                    "global_id": 8,
+                    "distance": 200.44242197578083,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 527,
+                    "global_id": 8,
+                    "distance": 205.52760392921212,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 539,
+                    "global_id": 8,
+                    "distance": 227.32886130959375,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 543,
+                    "global_id": 3,
+                    "distance": 118.50007257454887,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 549,
+                    "global_id": 3,
+                    "distance": 116.53077626336265,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 550,
+                    "global_id": 3,
+                    "distance": 121.01770306063082,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 552,
+                    "global_id": 3,
+                    "distance": 123.54171842194306,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 554,
+                    "global_id": 3,
+                    "distance": 121.40799810274791,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 582,
+                    "global_id": 5,
+                    "distance": 138.96638944682113,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 584,
+                    "global_id": 5,
+                    "distance": 141.899863271185,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 587,
+                    "global_id": 5,
+                    "distance": 107.90215173470972,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 588,
+                    "global_id": 5,
+                    "distance": 109.14064930770029,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 595,
+                    "global_id": 8,
+                    "distance": 831.5316945518493,
+                    "gap_frames": 5,
+                    "effective_threshold": 500.0
+                },
+                {
+                    "frame": 632,
+                    "global_id": 3,
+                    "distance": 106.63360763172294,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 633,
+                    "global_id": 3,
+                    "distance": 106.63360763172294,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 636,
+                    "global_id": 3,
+                    "distance": 103.40692694227513,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 636,
+                    "global_id": 5,
+                    "distance": 100.62926433764015,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 637,
+                    "global_id": 3,
+                    "distance": 113.23302571021947,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 639,
+                    "global_id": 3,
+                    "distance": 118.0480791477155,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 640,
+                    "global_id": 3,
+                    "distance": 118.0480791477155,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 641,
+                    "global_id": 3,
+                    "distance": 117.28928191037936,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 642,
+                    "global_id": 3,
+                    "distance": 119.42469722067463,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 643,
+                    "global_id": 5,
+                    "distance": 114.50339682471882,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 644,
+                    "global_id": 5,
+                    "distance": 115.74390511316277,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 647,
+                    "global_id": 5,
+                    "distance": 135.3346820555601,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 650,
+                    "global_id": 5,
+                    "distance": 114.56968141218753,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 654,
+                    "global_id": 3,
+                    "distance": 133.6086791305896,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 654,
+                    "global_id": 5,
+                    "distance": 110.71949888539595,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 655,
+                    "global_id": 3,
+                    "distance": 133.6086791305896,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 657,
+                    "global_id": 5,
+                    "distance": 100.43127924826003,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 658,
+                    "global_id": 5,
+                    "distance": 116.15796298341955,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 659,
+                    "global_id": 3,
+                    "distance": 136.5031664651315,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 660,
+                    "global_id": 3,
+                    "distance": 136.5031664651315,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 667,
+                    "global_id": 5,
+                    "distance": 137.33271418764295,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 668,
+                    "global_id": 5,
+                    "distance": 135.0125807920716,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 668,
+                    "global_id": 3,
+                    "distance": 150.96831427168908,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 670,
+                    "global_id": 3,
+                    "distance": 105.62456255396195,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 673,
+                    "global_id": 5,
+                    "distance": 100.69264013693684,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 674,
+                    "global_id": 12,
+                    "distance": 271.4346939970435,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 676,
+                    "global_id": 5,
+                    "distance": 120.86788116636917,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 676,
+                    "global_id": 12,
+                    "distance": 273.802450386419,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 692,
+                    "global_id": 5,
+                    "distance": 115.75980035732837,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 693,
+                    "global_id": 5,
+                    "distance": 126.07741332904537,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 694,
+                    "global_id": 5,
+                    "distance": 122.78694772861441,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 695,
+                    "global_id": 5,
+                    "distance": 115.53685961483572,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 696,
+                    "global_id": 5,
+                    "distance": 114.26027830572198,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 698,
+                    "global_id": 5,
+                    "distance": 113.05575072700407,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 702,
+                    "global_id": 5,
+                    "distance": 121.47810558320084,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 703,
+                    "global_id": 3,
+                    "distance": 258.2840894134499,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 703,
+                    "global_id": 5,
+                    "distance": 119.7689919163006,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 705,
+                    "global_id": 5,
+                    "distance": 136.40495404083703,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 705,
+                    "global_id": 3,
+                    "distance": 239.31225141120865,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 709,
+                    "global_id": 5,
+                    "distance": 147.78149796565123,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 712,
+                    "global_id": 30,
+                    "distance": 252.92550942023922,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 712,
+                    "global_id": 5,
+                    "distance": 158.84149608462803,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 732,
+                    "global_id": 5,
+                    "distance": 265.6388464000406,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 732,
+                    "global_id": 12,
+                    "distance": 155.18458528715345,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 733,
+                    "global_id": 5,
+                    "distance": 266.1638732502445,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 734,
+                    "global_id": 5,
+                    "distance": 280.36052652532464,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 735,
+                    "global_id": 5,
+                    "distance": 280.55091531339394,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 793,
+                    "global_id": 5,
+                    "distance": 107.25031592424986,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 794,
+                    "global_id": 5,
+                    "distance": 113.18356334891813,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 796,
+                    "global_id": 5,
+                    "distance": 120.88434776194268,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 801,
+                    "global_id": 8,
+                    "distance": 107.50493745209486,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 806,
+                    "global_id": 8,
+                    "distance": 115.28560953922252,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 806,
+                    "global_id": 5,
+                    "distance": 269.94053451388277,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 807,
+                    "global_id": 5,
+                    "distance": 272.1382658684502,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 807,
+                    "global_id": 8,
+                    "distance": 123.54480993481607,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 815,
+                    "global_id": 12,
+                    "distance": 360.0557538351,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 817,
+                    "global_id": 5,
+                    "distance": 361.4909601696373,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 817,
+                    "global_id": 3,
+                    "distance": 116.11100528544443,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 818,
+                    "global_id": 5,
+                    "distance": 364.2505887332992,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 819,
+                    "global_id": 3,
+                    "distance": 126.8884105468634,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 823,
+                    "global_id": 3,
+                    "distance": 132.47924691998378,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 831,
+                    "global_id": 5,
+                    "distance": 368.95272813418933,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 832,
+                    "global_id": 5,
+                    "distance": 340.7247975699597,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 837,
+                    "global_id": 5,
+                    "distance": 418.593087952399,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 838,
+                    "global_id": 5,
+                    "distance": 417.66022913762816,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 838,
+                    "global_id": 12,
+                    "distance": 488.448541488981,
+                    "gap_frames": 3,
+                    "effective_threshold": 300.0
+                },
+                {
+                    "frame": 840,
+                    "global_id": 12,
+                    "distance": 492.375119954504,
+                    "gap_frames": 2,
+                    "effective_threshold": 200.0
+                },
+                {
+                    "frame": 841,
+                    "global_id": 3,
+                    "distance": 167.29863091628076,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 843,
+                    "global_id": 12,
+                    "distance": 507.76484327746647,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 844,
+                    "global_id": 12,
+                    "distance": 512.6326885074324,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 847,
+                    "global_id": 5,
+                    "distance": 342.2197859572705,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 848,
+                    "global_id": 5,
+                    "distance": 363.19054865523947,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 854,
+                    "global_id": 5,
+                    "distance": 417.9801386682368,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 855,
+                    "global_id": 5,
+                    "distance": 419.0894652518152,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 857,
+                    "global_id": 5,
+                    "distance": 419.89067875456317,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 858,
+                    "global_id": 3,
+                    "distance": 161.65958865358178,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 862,
+                    "global_id": 5,
+                    "distance": 420.84253804262687,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 864,
+                    "global_id": 2,
+                    "distance": 123.9260629695256,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 872,
+                    "global_id": 2,
+                    "distance": 171.88841442306574,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 878,
+                    "global_id": 30,
+                    "distance": 244.37484755024798,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 879,
+                    "global_id": 30,
+                    "distance": 244.59196162431286,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 883,
+                    "global_id": 2,
+                    "distance": 176.24727222152842,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 884,
+                    "global_id": 2,
+                    "distance": 176.24727222152842,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 885,
+                    "global_id": 2,
+                    "distance": 178.72732649499042,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 888,
+                    "global_id": 2,
+                    "distance": 183.5494651346048,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 889,
+                    "global_id": 2,
+                    "distance": 185.18190254720557,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 962,
+                    "global_id": 3,
+                    "distance": 137.11041156149295,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 970,
+                    "global_id": 3,
+                    "distance": 140.03618870653884,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 971,
+                    "global_id": 3,
+                    "distance": 140.9204511670825,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 973,
+                    "global_id": 3,
+                    "distance": 140.4587056233372,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1055,
+                    "global_id": 3,
+                    "distance": 161.16290357536772,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1058,
+                    "global_id": 2,
+                    "distance": 202.40205794901678,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1059,
+                    "global_id": 2,
+                    "distance": 136.29250018607897,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1062,
+                    "global_id": 8,
+                    "distance": 105.2840309417878,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1091,
+                    "global_id": 2,
+                    "distance": 208.25089381514593,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1095,
+                    "global_id": 2,
+                    "distance": 265.7470229013043,
+                    "gap_frames": 2,
+                    "effective_threshold": 200.0
+                },
+                {
+                    "frame": 1103,
+                    "global_id": 8,
+                    "distance": 120.80326434015794,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1109,
+                    "global_id": 8,
+                    "distance": 140.12491134968238,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1115,
+                    "global_id": 5,
+                    "distance": 329.06469538839696,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1116,
+                    "global_id": 5,
+                    "distance": 331.5954635111997,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1121,
+                    "global_id": 8,
+                    "distance": 253.17540371926415,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1121,
+                    "global_id": 5,
+                    "distance": 353.30014596445886,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1123,
+                    "global_id": 8,
+                    "distance": 266.7511101159155,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1126,
+                    "global_id": 5,
+                    "distance": 363.9099856273302,
+                    "gap_frames": 3,
+                    "effective_threshold": 300.0
+                },
+                {
+                    "frame": 1150,
+                    "global_id": 8,
+                    "distance": 163.61528680989963,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1152,
+                    "global_id": 5,
+                    "distance": 377.58795499818115,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1157,
+                    "global_id": 5,
+                    "distance": 369.7147064200279,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1158,
+                    "global_id": 8,
+                    "distance": 338.22033722987686,
+                    "gap_frames": 2,
+                    "effective_threshold": 200.0
+                },
+                {
+                    "frame": 1163,
+                    "global_id": 8,
+                    "distance": 334.7368424593712,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1167,
+                    "global_id": 8,
+                    "distance": 336.3614992396174,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1197,
+                    "global_id": 8,
+                    "distance": 148.89403096526712,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1204,
+                    "global_id": 8,
+                    "distance": 214.49266763150214,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1207,
+                    "global_id": 62,
+                    "distance": 117.87534994222668,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1209,
+                    "global_id": 3,
+                    "distance": 174.39464713008383,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1210,
+                    "global_id": 62,
+                    "distance": 136.91267723923866,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1216,
+                    "global_id": 3,
+                    "distance": 196.27302797402666,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1227,
+                    "global_id": 8,
+                    "distance": 153.90005836827052,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1237,
+                    "global_id": 8,
+                    "distance": 182.8202854178417,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1239,
+                    "global_id": 8,
+                    "distance": 150.54791415960577,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1241,
+                    "global_id": 8,
+                    "distance": 190.23085989361996,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1242,
+                    "global_id": 8,
+                    "distance": 188.05986872830545,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1243,
+                    "global_id": 8,
+                    "distance": 189.38702589803387,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1248,
+                    "global_id": 8,
+                    "distance": 159.02795848184854,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1254,
+                    "global_id": 8,
+                    "distance": 160.25874038101762,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1255,
+                    "global_id": 8,
+                    "distance": 164.52986323579088,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1257,
+                    "global_id": 8,
+                    "distance": 162.69153203264494,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1258,
+                    "global_id": 8,
+                    "distance": 160.98846252861009,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1279,
+                    "global_id": 8,
+                    "distance": 152.38154302599298,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                },
+                {
+                    "frame": 1282,
+                    "global_id": 8,
+                    "distance": 155.3375121529733,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                }
+            ]
+        },
+        "fragmentation": {
+            "fragmentation_count": 0,
+            "short_lived_bursts": 20
+        }
+    }
+}

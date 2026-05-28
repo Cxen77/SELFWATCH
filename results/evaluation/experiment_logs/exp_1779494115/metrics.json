@@ -1,0 +1,45 @@
+{
+    "summary": {
+        "identity_stability_score": 0.9342105263157895,
+        "visible_id_switches": 1,
+        "duplicate_box_frames": 0,
+        "teleportation_events": 1,
+        "fragmentation_count": 0
+    },
+    "detailed": {
+        "visible_switches": {
+            "visible_id_switches": 1,
+            "switch_events": [
+                {
+                    "frame": 76,
+                    "old_id": 79,
+                    "new_id": 120,
+                    "distance": 24.822738705779717,
+                    "old_duration": 16
+                }
+            ]
+        },
+        "duplicates": {
+            "duplicate_frame_count": 0,
+            "total_duplicate_events": 0,
+            "duplicate_events": []
+        },
+        "teleportation": {
+            "teleportation_count": 1,
+            "impossible_velocity_events": 1,
+            "teleportation_events": [
+                {
+                    "frame": 4,
+                    "global_id": 94,
+                    "distance": 515.7712606581066,
+                    "gap_frames": 1,
+                    "effective_threshold": 100.0
+                }
+            ]
+        },
+        "fragmentation": {
+            "fragmentation_count": 0,
+            "short_lived_bursts": 6
+        }
+    }
+}

@@ -1,40 +1,24 @@
-"""
-SELFWATCH Testing UI — Deterministic Frame-Owned Pipeline
-
-Architecture (simplest correct design):
-  1. READER thread  — reads frames, keeps ONLY the latest (buffer=1).
-  2. INFERENCE thread — grabs latest frame, runs full pipeline on it.
-                        Pipeline draws boxes ON that frame. Publishes
-                        the completed annotated frame.
-  3. MAIN (UI) thread — displays the latest completed annotated frame.
-
-Zero interpolation. Zero extrapolation. Zero velocity math.
-Boxes are ALWAYS on the exact frame they were detected on.
-Display updates at inference FPS (~3-5fps). Slight stutter but
-perfect temporal correctness and box alignment.
-"""
-
 import os
 import time
 import cv2
 import threading
-import collections
 import numpy as np
 import customtkinter as ctk
 from tkinter import filedialog
+import tkinter as tk
 
 import config
 from ui.video_player import VideoPlayer
 from ui.side_panel import SidePanel
 from ui.timeline import Timeline
 from ui.overlay_panel import OverlayPanel
-from ui.benchmark_panel import BenchmarkPanel
-from engine.state_cache import StateCache
-from engine.dataset_manager import DatasetManager
-from engine.benchmark import BenchmarkEngine
-from memory.forensic_debug import ForensicDebugger
+from engine.async_state_cache import AsyncStateCache
 from evaluation.evaluator import SELFWATCHEvaluator
 from evaluation.experiment_logs.experiment_tracker import ResearchExperimentTracker
+
+# Import multicam
+from multicam.multicam_pipeline import MultiCameraPipeline
+from multicam.events import CameraEvent, EventType
 
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("blue")
@@ -43,49 +27,48 @@ ctk.set_default_color_theme("blue")
 class SelfWatchApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("SELFWATCH — Cognitive Tracking Lab")
-        self.geometry("1400x900")
+        self.title("SELFWATCH — Multi-Camera Cognitive Tracking Lab")
+        self.geometry("1600x900")
 
         # ── Core State ──────────────────────────────────────────────
-        self.pipeline = None
-        self.cap = None
-        self.state_cache = StateCache(max_frames=2000)
-        self.forensic = ForensicDebugger()
-        self.dataset_manager = DatasetManager(root="datasets")
-        self.benchmark_engine = None
-        self._sequence_map = {}  # name -> SequenceInfo
+        self.multicam_pipeline = None
+        self.state_cache = AsyncStateCache(max_frames=300, jpeg_quality=70)
+        
+        self.sources = [] # list of sources (int or str)
+        
         self.is_running = False
         self.is_playing = True
-        self.is_video_source = False
         self.video_fps = 30.0
-        self.evaluator = None
-        self.experiment_tracker = None
 
         # Thread handles
-        self._reader_thread = None
         self._inference_thread = None
         self._display_timer = None
 
-        # ── Reader → Inference: single-slot buffer ──────────────────
-        # Only the LATEST frame matters. No ring buffer, no backlog.
-        self._frame_slot = None          # (frame_idx, frame) or None
-        self._frame_lock = threading.Lock()
-        self._frame_event = threading.Event()
-
-        # ── Inference → Display: completed annotated frame ──────────
-        self._display_lock = threading.Lock()
-        self._display_frame = None       # latest pipeline-annotated frame
-        self._display_stats = None       # latest stats dict
-        self._cached_display = None      # held frame for redisplay between ticks
+        # ── Inference → Display: lock-free latest-state handoff ───────
+        # The inference thread writes here; the display thread reads.
+        # No mutex needed — Python's GIL makes single-reference
+        # assignment atomic. We use overwrite semantics.
+        self._latest_frames = None       # latest list of annotated frames
+        self._latest_stats = None        # latest list of stats dicts
+        self._new_data_ready = False      # flag: new data since last display
 
         # ── Counters ────────────────────────────────────────────────
         self._raw_frame_index = 0
-        self._frames_read = 0
-        self._frames_processed = 0
-        self._last_display_raw_frame_index = 0
-        self._last_tracker_raw_frame_index = 0
         self._inference_fps = 0.0
-        self._last_display_time = time.perf_counter()
+        self._render_fps = 0.0
+
+        self.video_players = []
+        
+        self.evaluators = []
+        self.experiment_tracker = None
+        self.evaluation_enabled = True
+
+        # ── Diagnostics ─────────────────────────────────────────────
+        self._diag_ram_mb = 0.0
+        self._diag_q_sizes = ""
+        self._diag_drops = 0
+        self._diag_inf_ms = 0.0
+        self._diag_render_ms = 0.0
 
         self._build_ui()
 
@@ -99,8 +82,9 @@ class SelfWatchApp(ctk.CTk):
         self.grid_rowconfigure(0, weight=1)
 
         callbacks = {
-            "on_source_camera": self.start_camera,
-            "on_source_video": self.start_video,
+            "on_source_camera": self.add_camera_source,
+            "on_source_video": self.add_video_source,
+            "on_start_tracking": self.start_multi_camera,
             "on_toggle_debug": self.toggle_debug,
             "on_play": self.play,
             "on_pause": self.pause,
@@ -108,19 +92,12 @@ class SelfWatchApp(ctk.CTk):
             "on_prev_frame": self.step_backward,
             "on_scrub": self.scrub_to,
             "on_toggle_layer": self.toggle_layer,
+            "on_toggle_evaluation": self.toggle_evaluation,
         }
 
-        benchmark_callbacks = {
-            "on_benchmark_toggle": self._on_benchmark_toggle,
-            "on_dataset_change": self._on_dataset_change,
-            "on_benchmark_run": self._on_benchmark_run,
-            "on_benchmark_stop": self._on_benchmark_stop,
-            "on_benchmark_export": self._on_benchmark_export,
-        }
-
-        # Side Panel (Left) — uses scrollable frame for long content
+        # Side Panel (Left)
         self.side_panel_scroll = ctk.CTkScrollableFrame(
-            self, width=300, fg_color=("gray92", "gray14")
+            self, width=320, fg_color=("gray92", "gray14")
         )
         self.side_panel_scroll.grid(row=0, column=0, rowspan=2, sticky="nsew")
 
@@ -129,17 +106,53 @@ class SelfWatchApp(ctk.CTk):
             fg_color="transparent"
         )
         self.side_panel.pack(fill="x", expand=False)
+        
+        # UI Toggle for Evaluation
+        self.chk_eval = ctk.CTkCheckBox(
+            self.side_panel_scroll, text="Enable Evaluator", 
+            command=lambda: self.toggle_evaluation(self.chk_eval.get()))
+        self.chk_eval.select()
+        self.chk_eval.pack(pady=5, padx=10, anchor="w")
 
-        # Benchmark Panel (inside left scroll)
-        self.benchmark_panel = BenchmarkPanel(
-            self.side_panel_scroll, benchmark_callbacks,
-            fg_color="transparent"
-        )
-        self.benchmark_panel.pack(fill="x", expand=False, pady=(5, 0))
+        # Diagnostics Panel
+        self.lbl_diag = ctk.CTkLabel(
+            self.side_panel_scroll, text="Pipeline Diagnostics",
+            font=ctk.CTkFont(weight="bold"))
+        self.lbl_diag.pack(pady=(15, 2), padx=10, anchor="w")
+        self.lbl_memory = ctk.CTkLabel(
+            self.side_panel_scroll,
+            text="RAM: -- | Inf: -- | Render: --",
+            text_color="gray", font=ctk.CTkFont(family="Consolas", size=11))
+        self.lbl_memory.pack(pady=2, padx=10, anchor="w")
+        self.lbl_queues = ctk.CTkLabel(
+            self.side_panel_scroll,
+            text="Q: -- | Drops: 0",
+            text_color="gray", font=ctk.CTkFont(family="Consolas", size=11))
+        self.lbl_queues.pack(pady=2, padx=10, anchor="w")
+        self.lbl_encoder = ctk.CTkLabel(
+            self.side_panel_scroll,
+            text="Enc: --ms | EncQ: 0 | EncDrops: 0",
+            text_color="gray", font=ctk.CTkFont(family="Consolas", size=11))
+        self.lbl_encoder.pack(pady=2, padx=10, anchor="w")
+        
+        # Source list display
+        self.lbl_sources = ctk.CTkLabel(self.side_panel_scroll, text="Selected Sources:", font=ctk.CTkFont(weight="bold"))
+        self.lbl_sources.pack(pady=(10, 2), padx=10, anchor="w")
+        self.sources_textbox = ctk.CTkTextbox(self.side_panel_scroll, height=60)
+        self.sources_textbox.pack(fill="x", padx=10, pady=2)
+        
+        self.btn_start = ctk.CTkButton(self.side_panel_scroll, text="▶ Start Multi-Camera", command=self.start_multi_camera, fg_color="#2b7b3b", hover_color="#1e5c2a")
+        self.btn_start.pack(pady=10, padx=10, fill="x")
 
-        # Video Player (Center)
-        self.video_player = VideoPlayer(self)
-        self.video_player.grid(row=0, column=1, sticky="nsew", padx=10, pady=(10, 0))
+        # Event Log
+        self.lbl_events = ctk.CTkLabel(self.side_panel_scroll, text="Cross-Camera Event Log", font=ctk.CTkFont(weight="bold"))
+        self.lbl_events.pack(pady=(20, 2), padx=10, anchor="w")
+        self.event_logbox = ctk.CTkTextbox(self.side_panel_scroll, height=150, font=ctk.CTkFont(family="Consolas", size=11))
+        self.event_logbox.pack(fill="x", padx=10, pady=2)
+
+        # Video Player Container (Center)
+        self.video_container = ctk.CTkFrame(self)
+        self.video_container.grid(row=0, column=1, sticky="nsew", padx=10, pady=(10, 0))
 
         # Timeline (Bottom)
         self.timeline = Timeline(self, callbacks, height=80)
@@ -149,211 +162,186 @@ class SelfWatchApp(ctk.CTk):
         self.overlay_panel = OverlayPanel(self, callbacks, width=250)
         self.overlay_panel.grid(row=0, column=2, rowspan=2, sticky="nsew")
 
-        # Key bindings
-        self.bind("1", lambda e: self.overlay_panel.toggle_master_checkbox("tracking"))
-        self.bind("2", lambda e: self.overlay_panel.toggle_master_checkbox("motion"))
-        self.bind("3", lambda e: self.overlay_panel.toggle_master_checkbox("association"))
-        self.bind("4", lambda e: self.overlay_panel.toggle_master_checkbox("cognitive"))
-        self.bind("5", lambda e: self.overlay_panel.toggle_master_checkbox("forensic"))
+    def _log_event(self, event_str):
+        self.event_logbox.insert("end", f"{event_str}\n")
+        self.event_logbox.see("end")
 
-    # ════════════════════════════════════════════════════════════════
-    #  ENGINE INITIALIZATION (lazy)
-    # ════════════════════════════════════════════════════════════════
-
-    def init_pipeline(self):
-        if self.pipeline is not None:
-            return
-
-        # Read model variant from UI dropdown
-        variant_map = {
-            "RT-DETR-Medium": ("medium", 512),
-            "RT-DETR-Large": ("large", 704),
-            "RT-DETR-Nano": ("nano", 384),
-        }
-        selected = self.side_panel.model_var.get()
-        variant, resolution = variant_map.get(selected, ("medium", 576))
-        print(f"[UI] Loading {selected} (res={resolution})...")
-
-        from detectors import RTDETRDetector
-        from reid import EmbeddingExtractor
-        from trackers import StrongSORTTracker
-        from engine.pipeline import SelfWatchPipeline
-
-        detector = RTDETRDetector(
-            variant=variant, resolution=resolution,
-            use_amp=True, compile_model=True,
-        )
-        detector.warmup()
-
-        reid = EmbeddingExtractor(
-            weights_path=config.REID_WEIGHTS,
-            device=detector.get_device(),
-            half=config.REID_HALF,
-        )
-
-        tracker = StrongSORTTracker(
-            appearance_weight=config.TRACKER_APPEARANCE_WEIGHT,
-            high_thresh=config.TRACKER_HIGH_THRESH,
-            low_thresh=config.TRACKER_LOW_THRESH,
-            iou_thresh=config.TRACKER_IOU_THRESH,
-            max_cosine_dist=config.TRACKER_MAX_COSINE_DIST,
-            max_lost=config.TRACKER_MAX_LOST,
-            confirm_threshold=config.TRACKER_CONFIRM_THRESHOLD,
-            embedding_history=config.TRACKER_EMBEDDING_HISTORY,
-            min_quality_score=config.TRACKER_MIN_QUALITY_SCORE,
-        )
-
-        self.pipeline = SelfWatchPipeline(
-            detector, reid, tracker,
-            enable_debug_overlay=self.overlay_panel.chk_debug.get(),
-        )
-        print(f"[UI] Engine loaded ({selected}).")
+    def _on_multicam_event(self, event: CameraEvent):
+        # Callback from the EventBus
+        ev_type = event.event_type.name
+        if ev_type == "NEW_GLOBAL":
+            msg = f"[NEW] GID{event.global_id} created at CAM{event.camera_id}"
+        elif ev_type == "MATCH":
+            msg = f"[RECOVER] GID{event.global_id} CAM{event.previous_camera_id} -> CAM{event.camera_id}"
+        elif ev_type in ("ENTER", "EXIT"):
+            msg = f"[{ev_type}] GID{event.global_id} at CAM{event.camera_id}"
+        else:
+            msg = f"[{ev_type}] GID{event.global_id}"
+            
+        self.after(0, self._log_event, msg)
 
     # ════════════════════════════════════════════════════════════════
     #  SOURCE CONTROL
     # ════════════════════════════════════════════════════════════════
 
-    def start_camera(self):
-        self.is_video_source = False
-        self._start_stream_async(0)
+    def add_camera_source(self):
+        # Count existing integer sources to auto-increment webcam ID
+        cams = [s for s in self.sources if isinstance(s, int)]
+        next_cam = len(cams)
+        self.sources.append(next_cam)
+        self._update_sources_display()
 
-    def start_video(self):
+    def add_video_source(self):
         path = filedialog.askopenfilename(
             title="Select Video",
             filetypes=[("Video Files", "*.mp4 *.avi *.mkv *.mov *.webm")],
         )
         if path:
-            self.is_video_source = True
-            self._start_stream_async(path)
+            self.sources.append(path)
+            self._update_sources_display()
+            
+    def _update_sources_display(self):
+        self.sources_textbox.delete("1.0", "end")
+        for i, src in enumerate(self.sources):
+            if isinstance(src, int):
+                self.sources_textbox.insert("end", f"CAM{i}: Webcam {src}\n")
+            else:
+                self.sources_textbox.insert("end", f"CAM{i}: {os.path.basename(src)}\n")
 
-    def _start_stream_async(self, source):
+    def start_multi_camera(self):
+        if not self.sources:
+            self._log_event("Error: No sources selected.")
+            return
+            
         if self.is_running:
             self.stop_stream()
 
         self.is_running = True
-        self.video_player.show_loading("Initializing Pipeline...")
+        
+        # Clear container and setup grid
+        for widget in self.video_container.winfo_children():
+            widget.destroy()
+            
+        self.video_players = []
+        num_cams = len(self.sources)
+        cols = min(2, num_cams)
+        rows = (num_cams + cols - 1) // cols
+        
+        for r in range(rows):
+            self.video_container.grid_rowconfigure(r, weight=1, uniform="row_group")
+        for c in range(cols):
+            self.video_container.grid_columnconfigure(c, weight=1, uniform="col_group")
+            
+        for i in range(num_cams):
+            vp = VideoPlayer(self.video_container)
+            vp.grid(row=i//cols, column=i%cols, sticky="nsew", padx=2, pady=2)
+            vp.show_loading(f"Initializing Camera {i}...")
+            self.video_players.append(vp)
+            
         threading.Thread(
-            target=self._init_stream_worker, args=(source,),
-            daemon=True, name="sw-startup"
+            target=self._init_stream_worker,
+            daemon=True, name="sw-multicam-startup"
         ).start()
 
-    def _init_stream_worker(self, source):
-        """Background thread: load models + open video + process first frame."""
+    def _init_stream_worker(self):
         t0 = time.perf_counter()
-        if self.pipeline is None:
-            self.after(0, self.video_player.show_loading, "Loading Neural Networks...")
-            self.init_pipeline()
-        print(f"[Profiling] Model load time: {time.perf_counter() - t0:.2f}s")
+        
+        # Initialize MultiCameraPipeline
+        selected = self.side_panel.model_var.get()
+        variant = "nano"
+        if "Medium" in selected: variant = "medium"
+        elif "Large" in selected: variant = "large"
+        
+        self.multicam_pipeline = MultiCameraPipeline(
+            detector_variant=variant,
+            enable_debug=self.overlay_panel.chk_debug.get()
+        )
+        
+        # Register event listener for UI
+        self.multicam_pipeline.event_bus.register_listener(self._on_multicam_event)
+        
+        # Add cameras
+        for i, src in enumerate(self.sources):
+            self.multicam_pipeline.add_camera(src, label=f"Source {i}")
+            
+        # Open cameras
+        for cam in self.multicam_pipeline.cameras:
+            cam.open()
+            
+        print(f"[Profiling] Pipeline load time: {time.perf_counter() - t0:.2f}s")
+        
+        self.after(0, self._finalize_stream_start)
 
-        self.after(0, self.video_player.show_loading, "Opening Video Source...")
-        cap = cv2.VideoCapture(source)
-        if not cap.isOpened():
-            print(f"[UI] Error: cannot open {source}")
-            self.after(0, self.video_player.show_loading, "Failed to open source")
-            self.is_running = False
-            return
-
-        # ── Process first frame synchronously ─────────────────────
-        # Guarantees boxes are ready before display starts.
-        self.after(0, self.video_player.show_loading, "Processing first frame...")
-        ret, first_frame = cap.read()
-        first_annotated = None
-        first_stats = None
-        if ret:
-            first_annotated, first_stats = self.pipeline.process_frame(
-                first_frame, frame_delta=1, frame_index=1)
-            n = first_stats.get("active_tracks", 0)
-            print(f"[Startup] First frame processed: {n} tracks")
-
-        self.after(0, self._finalize_stream_start, cap, source,
-                   first_annotated, first_stats)
-
-    def _finalize_stream_start(self, cap, source,
-                               first_annotated=None, first_stats=None):
-        """UI thread: seed display + start all threads."""
+    def _finalize_stream_start(self):
         if not self.is_running:
-            cap.release()
             return
 
         self.state_cache.clear()
-        self.cap = cap
-        self.video_fps = self.cap.get(cv2.CAP_PROP_FPS) or 30.0
+        
+        # Reset counters
+        self._raw_frame_index = 0
+        self._latest_frames = None
+        self._latest_stats = None
+        self._new_data_ready = False
 
-        # Reset counters (first frame already consumed)
-        has_first = first_annotated is not None
-        self._raw_frame_index = 1 if has_first else 0
-        self._frames_read = 1 if has_first else 0
-        self._frames_processed = 1 if has_first else 0
-        self._last_display_raw_frame_index = 1 if has_first else 0
-        self._last_tracker_raw_frame_index = 1 if has_first else 0
-
-        print("[EVAL INIT] Initializing SELFWATCHEvaluator and ExperimentTracker")
-        self.evaluator = SELFWATCHEvaluator()
+        self.evaluators = [SELFWATCHEvaluator() for _ in self.sources]
         self.experiment_tracker = ResearchExperimentTracker()
         
         config_data = {k: v for k, v in vars(config).items() if k.isupper()}
         self.experiment_tracker.save_config(config_data)
 
-        # Seed display with first processed frame
-        self._display_frame = first_annotated
-        self._display_stats = first_stats
-        self._frame_slot = None
-
-        if has_first:
-            self.state_cache.append(first_annotated, first_stats)
-
         self.is_playing = True
         self.timeline.is_playing = True
         self.timeline.btn_play_pause.configure(text="⏸ Pause")
 
-        # Launch threads
-        self._reader_thread = threading.Thread(
-            target=self._reader_loop, daemon=True, name="sw-reader")
+        # Thread B: Inference (decoupled from display)
         self._inference_thread = threading.Thread(
             target=self._inference_loop, daemon=True, name="sw-inference")
-        self._reader_thread.start()
         self._inference_thread.start()
 
-        # Start display timer
+        # Thread C: Display (runs on main thread via after())
         if self._display_timer is None:
             self._schedule_display()
 
     def stop_stream(self):
         self.is_running = False
-        self._frame_event.set()
-
-        if self._reader_thread:
-            self._reader_thread.join(timeout=0.5)
         if self._inference_thread:
-            self._inference_thread.join(timeout=0.5)
-        if self.cap:
-            self.cap.release()
-            self.cap = None
+            self._inference_thread.join(timeout=2.0)
 
-        if self.evaluator and self.experiment_tracker:
-            print("[EVAL SAVE START] Saving metrics and summary...")
-            report = self.evaluator.get_final_report()
-            self.experiment_tracker.save_metrics(report)
+        # Stop the async encoder thread cleanly
+        self.state_cache.stop()
+
+        if self.multicam_pipeline:
+            # We must gracefully close cameras
+            for cam in self.multicam_pipeline.cameras:
+                cam.close()
+            self.multicam_pipeline = None
+            
+        if self.experiment_tracker:
+            for i, ev in enumerate(self.evaluators):
+                report = ev.get_final_report()
+                # Store report per camera
+                self.experiment_tracker.save_metrics(report, suffix=f"_cam{i}")
             avg_fps = self._inference_fps if self._inference_fps else 0.0
-            total_time = self._frames_processed / avg_fps if avg_fps > 0 else 0.0
+            total_time = self._raw_frame_index / avg_fps if avg_fps > 0 else 0.0
             self.experiment_tracker.log_runtime_stats(avg_fps, total_time)
-            import os
-            abs_path = os.path.abspath(self.experiment_tracker.log_dir)
-            print(f"[EVAL SAVE COMPLETE] Directory: {abs_path}")
 
     def toggle_debug(self, state):
-        if self.pipeline:
-            self.pipeline.debug_overlay.enabled = state
+        if self.multicam_pipeline:
+            for cam in self.multicam_pipeline.cameras:
+                cam.pipeline.debug_overlay.enabled = state
 
     def toggle_layer(self, layer_name, state):
-        if self.pipeline and hasattr(self.pipeline, "layer_manager"):
-            self.pipeline.layer_manager.toggle(layer_name, state)
-            # Force redraw of cached frame if paused
-            if not self.is_playing and self._display_frame is not None:
+        if self.multicam_pipeline:
+            for cam in self.multicam_pipeline.cameras:
+                cam.pipeline.layer_manager.toggle(layer_name, state)
+            
+            # Force redraw if paused
+            if not self.is_playing and self._latest_frames:
                 self.scrub_to(self.timeline.slider_var.get())
 
     # ════════════════════════════════════════════════════════════════
-    #  PLAYBACK & SCRUBBING CONTROL
+    #  PLAYBACK & SCRUBBING
     # ════════════════════════════════════════════════════════════════
 
     def play(self):
@@ -363,402 +351,282 @@ class SelfWatchApp(ctk.CTk):
         self.is_playing = False
 
     def step_forward(self):
-        """Advance exactly one frame through the pipeline (paused mode)."""
-        if not self.is_running or self.cap is None:
-            return
+        if not self.is_running: return
         self.pause()
         
-        # If we are scrubbed backwards, just step forward in the cache
         if self.state_cache.current_index < self.state_cache.total_frames - 1:
             self.state_cache.current_index += 1
-            frame, meta = self.state_cache.get_frame(self.state_cache.current_index)
-            if frame is not None:
-                self.video_player.update_frame(frame)
-                self.side_panel.update_metrics(meta)
-                self.timeline.update_state(
-                    self.state_cache.current_index,
-                    max(0, self.state_cache.total_frames - 1),
-                    False)
+            frames, metas = self.state_cache.get_frame(self.state_cache.current_index)
+            self._update_ui_from_cache(frames, metas)
             return
 
-        # Otherwise process a new frame from the live video
-        ret, frame = self.cap.read()
-        if not ret:
-            return
+        # Advance one step in multicam pipeline
+        results = self.multicam_pipeline.step()
         self._raw_frame_index += 1
-        frame_delta = max(1, self._raw_frame_index - self._last_tracker_raw_frame_index)
-        annotated, stats = self.pipeline.process_frame(
-            frame, frame_delta=frame_delta, frame_index=self._raw_frame_index)
-        self._last_display_raw_frame_index = self._raw_frame_index
-        self._last_tracker_raw_frame_index = self._raw_frame_index
-        stats["inference_fps"] = self._inference_fps
-        self.state_cache.append(annotated, stats)
-        self.video_player.update_frame(annotated)
-        self.side_panel.update_metrics(stats)
-        self.timeline.update_state(
-            self.state_cache.current_index,
-            max(0, self.state_cache.total_frames - 1),
-            False)
+        
+        frames = [r[0] for r in results]
+        stats_list = [r[1] for r in results]
+        
+        # Combine stats for side panel (use camera 0 or aggregated)
+        agg_stats = stats_list[0] if stats_list and stats_list[0] else {}
+        
+        self.state_cache.append(frames, stats_list)
+        self._update_ui_from_cache(frames, stats_list)
 
     def step_backward(self):
         self.pause()
         if self.state_cache.current_index > 0:
             self.state_cache.current_index -= 1
-            frame, meta = self.state_cache.get_frame(self.state_cache.current_index)
-            if frame is not None:
-                self.video_player.update_frame(frame)
-                self.side_panel.update_metrics(meta)
-                self.timeline.update_state(
-                    self.state_cache.current_index,
-                    max(0, self.state_cache.total_frames - 1),
-                    False)
+            frames, metas = self.state_cache.get_frame(self.state_cache.current_index)
+            self._update_ui_from_cache(frames, metas)
 
     def scrub_to(self, index):
         self.pause()
         if 0 <= index < self.state_cache.total_frames:
-            frame, meta = self.state_cache.get_frame(index)
-            if frame is not None:
-                self.video_player.update_frame(frame)
-                self.side_panel.update_metrics(meta)
-                self.timeline.update_state(
-                    index,
-                    max(0, self.state_cache.total_frames - 1),
-                    False)
+            frames, metas = self.state_cache.get_frame(index)
+            self._update_ui_from_cache(frames, metas)
 
-    # ════════════════════════════════════════════════════════════════
-    #  THREAD 1: READER — reads frames, keeps only the latest
-    # ════════════════════════════════════════════════════════════════
-
-    def _reader_loop(self):
-        """Read frames on-demand: wait for inference to consume before reading next."""
-        while self.is_running:
-            # Pause reader if paused OR if we are playing from the cache
-            playing_from_cache = self.is_playing and (self.state_cache.current_index < self.state_cache.total_frames - 1)
-            if not self.is_playing or playing_from_cache:
-                time.sleep(0.02)
-                continue
-
-            # Check if inference has consumed the previous frame
-            with self._frame_lock:
-                slot_full = self._frame_slot is not None
-
-            if slot_full:
-                # Inference hasn't consumed yet — wait briefly
-                time.sleep(0.003)
-                continue
-
-            # Read OUTSIDE the lock to avoid blocking inference
-            ret, frame = self.cap.read()
-            if not ret:
-                self.is_playing = False
-                self.is_running = False
-                self.after(0, self.stop_stream)
+    def _update_ui_from_cache(self, frames, metas):
+        if frames:
+            for i, f in enumerate(frames):
+                if i < len(self.video_players):
+                    self.video_players[i].update_frame(f)
+                    
+        # Update metrics using first active camera's stats for now
+        # A true shared evaluator will aggregate these later
+        for m in metas:
+            if m:
+                self.side_panel.update_metrics(m)
                 break
+                
+        self.timeline.update_state(
+            self.state_cache.current_index,
+            max(0, self.state_cache.total_frames - 1),
+            False)
 
-            # Atomic slot write
-            with self._frame_lock:
-                self._raw_frame_index += 1
-                self._frames_read += 1
-                self._frame_slot = (self._raw_frame_index, frame)
-                self._frame_event.set()
+    def toggle_evaluation(self, state):
+        self.evaluation_enabled = state
+        self._log_event(f"Evaluator {'ENABLED' if state else 'DISABLED'}")
 
     # ════════════════════════════════════════════════════════════════
-    #  THREAD 2: INFERENCE — processes frames through the pipeline
+    #  THREAD B: INFERENCE (decoupled from display)
     # ════════════════════════════════════════════════════════════════
 
     def _inference_loop(self):
         """
-        Processes every frame through the full cognitive pipeline.
-        No frames skipped, no prediction-only shortcuts.
-        Every frame gets detection + ReID + tracking + drawing.
+        Inference thread — processes frames as fast as GPU allows.
+
+        Architecture:
+          - Reads latest frames from camera capture threads (Thread A)
+          - Runs detection + tracking + identity sync
+          - Writes results to _latest_frames/_latest_stats (atomic)
+          - Display thread (Thread C) reads these independently
+          - NEVER waits for display thread
+          - NEVER blocks on UI
         """
+        import psutil
+        proc = psutil.Process(os.getpid())
+
         last_inf_time = time.perf_counter()
-
+        fps_window = []  # Rolling window for smooth FPS
+        diag_interval = 20  # Update diagnostics every N frames
+        
         while self.is_running:
-            self._frame_event.wait(timeout=0.1)
-            if not self.is_running:
-                break
-
-            # Grab frame (slot is consumed, reader can now read next)
-            slot = None
-            with self._frame_lock:
-                slot = self._frame_slot
-                self._frame_slot = None
-                self._frame_event.clear()
-
-            if slot is None:
+            # Check pause state — if playing from cache, don't run inference
+            playing_from_cache = self.is_playing and (
+                self.state_cache.current_index < self.state_cache.total_frames - 1)
+            if not self.is_playing or playing_from_cache:
+                time.sleep(0.02)
                 continue
 
-            frame_idx, frame = slot
+            t_inf_start = time.perf_counter()
+            
+            # Step the full multi-camera pipeline (non-blocking)
+            try:
+                results = self.multicam_pipeline.step()
+            except Exception as e:
+                print(f"[INFERENCE ERROR] {e}")
+                time.sleep(0.05)
+                continue
 
-            # Full pipeline on EVERY frame — no predict_only shortcuts.
-            # predict_only caused box drift, blinking, and stutter.
-            t0 = time.perf_counter()
-            frame_delta = max(1, frame_idx - self._last_tracker_raw_frame_index)
-            annotated, stats = self.pipeline.process_frame(
-                frame, frame_delta=frame_delta, frame_index=frame_idx)
-            self._last_tracker_raw_frame_index = frame_idx
-            t1 = time.perf_counter()
-            self._last_display_raw_frame_index = frame_idx
+            # Check if all streams ended permanently
+            if results is None:
+                print("[MULTICAM] All streams ended.")
+                self.is_running = False
+                break
 
-            inf_dt = t1 - last_inf_time
-            last_inf_time = t1
-            self._inference_fps = 1.0 / (inf_dt + 1e-6)
-            self._frames_processed += 1
-
-            stats["inference_fps"] = self._inference_fps
-            stats["frames_read"] = self._frames_read
-            stats["frames_processed"] = self._frames_processed
-            stats["raw_frame_index"] = frame_idx
-            stats["frame_delta"] = frame_delta
-
-            if self.evaluator is not None:
-                visible_objects = []
-                for gid, info in stats.get("track_states", {}).items():
-                    state_idx = info.get("identity_state", 0)
-                    state_name = "ACTIVE" if state_idx == 0 else "THINKING"
-                    visible_objects.append({
-                        "global_id": gid,
-                        "bbox": info.get("box"),
-                        "state": state_name
-                    })
-                self.evaluator.update(
-                    frame_idx=frame_idx, 
-                    visible_rendered_identities=visible_objects,
-                    tracks=self.pipeline.tracker.tracks,
-                    detections=stats.get("raw_detections", []), 
-                    suppression_regions=None, # Pipeline doesn't currently expose suppression regions easily
-                    frozen_gids=list(self.pipeline.occlusion_manager.frozen_gids)
-                )
+            self._raw_frame_index += 1
                 
-                if frame_idx % 60 == 0:
-                    print(f"[EVAL UPDATE] Frame {frame_idx}")
-                    rep = self.evaluator.get_final_report()
-                    sm = rep["summary"]
-                    print("\n[Evaluation]")
-                    print(f"Visible Switches: {sm['visible_id_switches']}")
-                    print(f"Teleportations: {sm['teleportation_events']}")
-                    print(f"Duplicates: {sm['duplicate_box_frames']}")
-                    print(f"Stability: {sm['identity_stability_score']:.3f}\n")
+            frames = [r[0] for r in results]
+            stats_list = [r[1] for r in results]
+            
+            t_inf_end = time.perf_counter()
+            inf_dt = t_inf_end - last_inf_time
+            last_inf_time = t_inf_end
+            
+            # Smooth FPS calculation (rolling window)
+            fps_window.append(inf_dt)
+            if len(fps_window) > 30:
+                fps_window.pop(0)
+            avg_dt = sum(fps_window) / len(fps_window)
+            self._inference_fps = 1.0 / (avg_dt + 1e-6)
+            self._diag_inf_ms = (t_inf_end - t_inf_start) * 1000
+            
+            # Update inference FPS in all stats + run evaluator
+            for i, s in enumerate(stats_list):
+                if s: 
+                    s["inference_fps"] = self._inference_fps
+                    
+                    if self.evaluation_enabled and i < len(self.evaluators) and self.evaluators[i] is not None:
+                        visible_objects = []
+                        for pgid, info in s.get("track_states", {}).items():
+                            state_idx = info.get("identity_state", 0)
+                            state_name = "ACTIVE" if state_idx == 0 else "THINKING"
+                            # Remap to global ID
+                            mgid = s.get("multicam_active_gids", {}).get(pgid, pgid)
+                            visible_objects.append({
+                                "global_id": mgid,
+                                "bbox": info.get("box"),
+                                "state": state_name
+                            })
+                            
+                        cam = self.multicam_pipeline.cameras[i]
+                        self.evaluators[i].update(
+                            frame_idx=self._raw_frame_index,
+                            visible_rendered_identities=visible_objects,
+                            tracks=cam.pipeline.tracker.tracks,
+                            detections=s.get("raw_detections", []),
+                            suppression_regions=None,
+                            frozen_gids=list(cam.pipeline.occlusion_manager.frozen_gids),
+                            raw_display=s.get("raw_display", None)
+                        )
+                
+            # Append to state cache for scrubbing
+            self.state_cache.append(frames, stats_list)
 
-            # Cache for timeline scrubbing
-            self.state_cache.append(annotated, stats)
-
-            # Publish completed frame for display (atomic swap)
-            with self._display_lock:
-                self._display_frame = annotated
-                self._display_stats = stats
-
-            # Forensic Debug Mode trigger
-            if stats.get("id_switches"):
-                print(f"[UI] Capturing forensic ID switch event at frame {frame_idx} (Async).")
-                # Do forensic capture asynchronously so we don't block inference for too long
-                threading.Thread(target=self.forensic.capture_id_switch, 
-                                 args=(self.state_cache, stats, annotated), daemon=True).start()
+            # ── Atomic handoff to display thread ────────────────────
+            # No lock needed: Python GIL makes reference assignment atomic.
+            # Display thread reads these; if it misses one, it gets the next.
+            self._latest_frames = frames
+            self._latest_stats = stats_list
+            self._new_data_ready = True
+                
+            # ── Update diagnostics periodically ─────────────────────
+            if self._raw_frame_index % diag_interval == 0:
+                try:
+                    self._diag_ram_mb = proc.memory_info().rss / 1e6
+                    q_sizes = [cam.get_status()["queue_size"]
+                               for cam in self.multicam_pipeline.cameras]
+                    self._diag_q_sizes = ",".join(map(str, q_sizes))
+                    self._diag_drops = sum(
+                        cam.dropped_frames
+                        for cam in self.multicam_pipeline.cameras)
+                except Exception:
+                    pass
 
     # ════════════════════════════════════════════════════════════════
-    #  MAIN THREAD: DISPLAY — shows completed annotated frames
+    #  THREAD C: DISPLAY (main thread, paced at 30fps)
     # ════════════════════════════════════════════════════════════════
+
+    # Target: 30 FPS render cadence (33ms intervals)
+    TARGET_RENDER_FPS = 30
+    RENDER_INTERVAL_MS = 1000 // TARGET_RENDER_FPS  # 33ms
 
     def _schedule_display(self):
-        """Schedule display tick at ~30fps polling rate."""
         if self.is_running:
             self._display_tick()
-            self._display_timer = self.after(33, self._schedule_display)
+            self._display_timer = self.after(
+                self.RENDER_INTERVAL_MS, self._schedule_display)
         else:
             self._display_timer = None
 
     def _display_tick(self):
         """
-        Shows the latest pipeline-annotated frame.
-        Between inference ticks, re-displays the cached last frame
-        so the UI never goes blank.
+        Display thread tick — runs on the main/UI thread.
+
+        Architecture:
+          - Reads latest frames/stats from inference thread (atomic)
+          - Renders to VideoPlayer widgets
+          - Updates diagnostics panel
+          - NEVER blocks inference thread
+          - If no new data, displays last known frame (no stall)
         """
         if not self.is_running:
             return
 
-        # If playing from cache, ignore new frames and advance cache
+        t_render_start = time.perf_counter()
+
+        # If playing from cache (scrubbing)
         if self.is_playing and self.state_cache.current_index < self.state_cache.total_frames - 1:
             self.state_cache.current_index += 1
-            frame, meta = self.state_cache.get_frame(self.state_cache.current_index)
-            if frame is not None:
-                self.video_player.update_frame(frame)
-                self.side_panel.update_metrics(meta)
-                self.timeline.update_state(
-                    self.state_cache.current_index,
-                    max(0, self.state_cache.total_frames - 1),
-                    True)
+            frames, metas = self.state_cache.get_frame(self.state_cache.current_index)
+            self._update_ui_from_cache(frames, metas)
+            self.timeline.is_playing = True
             return
 
-        # Grab latest completed frame (if any)
-        new_frame = None
-        stats = None
-        with self._display_lock:
-            if self._display_frame is not None:
-                new_frame = self._display_frame
-                self._display_frame = None  # Consume
-            if self._display_stats is not None:
-                stats = self._display_stats
-                self._display_stats = None
+        # ── Read latest data (non-blocking, no lock) ────────────────
+        if self._new_data_ready:
+            new_frames = self._latest_frames
+            new_stats = self._latest_stats
+            self._new_data_ready = False
+        else:
+            new_frames = None
+            new_stats = None
 
-        # Cache new frame, or keep showing the last one
-        if new_frame is not None:
-            self._cached_display = new_frame
+        # ── Render frames to video players ──────────────────────────
+        if new_frames is not None:
+            for i, f in enumerate(new_frames):
+                if i < len(self.video_players) and f is not None:
+                    self.video_players[i].update_frame(f)
 
-        if self._cached_display is None:
-            return
+        # ── Update side panel metrics ───────────────────────────────
+        if new_stats is not None:
+            try:
+                reg_stats = self.multicam_pipeline.global_registry.get_stats()
+                display_stat = None
+                for s in new_stats:
+                    if s:
+                        display_stat = s
+                        break
+                
+                if display_stat:
+                    display_stat["active_tracks"] = reg_stats["active_global_ids"]
+                    self.side_panel.update_metrics(display_stat)
+            except Exception:
+                pass
 
-        self.video_player.update_frame(self._cached_display)
-
-        if stats is not None:
-            self.side_panel.update_metrics(stats)
-
+        # ── Update timeline ─────────────────────────────────────────
         if self.state_cache.total_frames > 0:
             self.timeline.update_state(
                 self.state_cache.current_index,
                 max(0, self.state_cache.total_frames - 1),
                 self.is_playing)
 
-    # ════════════════════════════════════════════════════════════════
-    #  LIFECYCLE
-    # ════════════════════════════════════════════════════════════════
+        # ── Update diagnostics (cheap, every tick) ──────────────────
+        t_render_end = time.perf_counter()
+        self._diag_render_ms = (t_render_end - t_render_start) * 1000
 
-    # ════════════════════════════════════════════════════════════════
-    #  BENCHMARK CONTROLS
-    # ════════════════════════════════════════════════════════════════
-
-    def _on_benchmark_toggle(self, enabled):
-        """Called when user toggles benchmark mode checkbox."""
-        if enabled:
-            print("[UI] Benchmark mode enabled")
-        else:
-            print("[UI] Benchmark mode disabled")
-
-    def _on_dataset_change(self, dataset_name, scenario):
-        """Called when user changes dataset dropdown."""
-        sequences = self.dataset_manager.list_sequences(
-            dataset_name, scenario
-        )
-        self._sequence_map = {s.name: s for s in sequences}
-        seq_names = [s.name for s in sequences]
-        self.benchmark_panel.update_sequences(seq_names)
-        print(f"[UI] Dataset: {dataset_name} | "
-              f"Scenario: {scenario} | "
-              f"Found {len(sequences)} sequences")
-
-    def _on_benchmark_run(self, dataset, scenario, sequence_name):
-        """Run benchmark on selected sequence."""
-        # Ensure pipeline is initialized
-        if self.pipeline is None:
-            self.benchmark_panel.lbl_progress.configure(
-                text="Loading pipeline first..."
-            )
-            self.init_pipeline()
-
-        if self.pipeline is None:
-            self.benchmark_panel.lbl_progress.configure(
-                text="Pipeline failed to load"
-            )
-            self.benchmark_panel.btn_run.configure(state="normal")
-            self.benchmark_panel.btn_stop.configure(state="disabled")
-            return
-
-        # Create benchmark engine if needed
-        if self.benchmark_engine is None:
-            self.benchmark_engine = BenchmarkEngine(
-                self.pipeline, self.dataset_manager, self.forensic
-            )
-
-        # Resolve sequence
-        seq_info = self._sequence_map.get(sequence_name)
-        if seq_info is None:
-            # For custom videos, check if it's a direct file pick
-            if dataset == "Custom Videos":
-                from tkinter import filedialog
-                path = filedialog.askopenfilename(
-                    title="Select Benchmark Video",
-                    filetypes=[("Video Files", "*.mp4 *.avi *.mkv *.mov")],
-                )
-                if not path:
-                    self.benchmark_panel.btn_run.configure(state="normal")
-                    self.benchmark_panel.btn_stop.configure(state="disabled")
-                    return
-                from engine.dataset_manager import SequenceInfo
-                seq_info = SequenceInfo(
-                    name=os.path.basename(path),
-                    dataset="Custom Videos",
-                    path=path, frame_dir=None, gt_path=None,
-                    frame_rate=30, seq_length=0,
-                    im_width=0, im_height=0,
-                    is_video=True, video_path=path, tags=["custom"],
-                )
-            else:
-                self.benchmark_panel.lbl_progress.configure(
-                    text=f"Sequence '{sequence_name}' not found"
-                )
-                self.benchmark_panel.btn_run.configure(state="normal")
-                self.benchmark_panel.btn_stop.configure(state="disabled")
-                return
-
-        # Define callbacks (thread-safe via self.after)
-        def progress_cb(fidx, total, stats):
-            self.after(0, self.benchmark_panel.update_progress,
-                       fidx, total, stats)
-            if self.benchmark_engine and self.benchmark_engine.current_result:
-                self.after(
-                    0, self.benchmark_panel.update_live_results,
-                    self.benchmark_engine.current_result
-                )
-
-        def frame_cb(annotated, stats):
-            self.after(0, self.video_player.update_frame, annotated)
-            stats["inference_fps"] = self._inference_fps
-            self.after(0, self.side_panel.update_metrics, stats)
-
-        def done_cb(result):
-            self.after(0, self.benchmark_panel.show_completed, result)
-
-        # Launch benchmark
-        self.benchmark_engine.run_sequence(
-            seq_info,
-            progress_cb=progress_cb,
-            done_cb=done_cb,
-            frame_cb=frame_cb
-        )
-
-    def _on_benchmark_stop(self):
-        """Stop a running benchmark."""
-        if self.benchmark_engine:
-            self.benchmark_engine.stop()
-            print("[UI] Benchmark stopped by user")
-
-    def _on_benchmark_export(self):
-        """Export benchmark results."""
-        if self.benchmark_engine and self.benchmark_engine.all_results:
-            self.benchmark_engine.export_results_csv()
-            self.benchmark_engine.export_results_json()
-            print("[UI] Benchmark results exported")
-            self.benchmark_panel.lbl_progress.configure(
-                text="✓ Results exported to logs/"
-            )
-        else:
-            print("[UI] No benchmark results to export")
-            self.benchmark_panel.lbl_progress.configure(
-                text="No results to export"
-            )
-
-    # ════════════════════════════════════════════════════════════════
-    #  LIFECYCLE
-    # ════════════════════════════════════════════════════════════════
+        try:
+            self.lbl_memory.configure(
+                text=f"RAM: {self._diag_ram_mb:.0f}MB | "
+                     f"Inf: {self._diag_inf_ms:.0f}ms "
+                     f"({self._inference_fps:.0f}fps) | "
+                     f"Render: {self._diag_render_ms:.0f}ms")
+            self.lbl_queues.configure(
+                text=f"Q: [{self._diag_q_sizes}] | "
+                     f"Drops: {self._diag_drops}")
+            # Phase 1: Async encoder diagnostics
+            from engine.async_state_cache import AsyncStateCache
+            self.lbl_encoder.configure(
+                text=f"Enc: {AsyncStateCache.encode_ms_avg:.1f}ms | "
+                     f"EncQ: {AsyncStateCache.encode_queue_size} | "
+                     f"EncDrops: {AsyncStateCache.encode_drops}")
+        except Exception:
+            pass
 
     def on_closing(self):
-        if self.benchmark_engine:
-            self.benchmark_engine.stop()
         self.stop_stream()
-        if self.pipeline:
-            self.pipeline.close()
         self.destroy()
-
 
 if __name__ == "__main__":
     app = SelfWatchApp()

@@ -17,23 +17,23 @@ class ResearchExperimentTracker:
         with open(os.path.join(self.log_dir, "config.json"), "w") as f:
             json.dump(config, f, indent=4)
             
-    def save_metrics(self, metrics: dict):
+    def save_metrics(self, metrics: dict, suffix: str = ""):
         # Save JSON
-        with open(os.path.join(self.log_dir, "metrics.json"), "w") as f:
+        with open(os.path.join(self.log_dir, f"metrics{suffix}.json"), "w") as f:
             json.dump(metrics, f, indent=4)
             
         # Save Markdown Summary
         summary = metrics.get("summary", {})
-        md_content = f"# Experiment {self.exp_id} Summary\n\n"
+        md_content = f"# Experiment {self.exp_id} Summary{suffix}\n\n"
         md_content += "## Core Stability Metrics\n"
         md_content += f"- **Identity Stability Score:** {summary.get('identity_stability_score', 0):.4f}\n"
-        md_content += f"- **Visible ID Switches:** {summary.get('visible_id_switches', 0)}\n"
+        md_content += f"- **Total Visible Switches:** {summary.get('total_visible_switches', 0)}\n"
         md_content += f"- **Duplicate Box Frames:** {summary.get('duplicate_box_frames', 0)}\n"
         md_content += f"- **Teleportation Events:** {summary.get('teleportation_events', 0)}\n"
         md_content += f"- **Fragmentation Count:** {summary.get('fragmentation_count', 0)}\n\n"
         md_content += "---\n*Generated automatically by SELFWATCH Evaluation Suite.*\n"
         
-        with open(os.path.join(self.log_dir, "summary.md"), "w") as f:
+        with open(os.path.join(self.log_dir, f"summary{suffix}.md"), "w") as f:
             f.write(md_content)
             
     def log_runtime_stats(self, fps: float, total_time: float):

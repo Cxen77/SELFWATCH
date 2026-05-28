@@ -26,6 +26,12 @@ from memory.phantom import PhantomTracker
 from memory.warm_memory import WarmMemory
 from memory.reasoning import CognitiveReasoning
 from memory.occlusion_groups import OcclusionGroupManager
+from memory.ownership_arbitration import OwnershipArbitrationLayer
+from memory.ownership_state import (
+    OwnershipStateMachine, VISIBLE_ACTIVE as OSM_ACTIVE,
+    VISIBLE_FROZEN as OSM_FROZEN, LATENT_CANDIDATE as OSM_LATENT,
+    RECOVERING as OSM_RECOVERING, ARCHIVED as OSM_ARCHIVED,
+)
 from memory.event_log import CognitiveEventLogger
 from memory.metrics import TrackingMetrics
 from memory.debug_overlay import DebugOverlay, DebugLayerManager
@@ -71,6 +77,8 @@ class SelfWatchPipeline:
         self.warm_memory = WarmMemory(max_size=config.MEMORY_MAX_WARM)
         self.reasoning = CognitiveReasoning()
         self.occlusion_manager = OcclusionGroupManager()
+        self.ownership_arbiter = OwnershipArbitrationLayer()
+        self.ownership_sm = OwnershipStateMachine()
 
         # Observability
         self.event_logger = CognitiveEventLogger(
@@ -151,8 +159,12 @@ class SelfWatchPipeline:
     #  MAIN FRAME PROCESSING
     # ══════════════════════════════════════════════════════════════════
 
-    def process_frame(self, frame, frame_delta=1, frame_index=None):
+    def process_frame(self, frame, frame_delta=1, frame_index=None, color_map=None):
         loop_start = time.perf_counter()
+        
+        # Optimize memory and rendering speed
+        frame = cv2.resize(frame, (960, 540))
+        
         frame_delta = max(1, int(frame_delta))
         self.frame_count += 1
         is_reid_frame = (
@@ -160,13 +172,23 @@ class SelfWatchPipeline:
         )
         h, w = frame.shape[:2]
 
-        # ── Layer 1A: Detect ─────────────────────────────────────────
-        t0 = time.perf_counter()
-        det_result = self.detector.detect(
-            frame, conf_threshold=0.35, target_classes=[PERSON_CLASS])
-        raw_boxes = [list(b) for b in det_result.boxes]
-        raw_scores = list(det_result.scores)
-        t1 = time.perf_counter()
+        DETECTOR_INTERVAL = getattr(config, 'DETECTOR_INTERVAL', 2)
+        if self.frame_count % DETECTOR_INTERVAL == 0 or self.frame_count <= 2:
+            t0 = time.perf_counter()
+            det_result = self.detector.detect(
+                frame, conf_threshold=0.35, target_classes=[PERSON_CLASS])
+            raw_boxes = [list(b) for b in det_result.boxes]
+            raw_scores = list(det_result.scores)
+            t1 = time.perf_counter()
+        else:
+            t0 = time.perf_counter()
+            raw_boxes = []
+            raw_scores = []
+            for track in self.tracker.tracks:
+                if track.is_confirmed and track.time_since_update <= 1:
+                    raw_boxes.append(track.smooth_box.tolist())
+                    raw_scores.append(track.score)
+            t1 = time.perf_counter()
 
         boxes, scores = [], []
         raw_crops = []  # Store crops for fingerprint color histograms
@@ -206,13 +228,41 @@ class SelfWatchPipeline:
             embeddings = np.zeros((0, 512), dtype=np.float32)
         t_reid1 = time.perf_counter()
 
-        # ── Pre-Tracker Suppression Regions ──────────────────────────
+
+
+        # ── Pre-Tracker Suppression Regions & Frozen / Cooldown LIDs ──
+        # ── Pre-Tracker Suppression Regions & Frozen / Cooldown LIDs ──
         suppress_regions = []
+        frozen_lids = set()
+        cooldown_lids = set()
+        exit_trajectories = {}
+        collision_partners = {}
+
         for track in self.tracker.tracks:
             gid = self.global_id_manager.get_global_id(track.local_id)
-            if gid in self.occlusion_manager.frozen_gids:
-                suppress_regions.append(track.smooth_box.tolist())
-            elif track.is_lost and track.time_since_update <= THINKING_WINDOW:
+            if gid is not None:
+                if gid in self.occlusion_manager.frozen_gids:
+                    suppress_regions.append(track.smooth_box.tolist())
+                    frozen_lids.add(track.local_id)
+                elif self.occlusion_manager.is_in_cooldown(gid):
+                    cooldown_lids.add(track.local_id)
+
+                # Cache exit trajectories and collision partners for low-level tracker
+                traj = self.occlusion_manager.get_exit_trajectory(gid)
+                if traj is not None:
+                    exit_trajectories[track.local_id] = traj
+
+                partners_gids = self.occlusion_manager._collision_partners.get(gid, set())
+                partner_lids = set()
+                for partner_gid in partners_gids:
+                    for lid, val in self.global_id_manager._local_to_global.items():
+                        if val == partner_gid:
+                            partner_lids.add(lid)
+                            break
+                if partner_lids:
+                    collision_partners[track.local_id] = partner_lids
+            
+            if track.is_lost and track.time_since_update <= THINKING_WINDOW:
                 # Approximate predicted box since predict() hasn't run yet
                 w = track.smooth_box[2] - track.smooth_box[0]
                 h = track.smooth_box[3] - track.smooth_box[1]
@@ -225,8 +275,15 @@ class SelfWatchPipeline:
         active = self.tracker.update(
             boxes, scores, embeddings,
             frame_shape=frame.shape, frame_delta=frame_delta,
-            suppress_regions=suppress_regions
+            suppress_regions=suppress_regions,
+            frozen_lids=frozen_lids,
+            cooldown_lids=cooldown_lids,
+            exit_trajectories=exit_trajectories,
+            collision_partners=collision_partners,
+            frame_count=self.frame_count
         )
+
+
         t_trk1 = time.perf_counter()
 
         # ── Compute identity states BEFORE reasoning ─────────────────
@@ -243,6 +300,14 @@ class SelfWatchPipeline:
                 confirmed_gids.add(gid)
                 confirmed_tracks_by_gid[gid] = track
 
+                # Flexible Trajectory Adaptation: if a track in cooldown successfully
+                # reattaches/matches a detection, clear its post-freeze cooldown early
+                # so it immediately unblocks and adapts to the new motion trajectory!
+                if gid is not None and self.occlusion_manager.is_in_cooldown(gid):
+                    self.occlusion_manager._post_freeze_cooldown.pop(gid, None)
+                    self.occlusion_manager._exit_trajectories.pop(gid, None)
+                    self.occlusion_manager._collision_partners.pop(gid, None)
+
         # ── Occlusion Group Detection ─────────────────────────────────
         # Build confirmed boxes + velocities for overlap check
         confirmed_boxes = {}
@@ -250,8 +315,30 @@ class SelfWatchPipeline:
         for gid, trk in confirmed_tracks_by_gid.items():
             confirmed_boxes[gid] = trk.smooth_box.tolist()
             confirmed_velocities[gid] = trk.vel.tolist()
+
         frozen_gids = self.occlusion_manager.update(
             confirmed_boxes, velocities=confirmed_velocities)
+
+        # ── Ambiguity-Aware Identity Freezing ────────────────────────
+        # Freeze identities that have weak/ambiguous association or
+        # are provisional with low confidence.
+        ambiguous_gids = set()
+        for gid, trk in confirmed_tracks_by_gid.items():
+            cost = getattr(trk, 'last_assoc_cost', 0.0)
+            method = getattr(trk, 'last_assoc_method', 'NEW')
+            # 1. High association cost (fused or BIoU)
+            # 2. C-BIoU fallback matching
+            # 3. Provisional (unconfirmed) but active track with low confidence
+            is_cbiou = "C-BIoU" in method
+            is_high_cost = cost > 0.65
+            is_weak_provisional = self.global_id_manager.is_provisional(trk.local_id) and trk.score < 0.60
+            
+            if is_cbiou or is_high_cost or is_weak_provisional:
+                ambiguous_gids.add(gid)
+
+        # Combine physical occlusion frozen GIDs and ambiguous frozen GIDs
+        frozen_gids = frozen_gids.union(ambiguous_gids)
+
 
         # Determine THINKING tracks: lost but within hold window
         # These are StrongSORT LOST tracks that still have predicted boxes
@@ -337,6 +424,89 @@ class SelfWatchPipeline:
             self.tracker.tracks, proposals, frozen_gids=frozen_gids,
             occlusion_manager=self.occlusion_manager)
 
+        # ── Ghost Track Remediation (Rebind & Deactivate) ───────────
+        # Target Point 3: detect detached ghost trajectories and transfer
+        # identity ownership to consistent moving detections.
+        # Avoid leaving original ID behind.
+        from trackers.strack import STrack
+        
+        # 1. Find lost tracks that are "ghosting" (in cooldown or recently lost)
+        ghost_tracks = []
+        for track in self.tracker.tracks:
+            gid = self.global_id_manager.get_global_id(track.local_id)
+            if gid is not None and track.is_lost:
+                if track.time_since_update > 0 and track.time_since_update <= 30:
+                    ghost_tracks.append(track)
+                    
+        # 2. Find newly spawned tracks that might represent the real moving person
+        active_new_tracks = []
+        for track in self.tracker.tracks:
+            if track.is_confirmed and track.time_since_update == 0:
+                is_prov = self.global_id_manager.is_provisional(track.local_id)
+                if track.age < 20 or is_prov:
+                    active_new_tracks.append(track)
+                    
+        # 3. Pairwise check: if a new active track matches a lost ghost track's appearance
+        # with overwhelming confidence, transfer GID and deactivate the ghost!
+        for t_active in active_new_tracks:
+            active_gid = self.global_id_manager.get_global_id(t_active.local_id)
+            active_emb = t_active.get_averaged_embedding()
+            if active_emb is None:
+                continue
+                
+            best_ghost = None
+            best_dist = 999.0
+            
+            for t_ghost in ghost_tracks:
+                ghost_gid = self.global_id_manager.get_global_id(t_ghost.local_id)
+                if ghost_gid == active_gid:
+                    continue  # Already same ID
+                    
+                ghost_emb = t_ghost.get_averaged_embedding()
+                if ghost_emb is None:
+                    continue
+                    
+                # Cosine distance
+                dist = 1.0 - float(np.dot(active_emb, ghost_emb))
+                if dist < 0.18:  # Overwhelming visual similarity
+                    if dist < best_dist:
+                        best_dist = dist
+                        best_ghost = t_ghost
+                        
+            if best_ghost is not None:
+                ghost_gid = self.global_id_manager.get_global_id(best_ghost.local_id)
+                
+                # Double check that ghost_gid is not active elsewhere
+                proposed_active_elsewhere = False
+                for other_track in self.tracker.tracks:
+                    if other_track.local_id != best_ghost.local_id and other_track.local_id != t_active.local_id:
+                        other_gid = self.global_id_manager.get_global_id(other_track.local_id)
+                        if other_gid == ghost_gid and other_track.is_confirmed and other_track.time_since_update == 0:
+                            proposed_active_elsewhere = True
+                            break
+                            
+                if not proposed_active_elsewhere:
+                    # Let's transfer identity!
+                    old_active_gid = active_gid
+                    self.global_id_manager._local_to_global[t_active.local_id] = ghost_gid
+                    t_active.global_id = ghost_gid
+                    
+                    # Remove active track from provisional since it now inherits a committed identity!
+                    self.global_id_manager._provisional.pop(t_active.local_id, None)
+                    
+                    # Deactivate the ghost track to prevent it from persisting or being stolen!
+                    best_ghost.state = STrack.STATE_LOST
+                    best_ghost.time_since_update = 1000  # Instantly age out and die!
+                    
+                    # Clear any occlusion or cooldown trace
+                    if self.occlusion_manager.is_in_cooldown(ghost_gid):
+                        self.occlusion_manager._post_freeze_cooldown.pop(ghost_gid, None)
+                        self.occlusion_manager._exit_trajectories.pop(ghost_gid, None)
+                        self.occlusion_manager._collision_partners.pop(ghost_gid, None)
+                        
+                    print(f"[GHOST REMEDIATION] Transferred GID={ghost_gid} from ghost track local={best_ghost.local_id} "
+                          f"to active track local={t_active.local_id} (old_gid={old_active_gid}, visual_dist={best_dist:.3f})")
+
         # Detect ID switches
         current_lid_to_gid = {}
         current_lid_is_prov = {}
@@ -377,6 +547,9 @@ class SelfWatchPipeline:
                 confirmed_gids_final.add(gid)
 
         # ── STATE TRANSITIONS ────────────────────────────────────────
+        # Tick the central ownership state machine
+        self.ownership_sm.tick(self.frame_count)
+        self.ownership_sm.update_frozen_set(frozen_gids)
 
         # 1. ACTIVE: currently detected tracks
         for gid in confirmed_gids_final:
@@ -406,6 +579,11 @@ class SelfWatchPipeline:
 
             self._set_state(gid, STATE_ACTIVE,
                             owning_lid=track.local_id if track else None)
+            # Central SM: canonical ACTIVE state
+            self.ownership_sm.activate(
+                gid, owning_lid=track.local_id if track else None,
+                box=track.smooth_box.tolist() if track else None,
+                velocity=track.vel.tolist() if track else None)
 
             # Update active memory with fingerprint features
             if track:
@@ -442,6 +620,8 @@ class SelfWatchPipeline:
                                 last_box=track.predicted_box.tolist(),
                                 owning_lid=track.local_id,
                                 last_velocity=last_vel)
+                # Central SM: THINKING = LATENT_CANDIDATE (not rendered)
+                self.ownership_sm.to_latent(gid, reason="thinking")
                 # Keep active memory alive during THINKING
                 # (don't remove it — the identity is still "held")
 
@@ -468,6 +648,7 @@ class SelfWatchPipeline:
                             importance=am_data.get("importance", 1.0),
                             gallery=am_data.get("gallery", []))
                 self._set_state(gid, STATE_PHANTOM)
+                # Central SM: PHANTOM = still LATENT (already set)
 
         # 4. Tick phantoms, handle PHANTOM -> DEAD
         about_to_expire = {}
@@ -491,6 +672,8 @@ class SelfWatchPipeline:
             self.metrics.record_memory_save(gid, phantom.age_frames)
             self.event_logger.log("warm_save", gid)
             self._set_state(gid, STATE_DEAD)
+            # Central SM: archive the identity
+            self.ownership_sm.archive(gid, reason="phantom_expired")
 
         self.phantom_tracker.tick(frame_delta)
 
@@ -499,6 +682,7 @@ class SelfWatchPipeline:
                      if d["state"] == STATE_DEAD]
         for gid in dead_gids:
             del self._id_states[gid]
+            self.ownership_sm.remove(gid)
 
         # 6. Also handle identities that went directly lost
         #    (not in confirmed, not in thinking, not yet phantom)
@@ -511,12 +695,14 @@ class SelfWatchPipeline:
                 if lifetime < MIN_PRESERVE_LIFETIME:
                     self.active_memory.remove(gid)
                     self._set_state(gid, STATE_DEAD)
+                    self.ownership_sm.archive(gid, reason="transient")
 
         # Re-clean dead
         dead_gids = [gid for gid, d in self._id_states.items()
                      if d["state"] == STATE_DEAD]
         for gid in dead_gids:
             del self._id_states[gid]
+            self.ownership_sm.remove(gid)
 
         # Decay warm memory
         self.warm_memory.decay(time.perf_counter())
@@ -562,6 +748,23 @@ class SelfWatchPipeline:
                     display[gid] = (box, STATE_THINKING, data.get("owning_lid", "?"), vel, age, {})
 
         # ── Visual Identity Metrics ──────────────────────────────────
+        # Capture pre-arbitration display for forensic comparison
+        raw_display = {}
+        for gid, (tbox, state, lid, vel, age, assoc) in display.items():
+            raw_display[gid] = {
+                "box": list(tbox) if not isinstance(tbox, list) else tbox,
+                "state": state,
+            }
+
+        # OWNERSHIP ARBITRATION: enforce single visual identity per region
+        display, suppressed_entries = self.ownership_arbiter.arbitrate(
+            display, frozen_gids=frozen_gids, frame_count=self.frame_count)
+
+        if suppressed_entries:
+            for sup_gid, sup_reason in suppressed_entries:
+                self.event_logger.log("visual_suppress", sup_gid,
+                                      reason=sup_reason, frame=self.frame_count)
+
         # Detect overlapping rendered boxes (human-perceived duplicates)
         display_boxes = [(gid, tbox) for gid, (tbox, *_) in display.items()]
         n_duplicates = 0
@@ -627,7 +830,8 @@ class SelfWatchPipeline:
 
         for gid, (tbox, state, lid, vel, age, assoc_data) in display.items():
             x1, y1, x2, y2 = map(int, tbox)
-            color = id_color(gid)
+            color_id = color_map[gid] if (color_map and gid in color_map) else gid
+            color = id_color(color_id)
             cx = int((x1 + x2) / 2)
             cy = int((y1 + y2) / 2)
             
@@ -770,7 +974,8 @@ class SelfWatchPipeline:
                   f"Warm={self.warm_memory.count} "
                   f"Saves={s['memory_saves']} "
                   f"Resurrections={s['resurrections']} "
-                  f"IDswitches={s['id_switches']}\n")
+                  f"IDswitches={s['id_switches']} "
+                  f"SM={self.ownership_sm.get_summary()}\n")
 
         # Build states for UI
         track_states = {}
@@ -796,9 +1001,11 @@ class SelfWatchPipeline:
             "active_tracks": len(display),
             "active_dict": {gid: box for gid, (box, _, _, _, _, _) in display.items()},
             "track_states": track_states,
+            "raw_display": raw_display,
             "phantom_count": n_phantom,
             "thinking_count": n_thinking,
             "metrics": self.metrics,
+            "ownership_sm_summary": self.ownership_sm.get_summary(),
             "processed_frame_index": self.frame_count,
             "raw_frame_index": frame_index,
             "frame_delta": frame_delta,
@@ -867,8 +1074,27 @@ class SelfWatchPipeline:
 
     def close(self):
         print("\n[PIPELINE] Exporting final metrics...")
+        print("\n" + "=" * 60)
+        print("  INTERNAL TRACKER METRICS (association-level)")
+        print("  NOTE: These measure internal consistency, NOT visual output.")
+        print("=" * 60)
         self.metrics.print_summary()
         self.metrics.export_csv("logs/metrics_summary.csv")
+
+        # Ownership SM summary
+        print("\n" + "=" * 60)
+        print("  OWNERSHIP STATE MACHINE — Final State")
+        print("=" * 60)
+        sm_summary = self.ownership_sm.get_summary()
+        for state_name, count in sm_summary.items():
+            print(f"  {state_name:25s}: {count}")
+        recent_transitions = self.ownership_sm.get_transition_log(last_n=20)
+        if recent_transitions:
+            print(f"\n  Recent transitions ({len(recent_transitions)}):")
+            for t in recent_transitions[-10:]:
+                print(f"    F#{t['frame']:>5d}: gid={t['gid']:>3d} "
+                      f"{t['from']:>20s} -> {t['to']:<20s} [{t['reason']}]")
+        print("=" * 60)
 
         n = max(self._prof_count, 1)
         print("\n" + "=" * 60)

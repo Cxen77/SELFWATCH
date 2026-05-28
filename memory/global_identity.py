@@ -26,10 +26,10 @@ import math
 
 
 class GlobalIdentityManager:
-    INERTIA_FULL = 5
-    INERTIA_FAST = 3       # was 2 — slightly more cautious for phantom
-    COMMIT_DELAY = 5       # Frames before a new ID becomes committed
-    FROZEN_INERTIA = 5     # Frames of consistent proposals required post-freeze
+    # Simple, uniform inertia — no tiered momentum stacking
+    INERTIA_BASE = 5         # Base frames before any proposal accepted
+    COMMIT_DELAY = 5         # Frames before a new ID becomes committed
+    FROZEN_INERTIA = 5       # Frames of consistent proposals required post-freeze
 
     def __init__(self):
         self._local_to_global = {}
@@ -42,7 +42,6 @@ class GlobalIdentityManager:
         self._gallery_motion = {}
 
         # ACT-R: gid -> { total_age, total_hits, last_seen_frame }
-        # Used for activation-based persistence scoring
         self._activation_data = {}
 
         # Forensic log of all rebinding decisions
@@ -111,6 +110,8 @@ class GlobalIdentityManager:
         frozen_gids = frozen_gids or set()
         self._occlusion_manager = occlusion_manager  # Store reference for exit region checks
         active_lids = {t.local_id for t in tracks}
+
+
 
         # Build track lookup for direction gating
         track_by_lid = {}
@@ -185,6 +186,33 @@ class GlobalIdentityManager:
                 self._proposals.pop(lid, None)
                 continue
 
+            # ── STICKY OWNERSHIP: committed tracks are PROTECTED ────────
+            # If this track has passed the provisional commit window,
+            # its ownership is STICKY. Reject proposals for committed
+            # tracks — ownership changes only through natural lifecycle
+            # (track dies, owner archived, impossible trajectory) OR
+            # through Flexible Trajectory Reattachment (target GID is inactive).
+            if lid not in self._provisional and current_gid is not None:
+                # Is proposed_gid currently active elsewhere?
+                proposed_active_elsewhere = False
+                for other_lid, other_gid in self._local_to_global.items():
+                    if other_lid != lid and other_gid == proposed_gid:
+                        other_track = track_by_lid.get(other_lid)
+                        if other_track is not None and other_track.is_confirmed and other_track.time_since_update == 0:
+                            proposed_active_elsewhere = True
+                            break
+
+                if proposed_active_elsewhere:
+                    self._proposals.pop(lid, None)
+                    self._log_rebind(
+                        lid, current_gid, proposed_gid, source,
+                        "REJECT_COMMITTED_ACTIVE_ELSEWHERE", 0.0, 0.0)
+                    continue
+
+                # Otherwise, proposed_gid is inactive (ghosting/lost), so we allow
+                # this committed track to rebind and inherit it!
+
+
             # FREEZE: reject ALL proposals for frozen identities
             if current_gid in frozen_gids:
                 self._proposals.pop(lid, None)
@@ -202,25 +230,24 @@ class GlobalIdentityManager:
                     "REJECT_TARGET_FROZEN", 0.0, 0.0)
                 continue
 
-            # COOLDOWN: reject proposals for recently-unfrozen identities
-            # This prevents rapid oscillation immediately after crowd separation
+            # ── SOFT PENALTIES (cooldown/exit-region) ──────────────────
+            # Instead of hard-blocking, we increase the inertia requirement.
+            # This preserves recovery capability while biasing toward stability.
+            soft_penalty = 0  # Extra inertia frames required
+            soft_reasons = []
+
             if self._occlusion_manager is not None:
                 if self._occlusion_manager.is_in_cooldown(current_gid):
-                    self._proposals.pop(lid, None)
-                    self._log_rebind(
-                        lid, current_gid, proposed_gid, source,
-                        "REJECT_COOLDOWN", 0.0, 0.0)
-                    continue
+                    soft_penalty += 2
+                    soft_reasons.append("cooldown_src")
                 if self._occlusion_manager.is_in_cooldown(proposed_gid):
-                    self._proposals.pop(lid, None)
-                    self._log_rebind(
-                        lid, current_gid, proposed_gid, source,
-                        "REJECT_TARGET_COOLDOWN", 0.0, 0.0)
-                    continue
+                    soft_penalty += 2
+                    soft_reasons.append("cooldown_tgt")
 
-                # EXIT REGION CHECK: if proposed_gid was recently frozen,
-                # only allow rebinding if the track is near the predicted exit region
+                # Exit region: if track is outside predicted exit zone,
+                # add extra inertia rather than blocking
                 exit_traj = self._occlusion_manager.get_exit_trajectory(proposed_gid)
+                track = track_by_lid.get(lid)
                 if exit_traj is not None and track is not None:
                     track_box = getattr(track, 'smooth_box', None)
                     if track_box is not None:
@@ -229,14 +256,12 @@ class GlobalIdentityManager:
                         is_near, dist = self._occlusion_manager.is_near_exit_region(
                             proposed_gid, track_cx, track_cy)
                         if not is_near:
-                            self._proposals.pop(lid, None)
-                            self._log_rebind(
-                                lid, current_gid, proposed_gid, source,
-                                f"REJECT_EXIT_REGION_{dist:.0f}px", 0.0, dist)
-                            continue
+                            soft_penalty += 2
+                            soft_reasons.append(f"exit_dist_{dist:.0f}px")
+            else:
+                track = track_by_lid.get(lid)
 
-            # Full trajectory check
-            track = track_by_lid.get(lid)
+            # Full trajectory check (this stays as a HARD gate — physics-based)
             ok, reason, dot_val, dist_val = self._full_trajectory_check(
                 proposed_gid, track)
 
@@ -258,37 +283,25 @@ class GlobalIdentityManager:
                     "ACCEPT_PROVISIONAL", dot_val, dist_val)
                 continue
 
-            # ── THINKING source: require more frames during crowd ambiguity ──
-            if source == "thinking":
-                if lid in self._proposals and self._proposals[lid]["gid"] == proposed_gid:
-                    self._proposals[lid]["count"] += 1
-                else:
-                    self._proposals[lid] = {
-                        "gid": proposed_gid, "count": 1, "source": source}
-
-                # Use stronger inertia if the proposed identity was recently frozen
-                required_frames = 2  # Default for thinking
-                if (self._occlusion_manager is not None and
-                        self._occlusion_manager.get_exit_trajectory(proposed_gid) is not None):
-                    required_frames = self.FROZEN_INERTIA  # 5 frames for post-frozen
-
-                if self._proposals[lid]["count"] >= required_frames:
-                    old_gid = self._local_to_global[lid]
-                    self._local_to_global[lid] = proposed_gid
-                    self._proposals.pop(lid)
-                    self._log_rebind(
-                        lid, old_gid, proposed_gid, source,
-                        f"ACCEPT_THINKING_{required_frames}F", dot_val, dist_val)
-                continue
-
-            # ── Inertia voting for phantom/warm proposals ──
-            required = self.INERTIA_FAST if source == "phantom" else self.INERTIA_FULL
-
+            # ── Uniform inertia voting for ALL sources ────────────────
             if lid in self._proposals and self._proposals[lid]["gid"] == proposed_gid:
                 self._proposals[lid]["count"] += 1
             else:
                 self._proposals[lid] = {
                     "gid": proposed_gid, "count": 1, "source": source}
+
+
+            required = self.INERTIA_BASE + soft_penalty
+
+            # Historical Importance Weighting: Protect historically stable identities
+            # from being easily replaced during transient/weak challenge.
+            if current_gid in self._activation_data:
+                act_data = self._activation_data[current_gid]
+                stable_hits = act_data.get("total_hits", 0)
+                if stable_hits > 50:
+                    # Scale bonus dynamically: up to 15 extra frames of inertia
+                    stability_bonus = min(15, int(stable_hits / 20))
+                    required += stability_bonus
 
             if self._proposals[lid]["count"] >= required:
                 old_gid = self._local_to_global[lid]
@@ -296,18 +309,37 @@ class GlobalIdentityManager:
                 self._proposals.pop(lid)
                 self._log_rebind(
                     lid, old_gid, proposed_gid, source,
-                    f"ACCEPT_INERTIA_{required}F", dot_val, dist_val)
+                    f"ACCEPT_{source}_{required}F", dot_val, dist_val)
+
+
+
+
 
         # ═══════════════════════════════════════════════════════════════
-        #  3. AGE PROVISIONALS AND COMMIT
+        #  3. AGE PROVISIONALS AND COMMIT (STRICT QUALITY GATE)
         # ═══════════════════════════════════════════════════════════════
         committed = []
         for lid, prov in self._provisional.items():
-            prov["age"] += 1
-            if prov["age"] >= self.COMMIT_DELAY:
-                committed.append(lid)
+            track = track_by_lid.get(lid)
+            if track is not None:
+                # Require stronger evidence (sustained consecutive hits & conf)
+                is_stably_tracked = track.consecutive_hits >= self.COMMIT_DELAY
+                has_decent_score = track.score >= 0.55
+                has_plausible_vel = np.linalg.norm(track.vel) < 20.0 if hasattr(track, 'vel') else True
+                is_currently_active = track.time_since_update == 0
+
+                if is_stably_tracked and has_decent_score and has_plausible_vel and is_currently_active:
+                    committed.append(lid)
+                else:
+                    # Increment provisional age but don't commit yet; keep waiting for more evidence
+                    prov["age"] += 1
+            else:
+                # Track is lost or dead before commitment, don't age it
+                prov["age"] += 1
+
         for lid in committed:
             del self._provisional[lid]
+
 
         # ═══════════════════════════════════════════════════════════════
         #  4. UPDATE GALLERY MOTION DATA
@@ -351,6 +383,8 @@ class GlobalIdentityManager:
         for lid in dead_prov:
             del self._provisional[lid]
 
+
+
     # ── TRAJECTORY VALIDATION ──────────────────────────────────────────
 
     def _full_trajectory_check(self, proposed_gid, track):
@@ -380,6 +414,11 @@ class GlobalIdentityManager:
         track_vel = getattr(track, 'vel', None)
         track_box = getattr(track, 'smooth_box', None)
 
+        # Check if in collision cooldown to enable flexible reattachment
+        is_flexible = False
+        if self._occlusion_manager is not None and self._occlusion_manager.is_in_cooldown(proposed_gid):
+            is_flexible = True
+
         # ── Check 1: Direction agreement ──────────────────────────────
         dot_val = 0.0
         if stored_vel is not None and track_vel is not None:
@@ -391,18 +430,24 @@ class GlobalIdentityManager:
             if sv_speed > 0.5 and tv_speed > 0.5:
                 dot_val = float(np.dot(sv / sv_speed, tv / tv_speed))
 
-                # HARD GATE: opposite direction
-                if dot_val < 0:
-                    return False, "opposite_direction", dot_val, 0.0
+                if not is_flexible:
+                    # HARD GATE: opposite direction
+                    if dot_val < 0:
+                        return False, "opposite_direction", dot_val, 0.0
 
-                # HARD GATE: weak agreement for significant motion
-                if sv_speed > 2.0 and tv_speed > 2.0 and dot_val < 0.2:
-                    return False, "weak_direction", dot_val, 0.0
+                    # HARD GATE: weak agreement for significant motion
+                    if sv_speed > 2.0 and tv_speed > 2.0 and dot_val < 0.2:
+                        return False, "weak_direction", dot_val, 0.0
 
-                # HARD GATE: speed mismatch (>4x different)
-                speed_ratio = max(sv_speed, tv_speed) / max(min(sv_speed, tv_speed), 0.1)
-                if speed_ratio > 4.0:
-                    return False, f"speed_mismatch_{speed_ratio:.1f}x", dot_val, 0.0
+                    # HARD GATE: speed mismatch (>4x different)
+                    speed_ratio = max(sv_speed, tv_speed) / max(min(sv_speed, tv_speed), 0.1)
+                    if speed_ratio > 4.0:
+                        return False, f"speed_mismatch_{speed_ratio:.1f}x", dot_val, 0.0
+                else:
+                    # In flexible recovery, opposite direction or speed shift is allowed,
+                    # but reject completely implausible trajectory angles (e.g. dot_val < -0.8)
+                    if dot_val < -0.8:
+                        return False, "implausible_opposite_turn", dot_val, 0.0
 
         # ── Check 2: Spatial continuity ───────────────────────────────
         dist_val = 0.0
@@ -422,7 +467,12 @@ class GlobalIdentityManager:
             dist_val = math.hypot(track_cx - pred_cx, track_cy - pred_cy)
 
             # Allow larger radius for longer elapsed time, but cap it
-            max_dist = min(400.0, 80.0 + frames_elapsed * 15.0)
+            if is_flexible:
+                # In flexible unfreeze, allow up to 250px for recovery
+                max_dist = min(300.0, 150.0 + frames_elapsed * 20.0)
+            else:
+                max_dist = min(400.0, 80.0 + frames_elapsed * 15.0)
+
             if dist_val > max_dist:
                 return False, f"too_far_{dist_val:.0f}px", dot_val, dist_val
 

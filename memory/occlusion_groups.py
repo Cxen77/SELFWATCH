@@ -29,7 +29,7 @@ class OcclusionGroupManager:
     OVERLAP_IOU_THRESH = 0.08      # IoU threshold to trigger freeze (lowered for earlier detection)
     SEPARATION_COOLDOWN = 12       # Frames after separation before unfreeze (was 8)
     STATIC_COOLDOWN = 20           # Extended cooldown for static occluders
-    POST_FREEZE_COOLDOWN = 8       # Frames after unfreeze where rebinding is still restricted
+    POST_FREEZE_COOLDOWN = 30      # Frames after unfreeze where RECOVERY_TRAJECTORY_LOCK is active (was 25)
     FROZEN_REBIND_MIN_FRAMES = 5   # Minimum consistent frames before reassignment allowed post-freeze
 
     def __init__(self):
@@ -44,6 +44,10 @@ class OcclusionGroupManager:
         # gid -> { velocity, center, box, freeze_frame }
         # Cached when a gid enters frozen state, used for plausible exit recovery
         self._exit_trajectories = {}
+
+        # ── Collision partners (who crossed with whom) ───────────────────
+        # gid -> set of partner gids
+        self._collision_partners = {}
 
         self._frame_count = 0
 
@@ -73,26 +77,60 @@ class OcclusionGroupManager:
 
         boxes = [confirmed_boxes[g] for g in gids]
 
-        # Pairwise IoU check
+
+        # Pairwise Collision Check (IoU, Distance, Approach)
         for i in range(len(gids)):
             for j in range(i + 1, len(gids)):
-                iou = self._iou(boxes[i], boxes[j])
-                if iou > self.OVERLAP_IOU_THRESH:
+                boxA = boxes[i]
+                boxB = boxes[j]
+                iou = self._iou(boxA, boxB)
+                
+                cxA, cyA = (boxA[0]+boxA[2])/2.0, (boxA[1]+boxA[3])/2.0
+                cxB, cyB = (boxB[0]+boxB[2])/2.0, (boxB[1]+boxB[3])/2.0
+                dist = math.hypot(cxA - cxB, cyA - cyB)
+                
+                wA, hA = boxA[2]-boxA[0], boxA[3]-boxA[1]
+                wB, hB = boxB[2]-boxB[0], boxB[3]-boxB[1]
+                avg_w = (wA + wB) / 2.0
+                
+                # Check if approaching
+                velA = velocities.get(gids[i])
+                velB = velocities.get(gids[j])
+                is_approaching = False
+                if velA is not None and velB is not None:
+                    rvx = velA[0] - velB[0]
+                    rvy = velA[1] - velB[1]
+                    dx = cxB - cxA
+                    dy = cyB - cyA
+                    if (rvx * dx + rvy * dy) > 0:
+                        is_approaching = True
+
+                # Enter COLLISION_STATE if:
+                # 1. High IoU overlap
+                # 2. Dangerously close center distance
+                # 3. Approaching and close
+                is_collision = iou > self.OVERLAP_IOU_THRESH or \
+                               dist < (avg_w * 1.2) or \
+                               (is_approaching and dist < avg_w * 2.0 and iou > 0.01)
+
+                if is_collision:
                     currently_overlapping.add(gids[i])
                     currently_overlapping.add(gids[j])
                     overlap_pairs.append((gids[i], gids[j], iou))
+                    self._collision_partners.setdefault(gids[i], set()).add(gids[j])
+                    self._collision_partners.setdefault(gids[j], set()).add(gids[i])
 
         # Classify overlap type
         for gid_a, gid_b, iou in overlap_pairs:
-            # High IoU = path crossing (people walking through each other)
-            # Low IoU = edge occlusion (person behind pole/shelf)
+            # High IoU or very close = path crossing
+            # Low IoU / mostly edge overlap = potential static occluder
             if iou < 0.25:
-                # Partial overlap → likely static occluder
                 self._overlap_type[gid_a] = "static"
                 self._overlap_type[gid_b] = "static"
             else:
                 self._overlap_type.setdefault(gid_a, "crossing")
                 self._overlap_type.setdefault(gid_b, "crossing")
+
 
         # Cache exit trajectory for newly frozen gids
         for gid in currently_overlapping:
@@ -143,8 +181,9 @@ class OcclusionGroupManager:
                 expired.append(gid)
         for gid in expired:
             del self._post_freeze_cooldown[gid]
-            # Clean up exit trajectory cache when cooldown fully expires
+            # Clean up exit trajectory cache and collision partners when cooldown fully expires
             self._exit_trajectories.pop(gid, None)
+            self._collision_partners.pop(gid, None)
 
     @property
     def frozen_gids(self):

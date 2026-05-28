@@ -37,12 +37,11 @@ class CognitiveReasoning:
         claimed_thinking = set()
         restricted_gids = restricted_gids or set()
 
-        # Filter out THINKING identities that are currently frozen or in cooldown
-        # This prevents generating proposals that would just get rejected anyway
-        filtered_thinking = {
-            gid: data for gid, data in thinking_identities.items()
-            if gid not in restricted_gids
-        }
+        # NOTE: We no longer filter thinking identities by restricted_gids.
+        # Internal reasoning should generate proposals FREELY.
+        # Visual deduplication is handled by the OwnershipArbitrationLayer.
+        # Blocking proposals here destroyed recovery capability (retrieval 0.5%).
+        filtered_thinking = thinking_identities
 
         # Sort youngest first — most likely to be returning people
         sorted_tracks = sorted(tracks, key=lambda t: t.age)

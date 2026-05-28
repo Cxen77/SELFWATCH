@@ -1,0 +1,112 @@
+{
+    "summary": {
+        "identity_stability_score": 0.9824304538799414,
+        "visible_id_switches": 2,
+        "box_continuity_switches": 0,
+        "display_id_changes": 4,
+        "total_visible_switches": 6,
+        "switch_breakdown": {
+            "replace": 2,
+            "swap": 0,
+            "flicker": 0,
+            "box_continuity": 0,
+            "display_id_change": 4
+        },
+        "duplicate_box_frames": 0,
+        "teleportation_events": 0,
+        "fragmentation_count": 0
+    },
+    "detailed": {
+        "visible_switches": {
+            "visible_id_switches": 2,
+            "replace_switches": 2,
+            "swap_switches": 0,
+            "flicker_switches": 0,
+            "switch_events": [
+                {
+                    "frame": 528,
+                    "type": "replace",
+                    "old_id": 4,
+                    "new_id": 9,
+                    "distance": 23.4,
+                    "old_duration": 523
+                },
+                {
+                    "frame": 636,
+                    "type": "replace",
+                    "old_id": 8,
+                    "new_id": 4,
+                    "distance": 45.1,
+                    "old_duration": 106
+                }
+            ]
+        },
+        "box_continuity": {
+            "box_continuity_switches": 0,
+            "box_births": 4,
+            "box_deaths": 0,
+            "display_id_changes": 4,
+            "total_visible_switches": 4,
+            "switch_events": [
+                {
+                    "frame": 528,
+                    "type": "display_id_change",
+                    "old_id": 4,
+                    "new_id": 9,
+                    "iou": 0.512,
+                    "position": [
+                        487.01849365234375,
+                        294.5844192504883
+                    ]
+                },
+                {
+                    "frame": 530,
+                    "type": "display_id_change",
+                    "old_id": 9,
+                    "new_id": 8,
+                    "iou": 0.9055,
+                    "position": [
+                        486.7524719238281,
+                        294.1896057128906
+                    ]
+                },
+                {
+                    "frame": 636,
+                    "type": "display_id_change",
+                    "old_id": 8,
+                    "new_id": 4,
+                    "iou": 0.5726,
+                    "position": [
+                        444.8266296386719,
+                        264.3958053588867
+                    ]
+                },
+                {
+                    "frame": 638,
+                    "type": "display_id_change",
+                    "old_id": 4,
+                    "new_id": 9,
+                    "iou": 0.5404,
+                    "position": [
+                        441.26841735839844,
+                        315.4149627685547
+                    ]
+                }
+            ]
+        },
+        "duplicates": {
+            "duplicate_frame_count": 0,
+            "total_duplicate_events": 0,
+            "duplicate_events": []
+        },
+        "teleportation": {
+            "teleportation_count": 0,
+            "impossible_velocity_events": 0,
+            "teleportation_events": []
+        },
+        "fragmentation": {
+            "fragmentation_count": 0,
+            "short_lived_bursts": 0
+        }
+    }
+}

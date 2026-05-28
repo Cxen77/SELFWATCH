@@ -1,0 +1,62 @@
+{
+    "summary": {
+        "identity_stability_score": 0.9672131147540983,
+        "visible_id_switches": 0,
+        "box_continuity_switches": 0,
+        "display_id_changes": 1,
+        "total_visible_switches": 1,
+        "switch_breakdown": {
+            "replace": 0,
+            "swap": 0,
+            "flicker": 0,
+            "box_continuity": 0,
+            "display_id_change": 1
+        },
+        "duplicate_box_frames": 0,
+        "teleportation_events": 0,
+        "fragmentation_count": 0
+    },
+    "detailed": {
+        "visible_switches": {
+            "visible_id_switches": 0,
+            "replace_switches": 0,
+            "swap_switches": 0,
+            "flicker_switches": 0,
+            "switch_events": []
+        },
+        "box_continuity": {
+            "box_continuity_switches": 0,
+            "box_births": 4,
+            "box_deaths": 1,
+            "display_id_changes": 1,
+            "total_visible_switches": 1,
+            "switch_events": [
+                {
+                    "frame": 61,
+                    "type": "display_id_change",
+                    "old_id": 8,
+                    "new_id": 10,
+                    "iou": 0.9871,
+                    "position": [
+                        470.9598388671875,
+                        297.9718475341797
+                    ]
+                }
+            ]
+        },
+        "duplicates": {
+            "duplicate_frame_count": 0,
+            "total_duplicate_events": 0,
+            "duplicate_events": []
+        },
+        "teleportation": {
+            "teleportation_count": 0,
+            "impossible_velocity_events": 0,
+            "teleportation_events": []
+        },
+        "fragmentation": {
+            "fragmentation_count": 0,
+            "short_lived_bursts": 1
+        }
+    }
+}

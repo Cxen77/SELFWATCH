@@ -106,11 +106,14 @@ class STrack:
         self._freeze_reasons = []       # Debug: reasons for current freeze
         self._consecutive_bad_frames = 0
 
+
         # ── Stable reference values (for change detection) ───────────
         self._stable_area = self._box_area(box)
         self._stable_aspect = self._box_aspect(box)
         self._stable_conf = score
         self._stable_update_count = 0    # How many good updates we've had
+        self.recovery_count = 0
+
 
     # ── ID property (backward compat) ────────────────────────────────
 
@@ -174,7 +177,8 @@ class STrack:
         """Predict next position using frame-gap-aware velocity model.
         
         OC-SORT observation-centric coasting:
-          - For recent observations (<=5 frames): use smoothed state (stable)
+          - For recent observations (<=5 frames): use RAW last detection box
+            (not smooth_box, which lags during fast motion)
           - For extended loss (>5 frames): coast from LAST VALID OBSERVATION
             to prevent Kalman-style drift accumulation
         """
@@ -186,7 +190,10 @@ class STrack:
             base_box = self._last_observed_box
             base_vel = self._last_observed_vel
         else:
-            base_box = self.smooth_box
+            # Use RAW detection box (not smooth_box) — smooth_box lags behind
+            # during fast motion, causing the predicted box to trail the person
+            # and IoU to drop to zero, breaking association.
+            base_box = self.box
             base_vel = self.vel
 
         cx = (base_box[0] + base_box[2]) / 2 + base_vel[0] * frame_delta
@@ -282,7 +289,18 @@ class STrack:
             [(nc[0] - oc[0]) / frame_delta, (nc[1] - oc[1]) / frame_delta],
             dtype=np.float32,
         )
-        self.vel = 0.85 * self.vel + 0.15 * observed_vel
+
+        # Adaptive velocity smoothing: respond faster during fast motion
+        # to prevent the predicted box from trailing behind the person.
+        # α=0.15 for stationary/slow (smooth), α=0.5 for fast (responsive).
+        obs_speed = float(np.linalg.norm(observed_vel))
+        if obs_speed > 8.0:
+            vel_alpha = 0.5    # Fast motion: respond quickly
+        elif obs_speed > 3.0:
+            vel_alpha = 0.3    # Moderate motion: balanced
+        else:
+            vel_alpha = 0.15   # Slow/stationary: smooth
+        self.vel = (1.0 - vel_alpha) * self.vel + vel_alpha * observed_vel
         self.box = new_box
 
         # OC-SORT observation-centric re-update:
@@ -292,7 +310,14 @@ class STrack:
             # Recovery from extended occlusion: aggressive blend
             effective_alpha = min(0.85, box_alpha + 0.3)
         else:
-            effective_alpha = box_alpha
+            # Adaptive smooth_box: track fast-moving people more tightly
+            # to prevent the prediction base from lagging behind
+            if obs_speed > 8.0:
+                effective_alpha = min(0.9, box_alpha + 0.35)   # Very tight tracking
+            elif obs_speed > 3.0:
+                effective_alpha = min(0.8, box_alpha + 0.2)    # Tighter tracking
+            else:
+                effective_alpha = box_alpha                     # Default smooth
         self.smooth_box = effective_alpha * new_box + (1 - effective_alpha) * self.smooth_box
         self.score = score
 
@@ -339,8 +364,12 @@ class STrack:
            self.total_hits >= self.confirm_threshold:
             self.state = self.STATE_CONFIRMED
 
+
         if self.state == self.STATE_LOST:
             self.state = self.STATE_CONFIRMED
+            self.recovery_count += 1
+            print(f"  [TRACKER DEBUG] STrack local={self.local_id} RECOVERED! recovery_count={self.recovery_count}")
+
 
     # ── Lost / removal ───────────────────────────────────────────────
 

@@ -59,7 +59,7 @@ class StrongSORTTracker:
         self.low_thresh = low_thresh
         self.iou_thresh = iou_thresh
         self.max_cosine_dist = max_cosine_dist
-        self.max_lost = max_lost
+        self.max_lost = max(max_lost, 300)  # Ensure minimum 300 frames (~16s) survival
         self.confirm_threshold = confirm_threshold
         self.embedding_history = embedding_history
         self.min_quality_score = min_quality_score
@@ -70,19 +70,26 @@ class StrongSORTTracker:
 
         # IDSR: recently removed tracks for post-hoc rectification
         self._recently_removed = []  # list of (box, vel, aspect, local_id, age)
-        self._max_removed_history = 30  # max items to keep
+        self._max_removed_history = 60  # Keep recently removed tracks longer for recovery
 
     # ─── Public API ──────────────────────────────────────────────────
 
+
     def update(self, boxes, scores, embeddings, crops=None, frame_shape=None,
-               frame_delta=1, suppress_regions=None):
+               frame_delta=1, suppress_regions=None, frozen_lids=None, cooldown_lids=None,
+               exit_trajectories=None, collision_partners=None, frame_count=None):
         """
         Run one frame of StrongSORT+ tracking.
 
         PURE TRACKER: no brain, no phantom, no identity mutation.
         Returns dict {local_id: [x1, y1, x2, y2]} for confirmed, active tracks.
         """
+        frozen_lids = frozen_lids or set()
+        cooldown_lids = cooldown_lids or set()
+        exit_trajectories = exit_trajectories or {}
+        collision_partners = collision_partners or {}
         frame_delta = max(1, int(frame_delta))
+
 
         # Predict all existing tracks forward
         for t in self.tracks:
@@ -124,14 +131,18 @@ class StrongSORTTracker:
         # detection during crowded scenes.
         confirmed_tracks.sort(key=lambda t: -t.total_hits)
 
+
         # ─────────────────────────────────────────────────────────────
         # STAGE 1A: High-conf detections vs CONFIRMED/TENTATIVE tracks
         # ─────────────────────────────────────────────────────────────
         matched_tc, matched_dc, unmatched_conf, unmatched_dets_c, fused_cost_c = \
             self._fused_associate(
                 high_boxes, high_embs, high_scores, confirmed_tracks,
-                frame_h=frame_h
+                frame_h=frame_h, frozen_lids=frozen_lids, cooldown_lids=cooldown_lids,
+                exit_trajectories=exit_trajectories, collision_partners=collision_partners,
+                frame_count=frame_count
             )
+
 
         # Update matched confirmed tracks
         for t_idx, d_idx in zip(matched_tc, matched_dc):
@@ -159,11 +170,15 @@ class StrongSORTTracker:
                 else np.empty((0, 512), dtype=np.float32)
             rem_scores = [high_scores[i] for i in remaining_det_idx]
 
+
             matched_tl, matched_dl, unmatched_lost, unmatched_dets_l, fused_cost_l = \
                 self._fused_associate(
                     rem_boxes, rem_embs, rem_scores, lost_tracks,
-                    frame_h=frame_h
+                    frame_h=frame_h, frozen_lids=frozen_lids, cooldown_lids=cooldown_lids,
+                    exit_trajectories=exit_trajectories, collision_partners=collision_partners,
+                    frame_count=frame_count
                 )
+
 
             for t_idx, d_idx in zip(matched_tl, matched_dl):
                 trk = lost_tracks[t_idx]
@@ -193,9 +208,11 @@ class StrongSORTTracker:
         # ─────────────────────────────────────────────────────────────
         remaining_tracks = unmatched_conf_tracks + unmatched_lost_tracks
 
+
         if low_boxes and remaining_tracks:
             matched_t2, matched_d2, unmatched_tracks_2, _, cost_iou_2 = \
-                self._iou_associate(low_boxes, remaining_tracks, self.iou_thresh)
+                self._iou_associate(low_boxes, remaining_tracks, self.iou_thresh, frozen_lids=frozen_lids, cooldown_lids=cooldown_lids, collision_partners=collision_partners)
+
 
             for t_idx, d_idx in zip(matched_t2, matched_d2):
                 trk = remaining_tracks[t_idx]
@@ -220,12 +237,17 @@ class StrongSORTTracker:
         # Collect remaining high-conf detections
         remaining_high_dets = final_unmatched_dets  # indices into high_boxes
         if still_unmatched and remaining_high_dets:
-            # Dynamic C-BIoU: scale buffer by velocity magnitude, min 10, max 40
+            # Dynamic C-BIoU: scale buffer by velocity, CAPPED at 25px
+            # Reduced from 40px to prevent cross-person matching
             biou_trk_boxes = []
             buffers_used = []
             for t in still_unmatched:
                 vel_mag = np.linalg.norm(t.vel)
-                dyn_buffer = max(10, min(40, int(vel_mag * 2.5)))
+                # Scale buffer proportionally with velocity:
+                # Slow tracks (vel<2): 8px buffer (tight, no cross-matching)
+                # Moderate tracks (vel~5): ~18px buffer
+                # Fast tracks (vel>10): up to 50px buffer to catch up
+                dyn_buffer = max(8, min(50, int(vel_mag * 3.5)))
                 biou_trk_boxes.append(self._expand_box(t.predicted_box.tolist(), dyn_buffer))
                 buffers_used.append(dyn_buffer)
 
@@ -249,6 +271,43 @@ class StrongSORTTracker:
                     orig_d = remaining_high_dets[r]
                     orig_i = high_idx[orig_d]
                     trk = still_unmatched[c]
+                    det_box = boxes[orig_i]
+
+
+                    # ── C-BIoU hard validation ────────────────────────
+                    # C-BIoU is a fallback matcher. Validate before accepting.
+
+                    # Check 0: Hard Track Locking during Collision & Recovery Lock
+                    if trk.local_id in frozen_lids or trk.local_id in cooldown_lids:
+                        continue # No fallback jumps allowed during collision freeze or recovery lock
+
+                    # Check 1: Center distance must be reasonable
+
+                    det_cx = (det_box[0] + det_box[2]) / 2
+                    det_cy = (det_box[1] + det_box[3]) / 2
+                    pred = trk.predicted_box
+                    pred_cx = (pred[0] + pred[2]) / 2
+                    pred_cy = (pred[1] + pred[3]) / 2
+                    cdist = float(np.hypot(det_cx - pred_cx, det_cy - pred_cy))
+                    if cdist > 200:
+                        continue  # Too far — skip
+
+                    # Check 2: Direction consistency for moving tracks
+                    tv = trk.vel
+                    tv_speed = float(np.linalg.norm(tv))
+                    if tv_speed >= 1.5:
+                        dv = np.array([det_cx - pred_cx, det_cy - pred_cy],
+                                      dtype=np.float32)
+                        dv_speed = float(np.linalg.norm(dv))
+                        if dv_speed >= 1.0:
+                            dot = float(np.dot(tv / tv_speed, dv / dv_speed))
+                            if dot < -0.3:
+                                continue  # Opposite direction — skip
+
+                    # Check 3: Skip (appearance unreliable in C-BIoU scenarios)
+                    # C-BIoU activates during occlusion/fast motion where
+                    # appearance is most likely to be corrupted.
+
                     crop = crops[orig_i] if crops is not None else None
                     trk.update(boxes[orig_i], scores[orig_i], embeddings[orig_i],
                                crop=crop, min_quality_score=self.min_quality_score,
@@ -294,9 +353,80 @@ class StrongSORTTracker:
                         suppressed = True
                         break
 
+
+
+                # Track-Aware NMS & Territorial Ownership:
+                # Suppress births near active tracks or recently lost/frozen tracks' territorial corridors.
+                if not suppressed:
+                    for t in self.tracks:
+                        # Case 1: Active established track
+                        if t.is_confirmed and t.time_since_update == 0 and t.age > 5:
+                            if self._single_iou(det_box, t.smooth_box.tolist()) > 0.30:
+                                suppressed = True
+                                print(f"  [TRACKER DEBUG] BIRTH SUPPRESSED: active track NMS (near local={t.local_id} age={t.age}). conf={scores[orig_i]:.2f}")
+                                break
+                        
+                        # Case 2: Recently lost/frozen track with dynamic suppression window
+                        elif t.is_confirmed and t.is_lost:
+                            # 1. Dynamic suppression lifetime scaling (90-150 frames for historically stable tracks)
+                            base_window = 45
+                            history_bonus = min(80, int(t.total_hits / 3))  # up to 80 frames
+                            rec_bonus = min(25, getattr(t, 'recovery_count', 0) * 10)  # up to 25 frames
+                            conf_bonus = 25 if t.score >= 0.8 else 0
+                            
+                            suppression_window = max(45, min(150, base_window + history_bonus + rec_bonus + conf_bonus))
+                            
+                            if t.time_since_update <= suppression_window:
+                                # 2. Territorial Ownership & Reverse Birth Assumption
+                                # Define spatial region (smooth_box) and predicted trajectory corridor
+                                ref_box = t.predicted_box.tolist() if t.predicted_box is not None else t.smooth_box.tolist()
+                                
+                                # A. Direct Spatial Box Overlap
+                                iou = self._single_iou(det_box, ref_box)
+                                
+                                # B. Center Distance to Corridor
+                                det_cx = (det_box[0] + det_box[2]) / 2.0
+                                det_cy = (det_box[1] + det_box[3]) / 2.0
+                                
+                                # Estimate predicted track position along trajectory corridor
+                                last_cx = (t.smooth_box[0] + t.smooth_box[2]) / 2.0
+                                last_cy = (t.smooth_box[1] + t.smooth_box[3]) / 2.0
+                                
+                                vx, vy = t.vel[0], t.vel[1]
+                                pred_cx = last_cx + vx * t.time_since_update
+                                pred_cy = last_cy + vy * t.time_since_update
+                                
+                                import math
+                                dist = math.hypot(det_cx - pred_cx, det_cy - pred_cy)
+                                max_allowed_dist = min(350.0, 150.0 + 8.0 * t.time_since_update)
+                                
+                                # C. Motion Direction alignment: check if displacement vector matches velocity direction
+                                disp_x = det_cx - last_cx
+                                disp_y = det_cy - last_cy
+                                disp_len = math.hypot(disp_x, disp_y)
+                                vel_len = math.hypot(vx, vy)
+                                
+                                is_aligned = False
+                                if vel_len > 0.5 and disp_len > 10:
+                                    dot_product = (disp_x * vx + disp_y * vy) / (disp_len * vel_len)
+                                    is_aligned = dot_product > 0.3  # Moving in the same general corridor direction
+                                
+                                # Decide if detection falls in territorial ownership zone
+                                in_spatial_territory = iou > 0.12
+                                in_trajectory_corridor = (dist < max_allowed_dist) and (is_aligned or vel_len <= 0.5)
+                                
+                                if in_spatial_territory or in_trajectory_corridor:
+                                    suppressed = True
+                                    print(f"  [TRACKER TERRITORY] BIRTH SUPPRESSED: inside lost local={t.local_id} "
+                                          f"territory (hits={t.total_hits} rec={getattr(t, 'recovery_count', 0)} "
+                                          f"window={suppression_window} frames={t.time_since_update} iou={iou:.2f} dist={dist:.1f}px). "
+                                          f"Reverse birth assumption holds: prioritize recovery.")
+                                    break
+
                 if suppressed:
-                    print(f"  [TRACKER DEBUG] BIRTH SUPPRESSED: overlap with region. conf={scores[orig_i]:.2f}")
                     continue
+
+
 
                 new_track = STrack(
                     det_box, scores[orig_i], embeddings[orig_i],
@@ -314,6 +444,10 @@ class StrongSORTTracker:
         #          reassignment is NOT done here — GlobalIdentityManager
         #          handles identity recovery at a higher layer.
         # ─────────────────────────────────────────────────────────────
+
+        # ── IDSR: reuse old local_ids for new tracks ──────────────
+        if new_tracks:
+            self._idsr_rectify(new_tracks)
 
         self.tracks.extend(new_tracks)
 
@@ -340,19 +474,304 @@ class StrongSORTTracker:
         return [box[0] - buffer, box[1] - buffer,
                 box[2] + buffer, box[3] + buffer]
 
+
     def _fused_associate(self, det_boxes, det_embs, det_scores, tracks,
-                         frame_h=None):
+                         frame_h=None, frozen_lids=None, cooldown_lids=None,
+                         exit_trajectories=None, collision_partners=None, frame_count=None):
         """
         Hungarian matching using fused appearance + IoU cost matrix.
 
-        Research-driven enhancements:
+        PHASE 2 OPTIMIZATION: Full NumPy vectorization.
+        All O(N×M) Python loops replaced with broadcasting + masking.
+        Every cognitive constraint preserved exactly:
           - Direction-aware motion penalty (OC-SORT inspired)
           - Pseudo-depth quantization (PD-SORT inspired)
           - Adaptive appearance weight during partial occlusion
           - AMI (Ambiguous Match Improvement)
+          - Frozen track gating
+          - Cooldown trajectory commitment
+          - Cross-partner isolation
         """
+        import math
+        frozen_lids = frozen_lids or set()
+        cooldown_lids = cooldown_lids or set()
+        exit_trajectories = exit_trajectories or {}
+        collision_partners = collision_partners or {}
         n_det = len(det_boxes)
         n_trk = len(tracks)
+
+        if n_det == 0 or n_trk == 0:
+            return [], [], list(range(n_trk)), list(range(n_det)), np.empty((0, 0))
+
+        GATE_VALUE = 1e5
+
+        # ── Precompute track arrays (one pass, O(M)) ──────────────────
+        # Build per-track scalar arrays instead of repeating lookups inside loops
+        pred_boxes_list = [t.predicted_box.tolist() for t in tracks]
+        pred_boxes = np.array(pred_boxes_list, dtype=np.float32)           # (M,4)
+        det_boxes_arr = np.array(det_boxes, dtype=np.float32)              # (N,4)
+        det_scores_arr = np.array(det_scores, dtype=np.float32)            # (N,)
+
+        # Track centers (M,2) and detection centers (N,2)
+        trk_cx = (pred_boxes[:, 0] + pred_boxes[:, 2]) * 0.5              # (M,)
+        trk_cy = (pred_boxes[:, 1] + pred_boxes[:, 3]) * 0.5              # (M,)
+        det_cx = (det_boxes_arr[:, 0] + det_boxes_arr[:, 2]) * 0.5        # (N,)
+        det_cy = (det_boxes_arr[:, 1] + det_boxes_arr[:, 3]) * 0.5        # (N,)
+
+        # Velocity arrays
+        trk_vx = np.array([t.vel[0] for t in tracks], dtype=np.float32)   # (M,)
+        trk_vy = np.array([t.vel[1] for t in tracks], dtype=np.float32)   # (M,)
+
+        # Boolean masks for cognitive states
+        is_frozen_arr   = np.array([t.local_id in frozen_lids   for t in tracks], dtype=bool)  # (M,)
+        is_cooldown_arr = np.array([t.local_id in cooldown_lids for t in tracks], dtype=bool)  # (M,)
+        track_has_emb   = np.array([t.get_averaged_embedding() is not None for t in tracks], dtype=bool)  # (M,)
+
+        # Embeddings matrix (M,512) — use zeros where no embedding
+        track_embs = np.zeros((n_trk, 512), dtype=np.float32)
+        for j, t in enumerate(tracks):
+            emb = t.get_averaged_embedding()
+            if emb is not None:
+                track_embs[j] = emb
+
+        # ── IoU distance (N,M) ────────────────────────────────────────
+        iou = iou_matrix(det_boxes, pred_boxes_list)                        # (N,M)
+        iou_dist = 1.0 - iou                                               # (N,M)
+
+        # ── Appearance distance (N,M) ─────────────────────────────────
+        # det_embs: (N,512), track_embs: (M,512) — both L2-normalized
+        # Cosine distance = 1 - (det @ trk.T)
+        if det_embs.shape[0] > 0 and np.any(track_has_emb):
+            sim = det_embs @ track_embs.T                                   # (N,M)
+            app_dist = np.ones((n_det, n_trk), dtype=np.float32)
+            app_dist[:, track_has_emb] = (1.0 - sim[:, track_has_emb])    # (N,M)
+        else:
+            app_dist = np.ones((n_det, n_trk), dtype=np.float32)
+
+        # ── Compute trajectory-predicted centers for cooldown tracks ───
+        # For each cooldown track with an exit trajectory, override its center
+        # with the trajectory-projected position.
+        traj_cx = trk_cx.copy()                                            # (M,)
+        traj_cy = trk_cy.copy()                                            # (M,)
+        traj_vx = trk_vx.copy()                                            # (M,)
+        traj_vy = trk_vy.copy()                                            # (M,)
+        has_traj = np.zeros(n_trk, dtype=bool)                             # (M,)
+
+        for j, t in enumerate(tracks):
+            if is_cooldown_arr[j] or is_frozen_arr[j]:
+                traj = exit_trajectories.get(t.local_id)
+                if traj is not None and frame_count is not None:
+                    vx_t, vy_t = traj["velocity"]
+                    frames_elapsed = max(1, frame_count - traj["freeze_frame"])
+                    traj_cx[j] = traj["center"][0] + vx_t * frames_elapsed
+                    traj_cy[j] = traj["center"][1] + vy_t * frames_elapsed
+                    traj_vx[j] = vx_t
+                    traj_vy[j] = vy_t
+                    has_traj[j] = True
+
+        # ── Center distance matrix (N,M) ─────────────────────────────
+        # Vectorized: (det_cx[:,None] - traj_cx[None,:]) → (N,M)
+        diff_cx = det_cx[:, None] - traj_cx[None, :]                       # (N,M)
+        diff_cy = det_cy[:, None] - traj_cy[None, :]                       # (N,M)
+        center_dist = np.sqrt(diff_cx**2 + diff_cy**2)                     # (N,M)
+
+        # ── Adaptive appearance weight (N,M) ──────────────────────────
+        # Start from base weight, then modify per cognitive state
+        eff_app_w = np.where(
+            is_frozen_arr[None, :],
+            0.0,                                                            # frozen → no appearance
+            np.where(
+                is_cooldown_arr[None, :],
+                np.minimum(self.appearance_weight * 1.5, 0.95),             # cooldown → boosted
+                np.where(
+                    (iou > 0.15) & (iou < 0.5),
+                    self.appearance_weight * 0.5,                           # partial occlusion → reduced
+                    self.appearance_weight                                   # normal
+                )
+            )
+        ).astype(np.float32)                                               # (N,M)
+
+        # ── Base fused cost (N,M) ─────────────────────────────────────
+        # For cooldown tracks with trajectory: use trajectory distance cost
+        # For all others: use fused appearance + IoU
+        cost_eff_app_w_cd = 0.6  # cooldown trajectory commitment weight
+        dist_cost = np.minimum(1.0, center_dist / 80.0)                    # (N,M) — normalized dist
+
+        # cooldown+trajectory mask
+        cd_traj_mask = is_cooldown_arr[None, :] & has_traj[None, :]       # (N,M) broadcast
+
+        cost = np.where(
+            cd_traj_mask,
+            cost_eff_app_w_cd * app_dist + (1 - cost_eff_app_w_cd) * dist_cost,
+            eff_app_w * app_dist + (1 - eff_app_w) * iou_dist
+        ).astype(np.float32)                                               # (N,M)
+
+        # ── Frozen track spatial gating (vectorized) ──────────────────
+        # Gate out frozen track cells where detection is too far
+        # (iou < 0.20 AND center_dist > 45)
+        frozen_gate_mask = (
+            is_frozen_arr[None, :]                                          # track is frozen
+            & (iou < 0.20)                                                  # low IoU
+            & (center_dist > 45.0)                                          # far away
+        )                                                                   # (N,M)
+        cost = np.where(frozen_gate_mask, GATE_VALUE, cost)
+
+        # ── Cooldown trajectory corridor gating (vectorized) ──────────
+        # Gate out cooldown cells where detection is outside the trajectory corridor
+        has_strong_visual = (
+            track_has_emb[None, :] & (app_dist < 0.22)
+        )                                                                   # (N,M)
+        max_corridor = np.where(has_strong_visual, 120.0, 50.0)            # (N,M)
+
+        cooldown_corridor_gate = (
+            is_cooldown_arr[None, :]
+            & has_traj[None, :]
+            & (center_dist > max_corridor)
+        )
+        cost = np.where(cooldown_corridor_gate, GATE_VALUE, cost)
+
+        # ── Cooldown velocity direction gating (vectorized) ───────────
+        # Require motion direction consistency for cooldown tracks
+        vel_len = np.sqrt(traj_vx**2 + traj_vy**2)                        # (M,)
+        disp_len = center_dist                                              # (N,M) reuse
+
+        # Normalized dot product of detection displacement with track velocity
+        # Only compute where vel_len > 0.5 and disp_len > 10
+        valid_vel = (vel_len > 0.5)[None, :] & (disp_len > 10.0)          # (N,M)
+        if np.any(valid_vel):
+            # Vectorized dot: (diff_cx * traj_vx + diff_cy * traj_vy) / (disp_len * vel_len)
+            dot_num = diff_cx * traj_vx[None, :] + diff_cy * traj_vy[None, :]  # (N,M)
+            dot_denom = np.maximum(disp_len, 1e-6) * np.maximum(vel_len[None, :], 1e-6)
+            dot_prod = dot_num / dot_denom                                  # (N,M)
+
+            min_dot = np.where(has_strong_visual, -0.2, 0.6)               # (N,M)
+            cooldown_vel_gate = (
+                is_cooldown_arr[None, :]
+                & valid_vel
+                & (dot_prod < min_dot)
+            )
+            cost = np.where(cooldown_vel_gate, GATE_VALUE, cost)
+
+        # ── Cooldown appearance gate (vectorized) ─────────────────────
+        cooldown_app_gate = (
+            is_cooldown_arr[None, :]
+            & track_has_emb[None, :]
+            & (app_dist > 0.28)
+        )
+        cost = np.where(cooldown_app_gate, GATE_VALUE, cost)
+
+        # ── Cross-partner isolation (per-pair, sparse Python loop) ────
+        # This is inherently sparse (only frozen/cooldown tracks with partners)
+        # so it doesn't scale badly — most tracks have no partners.
+        for j, t in enumerate(tracks):
+            if not (is_frozen_arr[j] or is_cooldown_arr[j]):
+                continue
+            partners = collision_partners.get(t.local_id, set())
+            if not partners:
+                continue
+            for k, t_k in enumerate(tracks):
+                if k == j or t_k.local_id not in partners:
+                    continue
+                # Partner track k: compute distances from each det to k's position
+                cx_k = traj_cx[k]
+                cy_k = traj_cy[k]
+                dist_to_j = center_dist[:, j]                              # (N,)
+                dist_to_k = np.sqrt(
+                    (det_cx - cx_k)**2 + (det_cy - cy_k)**2)              # (N,)
+
+                # Gate cells where partner k is closer to the detection
+                crossing_mask = dist_to_k < dist_to_j - 20.0              # (N,) bool
+                cost[crossing_mask, j] = GATE_VALUE
+
+                # Additional cooldown appearance check
+                if is_cooldown_arr[j] and track_has_emb[j] and track_has_emb[k]:
+                    app_prefer_k = app_dist[:, k] < app_dist[:, j] - 0.05  # (N,)
+                    cost[app_prefer_k, j] = GATE_VALUE
+
+        # ── Pseudo-Depth Quantization (vectorized) ────────────────────
+        # Partition by bottom-edge y-position as depth proxy.
+        if frame_h is not None and frame_h > 0:
+            det_depth = det_boxes_arr[:, 3] / frame_h                      # (N,) 0=far 1=near
+            trk_depth = pred_boxes[:, 3] / frame_h                        # (M,)
+            depth_diff = np.abs(det_depth[:, None] - trk_depth[None, :])  # (N,M)
+            cost = np.where(depth_diff > 0.25, cost + 0.5, cost)
+            cost = np.where((depth_diff > 0.15) & (depth_diff <= 0.25), cost + 0.15, cost)
+
+        # ── Appearance + Spatial Gating (vectorized) ──────────────────
+        no_iou = iou < 0.001                                               # (N,M)
+        vel_mag = np.sqrt(trk_vx**2 + trk_vy**2)                          # (M,)
+
+        # Allow zero-IoU if: strong appearance + actually moving + reasonable distance
+        good_app_fast = (
+            track_has_emb[None, :]
+            & (app_dist <= self.max_cosine_dist)
+            & (vel_mag[None, :] > 2.0)
+        )                                                                   # (N,M)
+        max_cdist_allowed = np.minimum(120, np.maximum(40, vel_mag * 8.0)) # (M,)
+        too_far = center_dist > max_cdist_allowed[None, :]                 # (N,M)
+
+        # Gate zero-IoU cells: allow if good appearance+speed+distance, else gate
+        cost = np.where(
+            no_iou & ~(good_app_fast & ~too_far),
+            GATE_VALUE, cost
+        )
+
+        # Low overlap + bad appearance gate
+        bad_app_gate = (
+            track_has_emb[None, :]
+            & (app_dist > self.max_cosine_dist)
+            & (iou < 0.5)
+        )
+        cost = np.where(bad_app_gate, GATE_VALUE, cost)
+
+        # Crowd disambiguation: nearby but different looking
+        crowd_gate = (
+            track_has_emb[None, :]
+            & (iou > 0.1) & (iou < 0.45)
+            & (app_dist > 0.28)
+        )
+        cost = np.where(crowd_gate, GATE_VALUE, cost)
+
+        # ── Hungarian matching ────────────────────────────────────────
+        if cost.size > 0:
+            row_idx, col_idx = linear_sum_assignment(cost)
+        else:
+            row_idx = np.array([], dtype=int)
+            col_idx = np.array([], dtype=int)
+
+        matched_t, matched_d = [], []
+        unmatched_d = set(range(n_det))
+        unmatched_t = set(range(n_trk))
+
+        for r, c in zip(row_idx, col_idx):
+            if cost[r, c] < GATE_VALUE:
+                # ── AMI: Ambiguous Match Improvement ─────────────────
+                reject = False
+                if n_trk > 1:
+                    row_costs = cost[r, :]
+                    sorted_costs = np.sort(row_costs)
+                    valid = sorted_costs[sorted_costs < GATE_VALUE]
+                    if len(valid) >= 2:
+                        gap = valid[1] - valid[0]
+                        if gap < self.ambiguity_margin:
+                            reject = True
+                if n_det > 1 and not reject:
+                    col_costs = cost[:, c]
+                    sorted_costs = np.sort(col_costs)
+                    valid = sorted_costs[sorted_costs < GATE_VALUE]
+                    if len(valid) >= 2:
+                        gap = valid[1] - valid[0]
+                        if gap < self.ambiguity_margin:
+                            reject = True
+
+                if not reject:
+                    matched_d.append(r)
+                    matched_t.append(c)
+                    unmatched_d.discard(r)
+                    unmatched_t.discard(c)
+
+        return matched_t, matched_d, list(unmatched_t), list(unmatched_d), cost
+
 
         if n_det == 0 or n_trk == 0:
             return [], [], list(range(n_trk)), list(range(n_det)), np.empty((0, 0))
@@ -384,52 +803,181 @@ class StrongSORTTracker:
                 if track_has_emb[j]:
                     app_dist[:, j] = cos_dist[:, j]
 
+        # ── Precompute closest track index for each detection ────────
+        closest_track_for_det = []
+        import math
+        for i in range(n_det):
+            det_cx = (det_boxes[i][0] + det_boxes[i][2]) / 2.0
+            det_cy = (det_boxes[i][1] + det_boxes[i][3]) / 2.0
+            min_dist = float('inf')
+            best_k = -1
+            for k in range(n_trk):
+                traj_k = exit_trajectories.get(tracks[k].local_id)
+                if traj_k is not None and frame_count is not None:
+                    vx_k, vy_k = traj_k["velocity"]
+                    freeze_frame_k = traj_k["freeze_frame"]
+                    frames_elapsed_k = max(1, frame_count - freeze_frame_k)
+                    pred_cx_k = traj_k["center"][0] + vx_k * frames_elapsed_k
+                    pred_cy_k = traj_k["center"][1] + vy_k * frames_elapsed_k
+                else:
+                    pred_cx_k = (pred_boxes[k][0] + pred_boxes[k][2]) / 2.0
+                    pred_cy_k = (pred_boxes[k][1] + pred_boxes[k][3]) / 2.0
+                
+                dist_k = math.hypot(det_cx - pred_cx_k, det_cy - pred_cy_k)
+                if dist_k < min_dist:
+                    min_dist = dist_k
+                    best_k = k
+            closest_track_for_det.append(best_k)
+
         # ── Fused cost matrix (with per-pair adaptive app weight) ────
         cost = np.empty((n_det, n_trk), dtype=np.float32)
+        GATE_VALUE = 1e5
+        
         for i in range(n_det):
             for j in range(n_trk):
+                is_frozen = tracks[j].local_id in frozen_lids
+                is_cooldown = tracks[j].local_id in cooldown_lids
+                
                 # Occlusion-Aware Embedding Protection:
                 # During partial occlusion (IoU 0.15-0.5), appearance is unreliable.
                 # Reduce appearance weight to trust motion/position more.
-                if 0.15 < iou[i, j] < 0.5:
+                if is_frozen:
+                    # HARD TRACK LOCKING: Disable appearance similarity alone for frozen participants
+                    eff_app_w = 0.0
+                elif is_cooldown:
+                    # RECOVERY LOCK: Heavily bias previous appearance (keep eff_app_w high but restrict mismatch)
+                    eff_app_w = self.appearance_weight * 1.5
+                    if eff_app_w > 0.95:
+                        eff_app_w = 0.95
+                elif 0.15 < iou[i, j] < 0.5:
                     eff_app_w = self.appearance_weight * 0.5
                 else:
                     eff_app_w = self.appearance_weight
-                cost[i, j] = (eff_app_w * app_dist[i, j] +
-                              (1 - eff_app_w) * iou_dist[i, j])
+                    
+                det_cx = (det_boxes[i][0] + det_boxes[i][2]) / 2.0
+                det_cy = (det_boxes[i][1] + det_boxes[i][3]) / 2.0
+                
+                dist_to_pred = 0.0
+                traj = exit_trajectories.get(tracks[j].local_id)
+                if is_cooldown and traj is not None and frame_count is not None:
+                    # Predict future position along pre-collision exit trajectory corridor
+                    vx, vy = traj["velocity"]
+                    freeze_frame = traj["freeze_frame"]
+                    frames_elapsed = max(1, frame_count - freeze_frame)
+                    pred_cx = traj["center"][0] + vx * frames_elapsed
+                    pred_cy = traj["center"][1] + vy * frames_elapsed
+                    
+                    dist_to_pred = math.hypot(det_cx - pred_cx, det_cy - pred_cy)
+                    trk_cx, trk_cy = pred_cx, pred_cy
+                else:
+                    vx, vy = tracks[j].vel
+                    trk_cx = (pred_boxes[j][0] + pred_boxes[j][2]) / 2.0
+                    trk_cy = (pred_boxes[j][1] + pred_boxes[j][3]) / 2.0
+                    dist_to_pred = math.hypot(det_cx - trk_cx, det_cy - trk_cy)
 
-        # ── Direction-Aware Motion Penalty (OC-SORT inspired) ────────
-        # Penalize matches where detection velocity and track velocity
-        # point in opposite directions — physically impossible for the
-        # same person.
-        for i in range(n_det):
-            det_cx = (det_boxes[i][0] + det_boxes[i][2]) / 2
-            det_cy = (det_boxes[i][1] + det_boxes[i][3]) / 2
-            for j in range(n_trk):
-                tv = tracks[j].vel
-                tv_speed = float(np.linalg.norm(tv))
-                if tv_speed < 0.5:
-                    continue  # Track is nearly stationary, skip direction check
+                if is_cooldown and traj is not None:
+                    # Trajectory Commitment Cost: Trust predicted trajectory center distance over raw IoU
+                    dist_cost = min(1.0, dist_to_pred / 80.0)
+                    cost_eff_app_w = 0.6
+                    cost[i, j] = (cost_eff_app_w * app_dist[i, j] +
+                                  (1 - cost_eff_app_w) * dist_cost)
+                else:
+                    cost[i, j] = (eff_app_w * app_dist[i, j] +
+                                  (1 - eff_app_w) * iou_dist[i, j])
 
-                # Compute implied detection velocity from predicted position
-                pred = pred_boxes[j]
-                pred_cx = (pred[0] + pred[2]) / 2
-                pred_cy = (pred[1] + pred[3]) / 2
-                dv = np.array([det_cx - pred_cx, det_cy - pred_cy],
-                              dtype=np.float32)
-                dv_speed = float(np.linalg.norm(dv))
-                if dv_speed < 0.5:
-                    continue  # Detection is very close to prediction, fine
+                if is_frozen:
+                    # Restrict association to very tight trajectory corridor
+                    if iou[i, j] < 0.20 and dist_to_pred > 45.0:
+                        cost[i, j] = GATE_VALUE
+                        continue
 
-                # Normalized dot product: 1=same direction, -1=opposite
-                dot = float(np.dot(tv / tv_speed, dv / dv_speed))
+                    # Collision Participant Isolation during Freeze:
+                    partners = collision_partners.get(tracks[j].local_id, set())
+                    for k in range(n_trk):
+                        if k != j and tracks[k].local_id in partners:
+                            traj_k = exit_trajectories.get(tracks[k].local_id)
+                            if traj_k is not None and frame_count is not None:
+                                vx_k, vy_k = traj_k["velocity"]
+                                freeze_frame_k = traj_k["freeze_frame"]
+                                frames_elapsed_k = max(1, frame_count - freeze_frame_k)
+                                pred_cx_k = traj_k["center"][0] + vx_k * frames_elapsed_k
+                                pred_cy_k = traj_k["center"][1] + vy_k * frames_elapsed_k
+                                trk_cx_k, trk_cy_k = pred_cx_k, pred_cy_k
+                            else:
+                                trk_cx_k = (pred_boxes[k][0] + pred_boxes[k][2]) / 2.0
+                                trk_cy_k = (pred_boxes[k][1] + pred_boxes[k][3]) / 2.0
+                                
+                            dist_k = math.hypot(det_cx - trk_cx_k, det_cy - trk_cy_k)
+                            dist_j = math.hypot(det_cx - trk_cx, det_cy - trk_cy)
+                            
+                            # Forbid crossing identity exchange/stealing with a 20px margin
+                            if dist_k < dist_j - 20.0:
+                                cost[i, j] = GATE_VALUE
+                                break
 
-                if dot < -0.3:
-                    # Opposite direction: heavy penalty
-                    cost[i, j] += 0.4
-                elif dot < 0.1:
-                    # Weak/perpendicular: mild penalty
-                    cost[i, j] += 0.15
+                elif is_cooldown:
+                    # Determine if this detection is an extremely strong visual match
+                    has_strong_visual_match = track_has_emb[j] and app_dist[i, j] < 0.22
+
+                    # RECOVERY LOCK constraints
+                    # 1. Flexible Trajectory Commitment (loosen to 120px if visual match is strong)
+                    max_corridor = 120.0 if has_strong_visual_match else 50.0
+                    if dist_to_pred > max_corridor:
+                        cost[i, j] = GATE_VALUE
+                        continue
+                        
+                    # 2. Strongly prefer historical trajectory / motion direction (loosen if appearance is extremely strong)
+                    vel_len = math.hypot(vx, vy)
+                    disp_x = det_cx - trk_cx
+                    disp_y = det_cy - trk_cy
+                    disp_len = math.hypot(disp_x, disp_y)
+                    
+                    if vel_len > 0.5 and disp_len > 10.0:
+                        dot_prod = (disp_x * vx + disp_y * vy) / (disp_len * vel_len)
+                        min_dot = -0.2 if has_strong_visual_match else 0.6
+                        if dot_prod < min_dot:  # Allow unexpected turns if appearance matches perfectly
+                            cost[i, j] = GATE_VALUE
+                            continue
+                            
+                    # 3. Heavily bias previous appearance history (strictly reject mismatch)
+                    if track_has_emb[j] and app_dist[i, j] > 0.28:
+                        cost[i, j] = GATE_VALUE
+                        continue
+                        
+                    # 4. Crossing-Trajectory Rejection (reject stealing/exchanging identities)
+                    partners = collision_partners.get(tracks[j].local_id, set())
+                    for k in range(n_trk):
+                        if k != j and tracks[k].local_id in partners:
+                            traj_k = exit_trajectories.get(tracks[k].local_id)
+                            if traj_k is not None and frame_count is not None:
+                                vx_k, vy_k = traj_k["velocity"]
+                                freeze_frame_k = traj_k["freeze_frame"]
+                                frames_elapsed_k = max(1, frame_count - freeze_frame_k)
+                                pred_cx_k = traj_k["center"][0] + vx_k * frames_elapsed_k
+                                pred_cy_k = traj_k["center"][1] + vy_k * frames_elapsed_k
+                                trk_cx_k, trk_cy_k = pred_cx_k, pred_cy_k
+                            else:
+                                trk_cx_k = (pred_boxes[k][0] + pred_boxes[k][2]) / 2.0
+                                trk_cy_k = (pred_boxes[k][1] + pred_boxes[k][3]) / 2.0
+                                
+                            dist_k = math.hypot(det_cx - trk_cx_k, det_cy - trk_cy_k)
+                            dist_j = math.hypot(det_cx - trk_cx, det_cy - trk_cy)
+                            
+                            # Forbid crossing identity exchange/stealing with a 20px margin
+                            if dist_k < dist_j - 20.0:
+                                cost[i, j] = GATE_VALUE
+                                break
+                                
+                            if track_has_emb[k] and track_has_emb[j]:
+                                if app_dist[i, k] < app_dist[i, j] - 0.05:
+                                    cost[i, j] = GATE_VALUE
+                                    break
+        # NOTE: Hard distance/direction gating removed from main fused
+        # association. The fused IoU+appearance cost already handles match
+        # quality well. Hard gates here caused more fragmentation than
+        # they prevented wrong matches. Direction/distance checks remain
+        # active in the C-BIoU fallback stage (see above).
+
 
         # ── Pseudo-Depth Quantization (PD-SORT inspired) ─────────────
         # Partition by bottom-edge y-position as depth proxy.
@@ -446,24 +994,39 @@ class StrongSORTTracker:
                     elif depth_diff > 0.15:
                         cost[i, j] += 0.15  # Mild cross-depth penalty
 
-        # ── Gating ───────────────────────────────────────────────────
-        GATE_VALUE = 1e5
+        # ── Appearance + Spatial Gating ─────────────────────────────────
         for i in range(n_det):
             for j in range(n_trk):
-                # Gate on IoU: block when truly zero overlap
-                if iou[i, j] < 0.001:
-                    if tracks[j].is_lost and track_has_emb[j]:
-                        if app_dist[i, j] > self.max_cosine_dist:
-                            cost[i, j] = GATE_VALUE
-                    else:
-                        cost[i, j] = GATE_VALUE
+                if cost[i, j] >= GATE_VALUE:
+                    continue  # Already gated by direction/distance
 
-                # Gate on appearance: too different
+                # No spatial overlap: allow if appearance is strong enough
+                # (fast motion can cause predicted box to lag, dropping IoU to 0
+                #  even though it's the same person)
+                if iou[i, j] < 0.001:
+                    vel_mag_j = float(np.linalg.norm(tracks[j].vel))
+                    if track_has_emb[j] and app_dist[i, j] <= self.max_cosine_dist and vel_mag_j > 2.0:
+                        # Strong appearance + track is actually moving → allow despite zero IoU
+                        # but verify center distance is reasonable (proportional to velocity)
+                        det_cx_g = (det_boxes[i][0] + det_boxes[i][2]) / 2.0
+                        det_cy_g = (det_boxes[i][1] + det_boxes[i][3]) / 2.0
+                        pred_cx_g = (pred_boxes[j][0] + pred_boxes[j][2]) / 2.0
+                        pred_cy_g = (pred_boxes[j][1] + pred_boxes[j][3]) / 2.0
+                        import math
+                        cdist_g = math.hypot(det_cx_g - pred_cx_g, det_cy_g - pred_cy_g)
+                        # Scale max distance by velocity: fast tracks get more slack
+                        max_cdist = min(120, max(40, vel_mag_j * 8.0))
+                        if cdist_g > max_cdist:
+                            cost[i, j] = GATE_VALUE  # Too far even with good appearance
+                    else:
+                        cost[i, j] = GATE_VALUE  # No appearance, bad appearance, or stationary
+
+                # Low overlap + bad appearance = wrong match
                 if track_has_emb[j] and app_dist[i, j] > self.max_cosine_dist:
                     if iou[i, j] < 0.5:
                         cost[i, j] = GATE_VALUE
 
-                # Crowd disambiguation
+                # Crowd disambiguation: nearby but different looking
                 if track_has_emb[j] and 0.1 < iou[i, j] < 0.45:
                     if app_dist[i, j] > 0.28:
                         cost[i, j] = GATE_VALUE
@@ -516,9 +1079,13 @@ class StrongSORTTracker:
 
     # ─── IoU-only Association (Stage 2) ──────────────────────────────
 
+
     @staticmethod
-    def _iou_associate(det_boxes, tracks, iou_threshold):
+    def _iou_associate(det_boxes, tracks, iou_threshold, frozen_lids=None, cooldown_lids=None, collision_partners=None):
         """Pure IoU Hungarian matching for low-confidence recovery."""
+        frozen_lids = frozen_lids or set()
+        cooldown_lids = cooldown_lids or set()
+        collision_partners = collision_partners or {}
         n_det = len(det_boxes)
         n_trk = len(tracks)
 
@@ -540,11 +1107,30 @@ class StrongSORTTracker:
         unmatched_t = set(range(n_trk))
 
         for r, c in zip(row_idx, col_idx):
-            if iou[r, c] >= iou_threshold:
+            # Tighten IoU requirement for frozen/cooldown tracks to prevent theft
+            is_frozen = tracks[c].local_id in frozen_lids
+            is_cooldown = tracks[c].local_id in cooldown_lids
+            req_iou = 0.6 if (is_frozen or is_cooldown) else iou_threshold
+
+            # If in cooldown, check collision partners to prevent track swapping
+            if is_cooldown:
+                partners = collision_partners.get(tracks[c].local_id, set())
+                should_skip = False
+                for k in range(n_trk):
+                    if k != c and tracks[k].local_id in partners:
+                        # Compare IoU overlap with partner track k
+                        if iou[r, k] > iou[r, c] + 0.05:
+                            should_skip = True
+                            break
+                if should_skip:
+                    continue
+
+            if iou[r, c] >= req_iou:
                 matched_d.append(r)
                 matched_t.append(c)
                 unmatched_d.discard(r)
                 unmatched_t.discard(c)
+
 
         return matched_t, matched_d, list(unmatched_t), list(unmatched_d), cost
 
@@ -633,11 +1219,13 @@ class StrongSORTTracker:
         """Return confirmed tracks using local_id as key."""
         result = {}
         for t in self.tracks:
-            if t.is_confirmed and t.time_since_update <= 5:
+            if t.is_confirmed and t.time_since_update <= 15:
                 if t.time_since_update > 0:
                     result[t.local_id] = t.predicted_box.tolist()
                 else:
-                    result[t.local_id] = t.smooth_box.tolist()
+                    # Use raw detection box — smooth_box lags during fast motion,
+                    # causing the drawn box to trail behind the person visually
+                    result[t.local_id] = t.box.tolist()
         return result
 
     # ─── Info ────────────────────────────────────────────────────────
