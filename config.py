@@ -9,7 +9,7 @@ DETECTOR_RESOLUTION = 384
 DETECTOR_CONF_THRESH = 0.45
 DETECTOR_COMPILE = False
 DETECTOR_AMP = True
-DETECTOR_INTERVAL = 3          # Run detector every N frames; tracker predicts on skipped frames
+DETECTOR_INTERVAL = 1          # Run detector every frame — eliminates skip-frame identity churn
 
 # StrongSORT Tracker Settings
 TRACKER_TYPE = "strongsort"

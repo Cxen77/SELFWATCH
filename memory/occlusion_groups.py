@@ -114,6 +114,8 @@ class OcclusionGroupManager:
                                (is_approaching and dist < avg_w * 2.0 and iou > 0.01)
 
                 if is_collision:
+                    reason = "IoU>0.08" if iou > self.OVERLAP_IOU_THRESH else "dist<1.2w" if dist < (avg_w * 1.2) else "approaching"
+                    print(f"[INSTRUMENTATION] FREEZE TRIGGER: gid1={gids[i]} gid2={gids[j]} iou={iou:.3f} dist={dist:.1f} reason={reason}")
                     currently_overlapping.add(gids[i])
                     currently_overlapping.add(gids[j])
                     overlap_pairs.append((gids[i], gids[j], iou))

@@ -247,7 +247,8 @@ class SelfWatchPipeline:
                     embeddings = _inj_emb
                 else:
                     # Shape mismatch fallback (shouldn't happen in normal flow)
-                    embeddings = self._reuse_embeddings(boxes)
+                    print(f"[INSTRUMENTATION] SHAPE MISMATCH: len(_inj_emb)={len(_inj_emb)} != len(boxes)={len(boxes)}. Falling back to _reuse_embeddings.")
+                    embeddings = self._reuse_embeddings(boxes, frame)
             elif is_reid_frame:
                 crops = []
                 for box in boxes:
@@ -263,7 +264,7 @@ class SelfWatchPipeline:
                             (_REID_CROP_H, _REID_CROP_W, 3), dtype=np.uint8))
                 embeddings = self.reid.extract_batch(crops)
             else:
-                embeddings = self._reuse_embeddings(boxes)
+                embeddings = self._reuse_embeddings(boxes, frame)
         else:
             embeddings = np.zeros((0, 512), dtype=np.float32)
         t_reid1 = time.perf_counter()
@@ -1014,25 +1015,49 @@ class SelfWatchPipeline:
 
     # ── Embedding Reuse ──────────────────────────────────────────────
 
-    def _reuse_embeddings(self, boxes):
+    def _reuse_embeddings(self, boxes, frame=None):
         from utils.iou import iou_matrix as _iou_matrix
+        import cv2
 
         n_det = len(boxes)
         embeddings = np.zeros((n_det, 512), dtype=np.float32)
+        
         confirmed = [
             t for t in self.tracker.tracks
             if t.is_confirmed and t.embedding is not None
         ]
-        if not confirmed:
-            return embeddings
-
+        
         track_boxes = [t.predicted_box.tolist() for t in confirmed]
-        iou = _iou_matrix(boxes, track_boxes)
+        iou = _iou_matrix(boxes, track_boxes) if confirmed else np.zeros((n_det, 0))
 
+        failed_indices = []
         for i in range(n_det):
-            best_j = int(np.argmax(iou[i]))
-            if iou[i, best_j] > 0.3:
-                embeddings[i] = confirmed[best_j].embedding.copy()
+            if len(confirmed) > 0:
+                best_j = int(np.argmax(iou[i]))
+                if iou[i, best_j] > 0.3:
+                    embeddings[i] = confirmed[best_j].embedding.copy()
+                    continue
+            failed_indices.append(i)
+
+        if failed_indices and frame is not None and self.reid is not None:
+            crops = []
+            h, w = frame.shape[:2]
+            for i in failed_indices:
+                x1, y1, x2, y2 = map(int, boxes[i])
+                x1, y1 = max(0, x1), max(0, y1)
+                x2, y2 = min(w, x2), min(h, y2)
+                if x2 > x1 and y2 > y1:
+                    crop = cv2.resize(frame[y1:y2, x1:x2], (_REID_CROP_W, _REID_CROP_H))
+                    crops.append(crop)
+                else:
+                    crops.append(np.zeros((_REID_CROP_H, _REID_CROP_W, 3), dtype=np.uint8))
+            
+            try:
+                extracted = self.reid.extract_batch(crops)
+                for c, idx in enumerate(failed_indices):
+                    embeddings[idx] = extracted[c]
+            except Exception as e:
+                print(f"[REID] On-the-fly extraction failed: {e}")
 
         return embeddings
 

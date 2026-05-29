@@ -200,9 +200,17 @@ class CrossCameraReIDMatcher:
 
         # Print rejections for debugging
         if "REJECT" in decision:
-            print(f"[CROSS-CAM] {decision}: cam={camera_id} "
-                  f"lid={local_track_id} proposed_gid={proposed_gid} "
-                  f"sim={similarity:.3f}")
+            import numpy as np
+            print(f"[INSTRUMENTATION] CROSS-CAM NEW GID SPAWNED:")
+            print(f"  - local_track_id: {local_track_id}")
+            print(f"  - proposed_gid (from dormant): {proposed_gid}")
+            print(f"  - cosine_similarity: {similarity:.3f}")
+            print(f"  - reason: {decision}")
+        elif "ACCEPT" in decision:
+            print(f"[INSTRUMENTATION] CROSS-CAM GID REUSED:")
+            print(f"  - local_track_id: {local_track_id}")
+            print(f"  - reused_gid: {proposed_gid}")
+            print(f"  - cosine_similarity: {similarity:.3f}")
 
     def get_match_log(self, limit: int = 50) -> List[Dict[str, Any]]:
         """Get recent match log entries."""

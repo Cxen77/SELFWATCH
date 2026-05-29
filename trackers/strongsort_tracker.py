@@ -435,7 +435,8 @@ class StrongSORTTracker:
                     embedding_history_size=self.embedding_history,
                 )
                 new_tracks.append(new_track)
-                print(f"  [TRACKER DEBUG] NEW LOCAL TRACK SPAWNED: local={new_track.local_id} conf={scores[orig_i]:.2f}")
+                is_zero = "YES" if np.sum(np.abs(embeddings[orig_i])) < 1e-6 else "NO"
+                print(f"  [TRACKER DEBUG] NEW LOCAL TRACK SPAWNED: local={new_track.local_id} conf={scores[orig_i]:.2f} zero_emb={is_zero}")
 
         # ─────────────────────────────────────────────────────────────
         # STAGE 4: IDSR — ID Switch Rectification
@@ -1001,34 +1002,33 @@ class StrongSORTTracker:
                     continue  # Already gated by direction/distance
 
                 # No spatial overlap: allow if appearance is strong enough
-                # (fast motion can cause predicted box to lag, dropping IoU to 0
-                #  even though it's the same person)
                 if iou[i, j] < 0.001:
                     vel_mag_j = float(np.linalg.norm(tracks[j].vel))
                     if track_has_emb[j] and app_dist[i, j] <= self.max_cosine_dist and vel_mag_j > 2.0:
-                        # Strong appearance + track is actually moving → allow despite zero IoU
-                        # but verify center distance is reasonable (proportional to velocity)
                         det_cx_g = (det_boxes[i][0] + det_boxes[i][2]) / 2.0
                         det_cy_g = (det_boxes[i][1] + det_boxes[i][3]) / 2.0
                         pred_cx_g = (pred_boxes[j][0] + pred_boxes[j][2]) / 2.0
                         pred_cy_g = (pred_boxes[j][1] + pred_boxes[j][3]) / 2.0
                         import math
                         cdist_g = math.hypot(det_cx_g - pred_cx_g, det_cy_g - pred_cy_g)
-                        # Scale max distance by velocity: fast tracks get more slack
                         max_cdist = min(120, max(40, vel_mag_j * 8.0))
                         if cdist_g > max_cdist:
+                            print(f"[TRACE] REJECT (cdist > max_cdist): local={tracks[j].local_id} iou={iou[i,j]:.3f} app={app_dist[i,j]:.3f}")
                             cost[i, j] = GATE_VALUE  # Too far even with good appearance
                     else:
+                        print(f"[TRACE] REJECT (zero IoU, bad app/slow): local={tracks[j].local_id} iou={iou[i,j]:.3f} app={app_dist[i,j]:.3f} vel={vel_mag_j:.1f}")
                         cost[i, j] = GATE_VALUE  # No appearance, bad appearance, or stationary
 
                 # Low overlap + bad appearance = wrong match
                 if track_has_emb[j] and app_dist[i, j] > self.max_cosine_dist:
                     if iou[i, j] < 0.5:
+                        print(f"[TRACE] REJECT (low overlap + bad app): local={tracks[j].local_id} iou={iou[i,j]:.3f} app={app_dist[i,j]:.3f}")
                         cost[i, j] = GATE_VALUE
 
                 # Crowd disambiguation: nearby but different looking
                 if track_has_emb[j] and 0.1 < iou[i, j] < 0.45:
                     if app_dist[i, j] > 0.28:
+                        print(f"[TRACE] REJECT (crowd bad app): local={tracks[j].local_id} iou={iou[i,j]:.3f} app={app_dist[i,j]:.3f}")
                         cost[i, j] = GATE_VALUE
 
         # ── Hungarian matching ───────────────────────────────────────
@@ -1068,6 +1068,9 @@ class StrongSORTTracker:
                         gap = valid[1] - valid[0]
                         if gap < self.ambiguity_margin:
                             reject = True
+
+                if reject:
+                    print(f"[TRACE] REJECT (AMI ambiguous match): local={tracks[c].local_id}")
 
                 if not reject:
                     matched_d.append(r)

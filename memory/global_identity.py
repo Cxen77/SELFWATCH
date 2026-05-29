@@ -150,6 +150,7 @@ class GlobalIdentityManager:
                             "ACCEPT_NEW", dot_val, dist_val)
                     else:
                         new_gid = self._allocate_id()
+                        print(f"[INSTRUMENTATION] GLOBAL NEW GID ASSIGNED: local={lid} -> new_gid={new_gid} (REJECT_NEW: {reason})")
                         self._local_to_global[lid] = new_gid
                         self._provisional[lid] = {
                             "gid": new_gid,
@@ -162,6 +163,7 @@ class GlobalIdentityManager:
                             f"REJECT_NEW:{reason}", dot_val, dist_val)
                 else:
                     new_gid = self._allocate_id()
+                    print(f"[INSTRUMENTATION] GLOBAL NEW GID ASSIGNED: local={lid} -> new_gid={new_gid} (NO_PROPOSAL)")
                     self._local_to_global[lid] = new_gid
                     self._provisional[lid] = {
                         "gid": new_gid,

@@ -178,7 +178,7 @@ class SelfWatchApp(ctk.CTk):
         if ev_type == "NEW_GLOBAL":
             msg = f"[NEW] GID{event.global_id} created at CAM{event.camera_id}"
         elif ev_type == "MATCH":
-            msg = f"[RECOVER] GID{event.global_id} CAM{event.previous_camera_id} -> CAM{event.camera_id}"
+            msg = f"[RECOVER] GID{event.global_id} CAM{event.metadata.get('source_camera', '?')} -> CAM{event.camera_id}"
         elif ev_type in ("ENTER", "EXIT"):
             msg = f"[{ev_type}] GID{event.global_id} at CAM{event.camera_id}"
         else:

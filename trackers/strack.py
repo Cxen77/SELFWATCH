@@ -383,6 +383,7 @@ class STrack:
         self.memory_update_allowed = False
         if self.state == self.STATE_CONFIRMED:
             self.state = self.STATE_LOST
+            print(f"[INSTRUMENTATION] TRACK ENTERED LOST STATE: local={self.local_id} time_since_update={self.time_since_update} age={self.age} hits={self.total_hits}")
 
     def should_remove(self, max_lost):
         """Check if this track should be permanently removed.
