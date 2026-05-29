@@ -37,7 +37,7 @@ from typing import List, Dict, Optional, Any, Tuple
 import config
 from detectors import RTDETRDetector
 from detectors.trt_detector import TRTDetector
-from reid import EmbeddingExtractor
+from reid.trt_embedding_extractor import TRTEmbeddingExtractor
 from trackers import StrongSORTTracker
 from engine.pipeline import SelfWatchPipeline
 
@@ -162,16 +162,26 @@ class MultiCameraPipeline:
                 compile_model=False,
             )
 
-        self._reid = EmbeddingExtractor(
-            weights_path=config.REID_WEIGHTS,
+        import os
+        engine_path_reid = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "models", "osnet_x1_0_dyn_fp16.engine"
+        )
+        self._reid = TRTEmbeddingExtractor(
+            engine_path=engine_path_reid,
             device=self._detector.get_device(),
-            half=config.REID_HALF,
+            fallback=True,
+            fallback_weights=config.REID_WEIGHTS,
+            fallback_half=config.REID_HALF,
         )
 
         self._detector.warmup()
 
         print(f"[MULTICAM] Shared detector: {self._detector.get_name()}")
-        print(f"[MULTICAM] Shared ReID: OSNet x1.0 (512-dim)")
+        if self._reid.is_trt:
+            print(f"[MULTICAM] Shared ReID: TensorRT OSNet x1.0 (512-dim)")
+        else:
+            print(f"[MULTICAM] Shared ReID: PyTorch Fallback OSNet x1.0 (512-dim)")
         print(f"{'='*60}\n")
 
     def add_camera(self, source, label: str = "",
