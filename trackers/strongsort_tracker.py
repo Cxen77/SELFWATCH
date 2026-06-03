@@ -888,7 +888,7 @@ class StrongSORTTracker:
 
                 if is_frozen:
                     # Restrict association to very tight trajectory corridor
-                    if iou[i, j] < 0.20 and dist_to_pred > 45.0:
+                    if iou[i, j] < 0.05 and dist_to_pred > 80.0:
                         cost[i, j] = GATE_VALUE
                         continue
 

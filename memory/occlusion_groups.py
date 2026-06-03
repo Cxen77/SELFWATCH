@@ -26,7 +26,7 @@ import math
 
 
 class OcclusionGroupManager:
-    OVERLAP_IOU_THRESH = 0.08      # IoU threshold to trigger freeze (lowered for earlier detection)
+    OVERLAP_IOU_THRESH = 0.35      # IoU threshold to trigger freeze (lowered for earlier detection)
     SEPARATION_COOLDOWN = 12       # Frames after separation before unfreeze (was 8)
     STATIC_COOLDOWN = 20           # Extended cooldown for static occluders
     POST_FREEZE_COOLDOWN = 30      # Frames after unfreeze where RECOVERY_TRAJECTORY_LOCK is active (was 25)
@@ -110,11 +110,11 @@ class OcclusionGroupManager:
                 # 2. Dangerously close center distance
                 # 3. Approaching and close
                 is_collision = iou > self.OVERLAP_IOU_THRESH or \
-                               dist < (avg_w * 1.2) or \
-                               (is_approaching and dist < avg_w * 2.0 and iou > 0.01)
+                               dist < (avg_w * 0.75) or \
+                               (is_approaching and dist < avg_w * 1.2 and iou > 0.15)
 
                 if is_collision:
-                    reason = "IoU>0.08" if iou > self.OVERLAP_IOU_THRESH else "dist<1.2w" if dist < (avg_w * 1.2) else "approaching"
+                    reason = "IoU>0.35" if iou > self.OVERLAP_IOU_THRESH else "dist<0.75w" if dist < (avg_w * 0.75) else "approaching"
                     print(f"[INSTRUMENTATION] FREEZE TRIGGER: gid1={gids[i]} gid2={gids[j]} iou={iou:.3f} dist={dist:.1f} reason={reason}")
                     currently_overlapping.add(gids[i])
                     currently_overlapping.add(gids[j])
