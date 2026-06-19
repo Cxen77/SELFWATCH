@@ -35,6 +35,7 @@ from memory.ownership_state import (
 from memory.event_log import CognitiveEventLogger
 from memory.metrics import TrackingMetrics
 from memory.debug_overlay import DebugOverlay, DebugLayerManager
+from memory.identity_store import IdentityStore   # Stage 1: read-only shadow layer
 
 PERSON_CLASS = 0
 REID_INTERVAL = 12
@@ -79,6 +80,10 @@ class SelfWatchPipeline:
         self.occlusion_manager = OcclusionGroupManager()
         self.ownership_arbiter = OwnershipArbitrationLayer()
         self.ownership_sm = OwnershipStateMachine()
+
+        # ── Stage 1 shadow layer (read-only; influences NO live decision) ──
+        # Mirrors durable per-identity state and measures shadow-divergence.
+        self.identity_store = IdentityStore()
 
         # Observability
         self.event_logger = CognitiveEventLogger(
@@ -693,6 +698,12 @@ class SelfWatchPipeline:
                     frame_id_switches.append((lid, prev_gid, gid))
         t_id1 = time.perf_counter()
 
+        # ── Stage 1 shadow observe (READ-ONLY) ──────────────────────────
+        # Mirror the settled per-frame gid assignments into durable Identity
+        # records and measure shadow-divergence. Reads only; no live effect.
+        self.identity_store.observe(
+            self.tracker.tracks, self.global_id_manager, self.frame_count)
+
         # ── Layer 3 & 4: Memory + State Machine ─────────────────────
         t_mem0 = time.perf_counter()
 
@@ -1063,6 +1074,7 @@ class SelfWatchPipeline:
                   f"Resurrections={s['resurrections']} "
                   f"IDswitches={s['id_switches']} "
                   f"SM={self.ownership_sm.get_summary()}\n")
+            self.identity_store.shadow_report()
 
         # Build states for UI
         track_states = {}
