@@ -170,6 +170,15 @@ class GlobalIdentityManager:
                         "birth_frame": self._frame_count,
                         "age": 0,
                     }
+            elif lid not in self._provisional:
+                # IDSR may have recycled this local_id onto a brand-new track.
+                # Re-protect it with provisional inertia to prevent immediate hijack.
+                if getattr(t, 'consecutive_hits', 99) <= 2 and getattr(t, 'total_hits', 99) <= 3:
+                    self._provisional[lid] = {
+                        "gid": self._local_to_global[lid],
+                        "birth_frame": self._frame_count,
+                        "age": 0,
+                    }
 
         # ═══════════════════════════════════════════════════════════════
         #  2. PROCESS PROPOSALS FOR EXISTING TRACKS

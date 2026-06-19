@@ -114,6 +114,14 @@ class STrack:
         self._stable_update_count = 0    # How many good updates we've had
         self.recovery_count = 0
 
+        # ── Identity Protection Layer state ──────────────────────────────
+        # Anchor embedding is snapshotted at hits==100 and NEVER updated.
+        # It represents the original identity of this person.
+        # All subsequent EWMA updates are validated against it.
+        self._anchor_embedding = None       # frozen identity snapshot
+        self._drift_warned = False          # suppress repeated drift logs
+        self._identity_freeze_frames = 0   # frames remaining in memory freeze
+
 
     # ── ID property (backward compat) ────────────────────────────────
 
@@ -331,25 +339,73 @@ class STrack:
 
         if embedding is not None and not self.is_lost:
             if not is_hard_locked:
-                # Quality is good (or soft-locked) -- update embedding memory
                 emb = embedding.copy()
                 norm = np.linalg.norm(emb)
                 if norm > 1e-6:
                     emb /= norm
-                    
-                # Quality-gated EWMA update: 0.8 * old + 0.2 * new
+
+                # ── PHASE 1: Permanent Anchor Embedding ──────────────────────
+                # Snapshot the identity exactly once at maturity.
+                # This anchor is NEVER overwritten for the rest of the track's life.
+                if self.total_hits >= 100 and self._anchor_embedding is None and self.embedding is not None:
+                    self._anchor_embedding = self.embedding.copy()
+                    print(f"[ANCHOR CREATED] local={self.local_id} gid={self.global_id} "
+                          f"hits={self.total_hits}")
+
+                # ── PHASE 2: Anchor-Gated EWMA ──────────────────────────────
+                # Before absorbing a new embedding, verify it matches the anchor.
+                # A mismatch means the detector has found a different person.
+                # We allow spatial tracking to continue but freeze identity memory.
+                should_update_emb = True
+                anchor_sim_incoming = None
+
+                if self._anchor_embedding is not None and self.total_hits > 100:
+                    anchor_sim_incoming = float(np.dot(self._anchor_embedding, emb))
+
+                    # Phase 4: Sustained contamination freeze
+                    # If anchor similarity is critically low, lock identity memory
+                    # for 15 frames to prevent repeated contamination in the same cluster.
+                    if anchor_sim_incoming < 0.65:
+                        self._identity_freeze_frames = 15
+
+                    # Phase 4 tick: drain the freeze counter
+                    if self._identity_freeze_frames > 0:
+                        self._identity_freeze_frames -= 1
+                        should_update_emb = False
+
+                    # Phase 2: Hard veto if incoming is clearly a different person
+                    if anchor_sim_incoming < 0.55:
+                        should_update_emb = False
+                        print(f"[IDENTITY VETO] local={self.local_id} gid={self.global_id} "
+                              f"hits={self.total_hits} anchor_sim={anchor_sim_incoming:.3f} "
+                              f"reason=ANCHOR_MISMATCH")
+
                 if self.embedding is None:
-                    self.embedding = emb
-                else:
+                    self.embedding = emb               # first update — no anchor yet
+                elif should_update_emb:
                     self.embedding = 0.8 * self.embedding + 0.2 * emb
                     norm = np.linalg.norm(self.embedding)
                     if norm > 1e-6:
                         self.embedding /= norm
-                
+                # else: identity memory stays frozen; box tracking continues normally
+
+                # ── PHASE 3: Identity Health Score ───────────────────────────
+                # Log health every 30 hits and raise drift alarms if needed.
+                if self._anchor_embedding is not None and self.total_hits % 30 == 0:
+                    health = float(np.dot(self._anchor_embedding, self.embedding))
+                    print(f"[IDENTITY HEALTH] local={self.local_id} gid={self.global_id} "
+                          f"hits={self.total_hits} anchor_sim={health:.3f}")
+                    if health < 0.70:
+                        print(f"[IDENTITY DRIFT CRITICAL] local={self.local_id} gid={self.global_id} "
+                              f"hits={self.total_hits} anchor_sim={health:.3f}")
+                    elif health < 0.80:
+                        print(f"[IDENTITY DRIFT WARNING] local={self.local_id} gid={self.global_id} "
+                              f"hits={self.total_hits} anchor_sim={health:.3f}")
+
                 self._emb_history.append(self.embedding.copy())
-                self.memory_update_allowed = True
+                self.memory_update_allowed = should_update_emb
             else:
-                # Quality too low -- FREEZE embedding memory
+                # Memory Lock: geometric quality too low
                 self.memory_update_allowed = False
         else:
             self.memory_update_allowed = False

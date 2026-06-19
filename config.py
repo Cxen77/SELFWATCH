@@ -88,3 +88,10 @@ MULTICAM_SAME_CAMERA_MATCH = True      # Allow matching within same camera
 # Event Bus
 MULTICAM_EVENT_HISTORY = 10000         # Max events stored in bus
 MULTICAM_TRANSITION_MAX_GAP = 120.0    # Max seconds between exit→entry pair
+
+# ═══════════════════════════════════════════════════════════════════
+#  Forensic Identity Tracer
+#  Set TRACE_GID to the global ID you want to trace frame-by-frame.
+#  Set to None to disable (zero overhead).
+# ═══════════════════════════════════════════════════════════════════
+TRACE_GID = 28                       # e.g. 3  to trace GID 3

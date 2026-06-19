@@ -328,6 +328,46 @@ class StrongSORTTracker:
 
         # ── Mark unmatched tracks as lost ────────────────────────────
         for trk in still_unmatched:
+            if trk.total_hits > 60:
+                # Find nearest detection
+                if len(boxes) > 0:
+                    pred_cx = (trk.predicted_box[0] + trk.predicted_box[2]) / 2.0
+                    pred_cy = (trk.predicted_box[1] + trk.predicted_box[3]) / 2.0
+                    best_dist = float('inf')
+                    best_det = None
+                    best_emb = None
+                    for b, s, e in zip(boxes, scores, embeddings):
+                        cx = (b[0] + b[2]) / 2.0
+                        cy = (b[1] + b[3]) / 2.0
+                        dist = ((cx - pred_cx)**2 + (cy - pred_cy)**2)**0.5
+                        if dist < best_dist:
+                            best_dist = dist
+                            best_det = b
+                            best_emb = e
+                    
+                    if best_det is not None:
+                        # Morphology
+                        old_w = trk.smooth_box[2] - trk.smooth_box[0]
+                        old_h = trk.smooth_box[3] - trk.smooth_box[1]
+                        new_w = best_det[2] - best_det[0]
+                        new_h = best_det[3] - best_det[1]
+                        area_ratio = (new_w * new_h) / max(1, old_w * old_h)
+                        aspect_ratio_ratio = (new_w / max(1, new_h)) / max(0.1, old_w / max(1, old_h))
+                        
+                        # ReID
+                        sim = 0.0
+                        if trk.get_averaged_embedding() is not None and best_emb is not None:
+                            if np.linalg.norm(best_emb) > 0:
+                                sim = np.dot(trk.get_averaged_embedding(), best_emb)
+                                
+                        vel_mag = np.sqrt(trk.vel[0]**2 + trk.vel[1]**2)
+                        max_cdist_allowed = min(120, max(40, vel_mag * 8.0))
+                                
+                        print(f"[MATURE TRACK LOST] local={trk.local_id} hits={trk.total_hits} "
+                              f"pred_err={best_dist:.1f}px vel={vel_mag:.1f} max_dist={max_cdist_allowed:.1f} "
+                              f"area_ratio={area_ratio:.2f} aspect_ratio={aspect_ratio_ratio:.2f} "
+                              f"reid_sim={sim:.3f} frozen={trk.local_id in frozen_lids} cd={trk.local_id in cooldown_lids}")
+
             trk.mark_lost(frame_delta=frame_delta)
 
         # ── Initialize new tracks from unmatched high-conf dets ──────
@@ -578,9 +618,12 @@ class StrongSORTTracker:
 
         # ── Adaptive appearance weight (N,M) ──────────────────────────
         # Start from base weight, then modify per cognitive state
+        # CRITICAL: Frozen tracks retain a MINIMUM appearance weight (0.15)
+        # to prevent pure-geometry matching from hijacking ownership during
+        # crowd crossings. Setting this to 0.0 caused the ownership transfer bug.
         eff_app_w = np.where(
             is_frozen_arr[None, :],
-            0.0,                                                            # frozen → no appearance
+            0.15,                                                           # frozen → reduced but NOT zero
             np.where(
                 is_cooldown_arr[None, :],
                 np.minimum(self.appearance_weight * 1.5, 0.95),             # cooldown → boosted
@@ -703,13 +746,30 @@ class StrongSORTTracker:
         vel_mag = np.sqrt(trk_vx**2 + trk_vy**2)                          # (M,)
 
         # Allow zero-IoU if: strong appearance + actually moving + reasonable distance
+        # CHANGE 4: Mature tracks (hits > 60) are exempt from vel_mag > 2.0.
+        # A track with 300 hits has earned the right to match on appearance
+        # even when stationary. vel_mag > 2.0 was killing valid sits/stands.
+        track_hits = np.array([t.total_hits for t in tracks], dtype=np.float32)  # (M,)
+        is_mature = track_hits > 60                                         # (M,)
+
         good_app_fast = (
             track_has_emb[None, :]
             & (app_dist <= self.max_cosine_dist)
-            & (vel_mag[None, :] > 2.0)
+            & (
+                (vel_mag[None, :] > 2.0)                                    # moving track
+                | is_mature[None, :]                                         # CHANGE 4: mature exemption
+            )
         )                                                                   # (N,M)
-        max_cdist_allowed = np.minimum(120, np.maximum(40, vel_mag * 8.0)) # (M,)
-        too_far = center_dist > max_cdist_allowed[None, :]                 # (N,M)
+
+        # CHANGE 2: Mature tracks get 90px minimum radius (was 40px).
+        # Pose changes (sit/stand) shift box center ~80-90px vertically.
+        # The 40px floor was killing valid matches for slow-moving mature tracks.
+        max_cdist_allowed = np.where(
+            is_mature[None, :],
+            np.minimum(120, np.maximum(90, vel_mag * 8.0)),                 # mature: floor=90
+            np.minimum(120, np.maximum(40, vel_mag * 8.0))                  # new track: floor=40
+        )                                                                   # (N,M)
+        too_far = center_dist > max_cdist_allowed                           # (N,M)
 
         # Gate zero-IoU cells: allow if good appearance+speed+distance, else gate
         cost = np.where(
@@ -726,12 +786,77 @@ class StrongSORTTracker:
         cost = np.where(bad_app_gate, GATE_VALUE, cost)
 
         # Crowd disambiguation: nearby but different looking
+        # CHANGE 3: Fast-moving tracks (vel_mag > 20) get a relaxed appearance
+        # threshold (0.40 vs 0.28). Motion blur naturally degrades embeddings
+        # to ~0.30-0.35; the old 0.28 threshold was killing the correct person.
+        crowd_gate_threshold = np.where(
+            vel_mag[None, :] > 20.0,
+            0.40,                                                           # fast: relax for motion blur
+            0.28                                                            # normal: strict
+        )                                                                   # (N,M)
         crowd_gate = (
             track_has_emb[None, :]
             & (iou > 0.1) & (iou < 0.45)
-            & (app_dist > 0.28)
+            & (app_dist > crowd_gate_threshold)
         )
         cost = np.where(crowd_gate, GATE_VALUE, cost)
+
+        # ── Frozen Appearance Veto ─────────────────────────────────────
+        # CRITICAL: During crowd crossings, IoU is high between overlapping
+        # people, bypassing both bad_app_gate (iou < 0.5) and crowd_gate
+        # (iou < 0.45). This veto fires for FROZEN tracks regardless of IoU
+        # when appearance distance is clearly a different person.
+        frozen_app_veto = (
+            is_frozen_arr[None, :]
+            & track_has_emb[None, :]
+            & (app_dist > 0.40)
+        )
+        if np.any(frozen_app_veto):
+            rows_v, cols_v = np.where(frozen_app_veto & (cost < GATE_VALUE))
+            for rv, cv in zip(rows_v, cols_v):
+                t = tracks[cv]
+                print(f"[FROZEN APP VETO] frame={frame_count} det={rv} local={t.local_id} "
+                      f"iou={iou[rv,cv]:.3f} app_dist={app_dist[rv,cv]:.3f} → BLOCKED")
+        cost = np.where(frozen_app_veto, GATE_VALUE, cost)
+
+        # ── PHASE 5: Mature Ownership Veto ────────────────────────────
+        # For tracks with 200+ hits, compare every candidate detection's
+        # embedding directly against the track's permanent anchor embedding.
+        # If the detection looks nothing like the original person (sim < 0.50),
+        # the cell is gated out — even if IoU is 0.99.
+        # This is the structural fix for ownership drift: identity overrides geometry.
+        has_anchor_arr = np.array(
+            [getattr(t, '_anchor_embedding', None) is not None for t in tracks],
+            dtype=bool
+        )                                                                   # (M,)
+        is_very_mature = track_hits > 200                                   # (M,) reuses track_hits from above
+
+        if np.any(is_very_mature & has_anchor_arr) and det_embs.shape[0] > 0:
+            # Build anchor embedding matrix — zeros for tracks without anchor
+            anchor_embs = np.zeros((n_trk, 512), dtype=np.float32)
+            for j, t in enumerate(tracks):
+                if is_very_mature[j] and has_anchor_arr[j]:
+                    anchor_embs[j] = t._anchor_embedding
+
+            # Anchor similarity: det_embs (N,512) @ anchor_embs.T (512,M) → (N,M)
+            anchor_sim_mat = det_embs @ anchor_embs.T                       # (N,M)
+
+            mature_ownership_veto = (
+                is_very_mature[None, :]                                     # mature track
+                & has_anchor_arr[None, :]                                   # has anchor
+                & (anchor_sim_mat < 0.50)                                   # det ≠ original person
+            )
+
+            if np.any(mature_ownership_veto):
+                rows_v, cols_v = np.where(mature_ownership_veto & (cost < GATE_VALUE))
+                for rv, cv in zip(rows_v, cols_v):
+                    t = tracks[cv]
+                    print(f"[MATURE OWNERSHIP VETO] frame={frame_count} local={t.local_id}"
+                          f" gid={t.global_id} hits={t.total_hits}"
+                          f" det={rv} iou={iou[rv,cv]:.3f}"
+                          f" anchor_sim={anchor_sim_mat[rv,cv]:.3f} → BLOCKED")
+
+            cost = np.where(mature_ownership_veto, GATE_VALUE, cost)
 
         # ── Hungarian matching ────────────────────────────────────────
         if cost.size > 0:
@@ -766,6 +891,70 @@ class StrongSORTTracker:
                             reject = True
 
                 if not reject:
+                    # ── OWNERSHIP ASSIGNMENT AUDIT (Parts 1, 2, 5, 6) ───────
+                    t = tracks[c]
+                    is_mature_trk = t.total_hits > 100
+
+                    if is_mature_trk:
+                        # Part 2: best vs second-best detection candidate
+                        best_iou   = float(iou[r, c])
+                        best_app   = float(app_dist[r, c])
+                        best_cdist = float(center_dist[r, c])
+                        best_cost  = float(cost[r, c])
+
+                        col_costs = cost[:, c]
+                        sorted_dets = np.argsort(col_costs)
+                        second_r = next((d for d in sorted_dets
+                                         if d != r and col_costs[d] < GATE_VALUE), None)
+
+                        # Part 1: compare chosen detection vs anchor identity
+                        anchor_sim = None
+                        incoming_to_anchor = None
+                        if getattr(t, '_anchor_embedding', None) is not None and det_embs.shape[0] > 0:
+                            anchor_sim = float(np.dot(t._anchor_embedding, t.embedding))
+                            incoming_to_anchor = float(np.dot(t._anchor_embedding, det_embs[r]))
+
+                        # Part 5: did trajectory prediction agree with assignment?
+                        pred_cx_t = float(traj_cx[c])
+                        pred_cy_t = float(traj_cy[c])
+                        det_cx_t  = float((det_boxes_arr[r, 0] + det_boxes_arr[r, 2]) / 2)
+                        det_cy_t  = float((det_boxes_arr[r, 1] + det_boxes_arr[r, 3]) / 2)
+                        traj_err  = float(np.hypot(det_cx_t - pred_cx_t, det_cy_t - pred_cy_t))
+
+                        # Part 6: did StrongSORT override the embedding signal?
+                        emb_contradicted = (best_app > 0.35 and best_iou > 0.20)
+
+                        reason = "App"
+                        if is_frozen_arr[c]:  reason = "Freeze+IoU"
+                        elif is_cooldown_arr[c]: reason = "Cooldown"
+                        elif best_iou > 0.3 and best_app > best_iou: reason = "IoU"
+
+                        sec_info = ""
+                        if second_r is not None:
+                            sec_info = (f" | 2nd={second_r} iou2={iou[second_r,c]:.3f}"
+                                        f" app2={app_dist[second_r,c]:.3f}"
+                                        f" cost2={col_costs[second_r]:.3f}")
+
+                        drift_tag = ""
+                        if anchor_sim is not None:
+                            drift_tag = f" | anchor\u2192curr={anchor_sim:.3f} det\u2192anchor={incoming_to_anchor:.3f}"
+                            if incoming_to_anchor < 0.45:
+                                drift_tag += " \u26a0DRIFT"
+
+                        print(f"[OWNERSHIP ASSIGNMENT] frame={frame_count} local={t.local_id}"
+                              f" gid={t.global_id} hits={t.total_hits}"
+                              f" det={r} iou={best_iou:.3f} app={best_app:.3f}"
+                              f" cdist={best_cdist:.1f} cost={best_cost:.3f}"
+                              f" reason={reason} traj_err={traj_err:.1f}"
+                              f" frozen={is_frozen_arr[c]} emb_vs_iou={'CONFLICT' if emb_contradicted else 'ok'}"
+                              f"{sec_info}{drift_tag}")
+
+                    elif (is_frozen_arr[c] or is_cooldown_arr[c] or
+                          len(collision_partners.get(t.local_id, set())) > 0):
+                        print(f"[FORENSIC MATCH] frame={frame_count} det={r} trk={c} local={t.local_id} "
+                              f"iou={iou[r,c]:.3f} app_dist={app_dist[r,c]:.3f} center_dist={center_dist[r,c]:.1f} cost={cost[r,c]:.3f} "
+                              f"frozen={is_frozen_arr[c]} cooldown={is_cooldown_arr[c]}")
+                    # ────────────────────────────────────────────────────────
                     matched_d.append(r)
                     matched_t.append(c)
                     unmatched_d.discard(r)

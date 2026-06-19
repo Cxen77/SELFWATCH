@@ -93,28 +93,18 @@ class OcclusionGroupManager:
                 wB, hB = boxB[2]-boxB[0], boxB[3]-boxB[1]
                 avg_w = (wA + wB) / 2.0
                 
-                # Check if approaching
-                velA = velocities.get(gids[i])
-                velB = velocities.get(gids[j])
-                is_approaching = False
-                if velA is not None and velB is not None:
-                    rvx = velA[0] - velB[0]
-                    rvy = velA[1] - velB[1]
-                    dx = cxB - cxA
-                    dy = cyB - cyA
-                    if (rvx * dx + rvy * dy) > 0:
-                        is_approaching = True
+                # CHANGE 1: Approaching and dist<0.75w triggers REMOVED.
+                # Logs showed 75% of freezes were proximity-only events (people
+                # standing near each other), NOT true box overlaps. Those false
+                # freezes disabled appearance weighting unnecessarily.
+                # Only true IoU overlap (> 0.35) now activates FROZEN state.
 
                 # Enter COLLISION_STATE if:
-                # 1. High IoU overlap
-                # 2. Dangerously close center distance
-                # 3. Approaching and close
-                is_collision = iou > self.OVERLAP_IOU_THRESH or \
-                               dist < (avg_w * 0.75) or \
-                               (is_approaching and dist < avg_w * 1.2 and iou > 0.15)
+                # 1. High IoU overlap (ONLY trigger — proximity triggers removed)
+                is_collision = iou > self.OVERLAP_IOU_THRESH
 
                 if is_collision:
-                    reason = "IoU>0.35" if iou > self.OVERLAP_IOU_THRESH else "dist<0.75w" if dist < (avg_w * 0.75) else "approaching"
+                    reason = "IoU>0.35"
                     print(f"[INSTRUMENTATION] FREEZE TRIGGER: gid1={gids[i]} gid2={gids[j]} iou={iou:.3f} dist={dist:.1f} reason={reason}")
                     currently_overlapping.add(gids[i])
                     currently_overlapping.add(gids[j])
