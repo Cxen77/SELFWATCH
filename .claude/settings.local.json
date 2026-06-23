@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m py_compile memory/identity_store.py)",
+      "Bash(python -m py_compile engine/pipeline.py memory/identity_store.py)",
+      "Bash(python _smoke_identity_store.py)",
+      "Bash(ls -d venv .venv env)",
+      "Bash(ls Scripts/python*)",
+      "Bash(ls venv/Scripts/python* .venv/Scripts/python*)",
+      "Bash(which python *)",
+      "Bash(venv/Scripts/python.exe _smoke_identity_store.py)",
+      "Bash(venv/Scripts/python.exe -c \"import engine.pipeline as p; print\\('PIPELINE IMPORT OK'\\); print\\('IdentityStore attr present:', hasattr\\(p, 'IdentityStore'\\)\\)\")",
+      "Bash(rm -f _smoke_identity_store.py)",
+      "Bash(venv/Scripts/python.exe _analyze_mature_lost.py)",
+      "Bash(venv/Scripts/python.exe -c ' *)",
+      "Bash(venv/Scripts/python.exe *)",
+      "Bash(python -c ' *)",
+      "Bash(echo \"exit_with_fix=$?\")",
+      "Bash(xxd)",
+      "Bash(python -m py_compile app.py)",
+      "Bash(awk ' *)",
+      "Bash(awk 'NR>=1')",
+      "Bash(python -)",
+      "Read(//tmp/**)"
+    ]
+  }
+}

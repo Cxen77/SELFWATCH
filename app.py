@@ -1,3 +1,19 @@
+import sys
+
+# ── Safe UTF-8 stdout/stderr (must run before any print) ──────────────
+# When stdout is redirected to a file/pipe on Windows, Python picks the
+# locale encoding (cp1252) instead of the console's UTF-8. Status prints
+# containing glyphs like "✓"/"⚠" then raise UnicodeEncodeError, which
+# kills the sw-multicam-startup thread before _finalize_stream_start().
+# Reconfiguring to UTF-8 makes `python app.py > log 2>&1` behave exactly
+# like an attached console. errors="backslashreplace" is belt-and-braces:
+# even a stream that cannot be reconfigured will never crash on encode.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="backslashreplace")
+    except (AttributeError, ValueError):
+        pass
+
 import os
 import time
 import cv2

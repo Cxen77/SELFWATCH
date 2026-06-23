@@ -368,6 +368,19 @@ class StrongSORTTracker:
                               f"area_ratio={area_ratio:.2f} aspect_ratio={aspect_ratio_ratio:.2f} "
                               f"reid_sim={sim:.3f} frozen={trk.local_id in frozen_lids} cd={trk.local_id in cooldown_lids}")
 
+                        # ── Shadow-only EMA-vs-anchor drift measurement ──
+                        # Read-only. Changes NO matching/assignment/recovery
+                        # decision. Logs the case where durable anchor memory
+                        # still matches but the drifted EMA has fallen below
+                        # the live appearance gate.
+                        if (trk._anchor_embedding is not None and best_emb is not None
+                                and np.linalg.norm(best_emb) > 0):
+                            anchor_sim = float(np.dot(trk._anchor_embedding, best_emb))
+                            if anchor_sim >= 0.75 and sim < 0.70:
+                                print(f"[ANCHOR DRIFT] gid={trk.global_id} local={trk.local_id} "
+                                      f"ema={sim:.3f} anchor={anchor_sim:.3f} "
+                                      f"gap={anchor_sim - sim:.3f} pred_err={best_dist:.1f}")
+
             trk.mark_lost(frame_delta=frame_delta)
 
         # ── Initialize new tracks from unmatched high-conf dets ──────
