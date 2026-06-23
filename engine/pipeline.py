@@ -353,101 +353,12 @@ class SelfWatchPipeline:
                 if _t.is_lost and _t.time_since_update == 1:
                     self._tracer.log_lost(self.frame_count, _t)
 
-        # ── Post-Freeze Separation Verification ──────────────────────
+        # ── Post-Freeze Separation Verification (DISABLED FOR VALIDATION) ──
         # Runs AFTER tracker association, BEFORE identity propagation.
-        # For collision-partner pairs recently exiting the frozen state:
-        # compare pre-freeze stable embeddings against the tracker's
-        # current assignment. If appearances indicate a swap, correct
-        # the track state immediately — before any GID update.
+        # This is currently disabled to validate if it causes visual ID oscillation.
         #
-        # Safety: only fires for active cooldown pairs. Fail-safe: if
-        # any embedding is unavailable, the pair is silently skipped.
-        _SWAP_MARGIN = 0.10   # Net appearance gain required to trigger swap
-        _sep_checked = set()  # Prevent double-checking mirrored pairs
-
-        for gid_a, partners in list(self.occlusion_manager._collision_partners.items()):
-            if not self.occlusion_manager.is_in_cooldown(gid_a):
-                continue
-            for gid_b in partners:
-                if not self.occlusion_manager.is_in_cooldown(gid_b):
-                    continue
-                pair_key = (min(gid_a, gid_b), max(gid_a, gid_b))
-                if pair_key in _sep_checked:
-                    continue
-                _sep_checked.add(pair_key)
-
-                # Resolve gid → currently matched, confirmed track
-                trk_a, trk_b = None, None
-                for _t in self.tracker.tracks:
-                    if not (_t.is_confirmed and _t.time_since_update == 0):
-                        continue
-                    _tgid = self.global_id_manager.get_global_id(_t.local_id)
-                    if _tgid == gid_a:
-                        trk_a = _t
-                    elif _tgid == gid_b:
-                        trk_b = _t
-                if trk_a is None or trk_b is None:
-                    continue  # At least one person not currently detected — skip
-
-                # Pre-freeze stable embeddings (frozen during overlap — not polluted)
-                am_a = self.active_memory.get_identity(gid_a)
-                am_b = self.active_memory.get_identity(gid_b)
-                if am_a is None or am_b is None:
-                    continue
-                pre_a = am_a.get("stable_embedding")
-                pre_b = am_b.get("stable_embedding")
-                if pre_a is None or pre_b is None:
-                    continue
-
-                # Current post-separation embeddings (L2-normalized)
-                cur_a = trk_a.embedding
-                cur_b = trk_b.embedding
-                if cur_a is None or cur_b is None:
-                    continue
-
-                same_score = float(np.dot(pre_a, cur_a)) + float(np.dot(pre_b, cur_b))
-                swap_score = float(np.dot(pre_a, cur_b)) + float(np.dot(pre_b, cur_a))
-
-                if swap_score > same_score + _SWAP_MARGIN:
-                    # Tracker assigned detections to the wrong tracks.
-                    # Swap box, smooth_box, embedding, score, _last_observed_box
-                    # so the identity layer sees corrected data.
-                    _box_a = trk_a.box.copy()
-                    _box_b = trk_b.box.copy()
-                    _emb_a, _emb_b = cur_a.copy(), cur_b.copy()
-                    _score_a, _score_b = trk_a.score, trk_b.score
-
-                    trk_a.box                = _box_b
-                    trk_a.smooth_box         = _box_b.copy()
-                    trk_a._last_observed_box = _box_b.copy()
-                    trk_a.embedding          = _emb_b
-                    trk_a.score              = _score_b
-
-                    trk_b.box                = _box_a
-                    trk_b.smooth_box         = _box_a.copy()
-                    trk_b._last_observed_box = _box_a.copy()
-                    trk_b.embedding          = _emb_a
-                    trk_b.score              = _score_a
-
-                    # Patch the active dict so the render layer sees the swap
-                    if trk_a.local_id in active:
-                        active[trk_a.local_id] = _box_b.tolist()
-                    if trk_b.local_id in active:
-                        active[trk_b.local_id] = _box_a.tolist()
-
-                    decision = "SWAP"
-                else:
-                    decision = "KEEP"
-
-                print(
-                    f"[SEPARATION VERIFY] pair=({gid_a},{gid_b}) "
-                    f"same={same_score:.3f} swap={swap_score:.3f} "
-                    f"decision={decision}"
-                )
-                if self._tracer:
-                    self._tracer.log_sep_verify(
-                        self.frame_count, gid_a, gid_b,
-                        same_score, swap_score, decision)
+        # for gid_a, partners in list(self.occlusion_manager._collision_partners.items()):
+        #     pass
         # ── End Separation Verification ───────────────────────────────
 
         # ── Compute identity states BEFORE reasoning ─────────────────

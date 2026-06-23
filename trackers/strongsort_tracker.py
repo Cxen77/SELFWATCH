@@ -491,6 +491,48 @@ class StrongSORTTracker:
                 is_zero = "YES" if np.sum(np.abs(embeddings[orig_i])) < 1e-6 else "NO"
                 print(f"  [TRACKER DEBUG] NEW LOCAL TRACK SPAWNED: local={new_track.local_id} conf={scores[orig_i]:.2f} zero_emb={is_zero}")
 
+        # ── Same-Frame Gap Resolution (Reactivation) ────────────────
+        valid_new_tracks = []
+        used_same_frame = set()
+
+        for new_trk in new_tracks:
+            new_cx = (new_trk.box[0] + new_trk.box[2]) / 2
+            new_cy = (new_trk.box[1] + new_trk.box[3]) / 2
+            new_aspect = STrack._box_aspect(new_trk.box)
+
+            best_same_frame = None
+            best_dist_sf = float('inf')
+
+            for t in self.tracks:
+                if t.is_lost and t.time_since_update == 1 and t not in used_same_frame:
+                    if t.total_hits < 3:
+                        continue
+
+                    proj_cx = (t._last_observed_box[0] + t._last_observed_box[2]) / 2 + t._last_observed_vel[0]
+                    proj_cy = (t._last_observed_box[1] + t._last_observed_box[3]) / 2 + t._last_observed_vel[1]
+                    dist = ((new_cx - proj_cx) ** 2 + (new_cy - proj_cy) ** 2) ** 0.5
+
+                    rem_aspect = STrack._box_aspect(t._last_observed_box)
+                    aspect_diff = abs(new_aspect - rem_aspect) / max(rem_aspect, 0.1)
+
+                    if aspect_diff <= 0.4 and dist < 80 and dist < best_dist_sf:
+                        best_dist_sf = dist
+                        best_same_frame = t
+
+            if best_same_frame is not None:
+                print(f"  [IDSR SAME FRAME] Found opportunity: new local={new_trk.local_id} matches lost local={best_same_frame.local_id} dist={best_dist_sf:.1f}px")
+                # REACTIVATE the mature track instead of object replacement!
+                best_same_frame.update(new_trk.box, new_trk.score, new_trk.embedding, 
+                                       min_quality_score=self.min_quality_score,
+                                       frame_shape=frame_shape, frame_delta=frame_delta)
+                used_same_frame.add(best_same_frame)
+                print(f"  [IDSR SAME FRAME SUCCESS] Reactivated mature track local={best_same_frame.local_id}")
+                # We intentionally do NOT append new_trk to valid_new_tracks, destroying it.
+            else:
+                valid_new_tracks.append(new_trk)
+
+        new_tracks = valid_new_tracks
+
         # ─────────────────────────────────────────────────────────────
         # STAGE 4: IDSR — ID Switch Rectification
         #          Recently removed track data is kept in history for
