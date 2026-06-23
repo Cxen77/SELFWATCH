@@ -21,7 +21,8 @@
       "Bash(awk ' *)",
       "Bash(awk 'NR>=1')",
       "Bash(python -)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Bash(powershell *)"
     ]
   }
 }
