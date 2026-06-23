@@ -1,0 +1,60 @@
+                am_data = self.active_memory.get_identity(gid)
+                lifetime = am_data.get("age", 0) if am_data else 0
+                if lifetime < MIN_PRESERVE_LIFETIME:
+                    self.active_memory.remove(gid)
+                    self._set_state(gid, STATE_DEAD)
+                    self.ownership_sm.archive(gid, reason="transient")
+
+        # Re-clean dead
+        dead_gids = [gid for gid, d in self._id_states.items()
+                     if d["state"] == STATE_DEAD]
+        for gid in dead_gids:
+            del self._id_states[gid]
+            self.ownership_sm.remove(gid)
+
+        # Decay warm memory
+        self.warm_memory.decay(time.perf_counter())
+
+        self._prev_lid_to_gid = current_lid_to_gid
+        self._prev_lid_is_prov = current_lid_is_prov
+        t_mem1 = time.perf_counter()
+
+        # ── Draw ─────────────────────────────────────────────────────
+        t_draw0 = time.perf_counter()
+
+        # Build render list: ONE box per global_id
+        display = {}  # gid -> (box, render_state)
+
+        # ACTIVE tracks: normal rendering
+        for local_id, tbox in active.items():
+            if self.global_id_manager.is_provisional(local_id):
+                continue  # Delay rendering provisional new IDs
+            gid = self.global_id_manager.get_global_id(local_id)
+            vel = None
+            age = 0
+            assoc_data = {}
+            for t in self.tracker.tracks:
+                if t.local_id == local_id:
+                    vel = t.vel.tolist()
+                    age = t.age
+                    assoc_data = {
+                        "cost": getattr(t, "last_assoc_cost", 0.0),
+                        "method": getattr(t, "last_assoc_method", "NEW"),
+                        "cbiou": getattr(t, "cbiou_buffer", 0)
+                    }
+                    break
+            display[gid] = (tbox, STATE_ACTIVE, local_id, vel, age, assoc_data)
+
+        # THINKING tracks: render predicted box (faded)
+        for gid, data in self._id_states.items():
+            if data["state"] == STATE_THINKING and gid not in display:
+                box = data.get("last_box")
+                if box:
+                    am_data = self.active_memory.get_identity(gid)
+                    vel = am_data.get("last_velocity", [0, 0]) if am_data else [0, 0]
+                    age = am_data.get("age", 0) if am_data else 0
+                    display[gid] = (box, STATE_THINKING, data.get("owning_lid", "?"), vel, age, {})
+
+        # ── Visual Identity Metrics ──────────────────────────────────
+        # Capture pre-arbitration display for forensic comparison
+        raw_display = {}

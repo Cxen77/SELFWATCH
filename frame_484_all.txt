@@ -1,0 +1,2 @@
+[FORENSIC MATCH] frame=484 det=6 trk=6 local=33 iou=0.791 app_dist=-0.000 center_dist=5.5 cost=0.073 frozen=False cooldown=False
+[ARBITRATION SUPPRESS] frame=484 suppressed_gid=10 reason=keep_established

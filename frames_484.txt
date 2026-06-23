@@ -1,0 +1,15 @@
+[FORENSIC MATCH] frame=484 det=6 trk=6 local=33 iou=0.791 app_dist=-0.000 center_dist=5.5 cost=0.073 frozen=False cooldown=False
+[ARBITRATION SUPPRESS] frame=484 suppressed_gid=10 reason=keep_established
+[OWNERSHIP ASSIGNMENT] frame=486 local=10 gid=10 hits=232 det=4 iou=0.906 app=-0.000 cdist=2.0 cost=0.033 reason=App traj_err=2.0 frozen=False emb_vs_iou=ok | anchorΓåÆcurr=1.000 detΓåÆanchor=1.000
+[ARBITRATION SUPPRESS] frame=486 suppressed_gid=10 reason=keep_established
+[OWNERSHIP ASSIGNMENT] frame=487 local=10 gid=10 hits=233 det=5 iou=0.887 app=-0.000 cdist=5.6 cost=0.040 reason=App traj_err=5.6 frozen=False emb_vs_iou=ok | anchorΓåÆcurr=1.000 detΓåÆanchor=1.000
+[ARBITRATION SUPPRESS] frame=487 suppressed_gid=10 reason=keep_established
+[OWNERSHIP ASSIGNMENT] frame=488 local=10 gid=10 hits=234 det=6 iou=0.929 app=0.000 cdist=2.2 cost=0.025 reason=App traj_err=2.2 frozen=False emb_vs_iou=ok | anchorΓåÆcurr=1.000 detΓåÆanchor=1.000
+[ARBITRATION SUPPRESS] frame=488 suppressed_gid=10 reason=keep_established
+[OWNERSHIP ASSIGNMENT] frame=489 local=10 gid=10 hits=235 det=6 iou=0.804 app=-0.000 cdist=10.3 cost=0.068 reason=App traj_err=10.3 frozen=False emb_vs_iou=ok | anchorΓåÆcurr=1.000 detΓåÆanchor=1.000
+[ARBITRATION SUPPRESS] frame=489 suppressed_gid=10 reason=keep_established
+[OWNERSHIP ASSIGNMENT] frame=490 local=10 gid=10 hits=236 det=4 iou=0.958 app=0.000 cdist=1.4 cost=0.015 reason=App traj_err=1.4 frozen=False emb_vs_iou=ok | anchorΓåÆcurr=1.000 detΓåÆanchor=1.000
+[ARBITRATION SUPPRESS] frame=490 suppressed_gid=10 reason=keep_established
+[OWNERSHIP ASSIGNMENT] frame=491 local=10 gid=10 hits=237 det=4 iou=0.910 app=0.000 cdist=3.6 cost=0.032 reason=App traj_err=3.6 frozen=False emb_vs_iou=ok | anchorΓåÆcurr=1.000 detΓåÆanchor=1.000
+[ARBITRATION SUPPRESS] frame=491 suppressed_gid=10 reason=keep_established
+[ARBITRATION SUPPRESS] frame=492 suppressed_gid=10 reason=keep_established

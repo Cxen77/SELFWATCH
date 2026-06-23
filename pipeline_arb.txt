@@ -1,0 +1,70 @@
+                box = data.get("last_box")
+                if box:
+                    am_data = self.active_memory.get_identity(gid)
+                    vel = am_data.get("last_velocity", [0, 0]) if am_data else [0, 0]
+                    age = am_data.get("age", 0) if am_data else 0
+                    display[gid] = (box, STATE_THINKING, data.get("owning_lid", "?"), vel, age, {})
+
+        # ── Visual Identity Metrics ──────────────────────────────────
+        # Capture pre-arbitration display for forensic comparison
+        raw_display = {}
+        for gid, (tbox, state, lid, vel, age, assoc) in display.items():
+            raw_display[gid] = {
+                "box": list(tbox) if not isinstance(tbox, list) else tbox,
+                "state": state,
+            }
+
+        # [INSTRUMENTATION FOR DUPLICATE ARBITRATION]
+        if 10 in display or 33 in display:
+            active_gids = list(display.keys())
+            print(f"[RENDERER PRE-ARBITRATION] frame={self.frame_count} active_gids={active_gids}")
+            for target_gid in [10, 33]:
+                if target_gid in display:
+                    tbox, state, lid, vel, age, assoc = display[target_gid]
+                    print(f"  -> Pre-Arbitration: gid={target_gid} local_id={lid} box={tbox} state={state}")
+
+        # OWNERSHIP ARBITRATION: enforce single visual identity per region
+        display, suppressed_entries = self.ownership_arbiter.arbitrate(
+            display, frozen_gids=frozen_gids, frame_count=self.frame_count)
+
+        if suppressed_entries:
+            for sup_gid, sup_reason in suppressed_entries:
+                self.event_logger.log("visual_suppress", sup_gid,
+                                      reason=sup_reason, frame=self.frame_count)
+                if sup_gid in (10, 33):
+                    print(f"[ARBITRATION SUPPRESS] frame={self.frame_count} suppressed_gid={sup_gid} reason={sup_reason}")
+
+        if 10 in display or 33 in display:
+            rendered_gids = list(display.keys())
+            print(f"[RENDERER POST-ARBITRATION] frame={self.frame_count} rendered_gids={rendered_gids}")
+
+        # Detect overlapping rendered boxes (human-perceived duplicates)
+        display_boxes = [(gid, tbox) for gid, (tbox, *_) in display.items()]
+        n_duplicates = 0
+        for i in range(len(display_boxes)):
+            for j in range(i + 1, len(display_boxes)):
+                gid_a, box_a = display_boxes[i]
+                gid_b, box_b = display_boxes[j]
+                # Check IoU between rendered boxes
+                ix1 = max(box_a[0], box_b[0])
+                iy1 = max(box_a[1], box_b[1])
+                ix2 = min(box_a[2], box_b[2])
+                iy2 = min(box_a[3], box_b[3])
+                inter = max(0, ix2 - ix1) * max(0, iy2 - iy1)
+                area_a = max(1, (box_a[2]-box_a[0]) * (box_a[3]-box_a[1]))
+                area_b = max(1, (box_b[2]-box_b[0]) * (box_b[3]-box_b[1]))
+                overlap = inter / (area_a + area_b - inter + 1e-6)
+                if overlap > 0.3:
+                    n_duplicates += 1
+        self.metrics.record_duplicate_boxes(n_duplicates)
+
+        # Update stability score
+        n_active = sum(1 for _, (_, s, *_) in display.items() if s == STATE_ACTIVE)
+        n_thinking = sum(1 for _, (_, s, *_) in display.items() if s == STATE_THINKING)
+        n_phantom = self.phantom_tracker.count
+        self.metrics.update_stability(n_active, n_thinking, n_duplicates)
+
+        # ── Phase 3: Decoupled Render Metadata Generation ────────────────
+        # Instead of drawing directly in the inference thread, collect all data needed by OverlayRenderer
+        
+        layer_flags = {

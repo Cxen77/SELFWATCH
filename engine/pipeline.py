@@ -572,9 +572,23 @@ class SelfWatchPipeline:
                     # Remove active track from provisional since it now inherits a committed identity!
                     self.global_id_manager._provisional.pop(t_active.local_id, None)
                     
-                    # Deactivate the ghost track to prevent it from persisting or being stolen!
-                    best_ghost.state = STrack.STATE_LOST
-                    best_ghost.time_since_update = 1000  # Instantly age out and die!
+                    # ZOMBIE RESURRECTION FIX:
+                    # Physically remove the ghost track from self.tracker.tracks NOW.
+                    # The previous approach (time_since_update = 1000) was a logical kill that
+                    # ran AFTER _cleanup() had already executed for this frame. This meant the
+                    # ghost track survived into the next frame's association pipeline where
+                    # C-BIoU (which ignores appearance) could match it to a bystander, reset
+                    # time_since_update to 0, and resurrect it as a permanent duplicate track
+                    # sharing the same GID as the intended recipient. This created silent visual
+                    # identity oscillation undetectable by ID switch metrics.
+                    ghost_local_id = best_ghost.local_id
+                    pre_purge_count = len(self.tracker.tracks)
+                    self.tracker.tracks = [t for t in self.tracker.tracks
+                                           if t.local_id != ghost_local_id]
+                    purged = pre_purge_count - len(self.tracker.tracks)
+                    if purged > 0:
+                        print(f"[GHOST PURGED] local={ghost_local_id} gid={ghost_gid} "
+                              f"(physically removed from tracker — zombie resurrection prevented)")
                     
                     # Clear any occlusion or cooldown trace
                     if self.occlusion_manager.is_in_cooldown(ghost_gid):
@@ -582,7 +596,7 @@ class SelfWatchPipeline:
                         self.occlusion_manager._exit_trajectories.pop(ghost_gid, None)
                         self.occlusion_manager._collision_partners.pop(ghost_gid, None)
                         
-                    print(f"[GHOST REMEDIATION] Transferred GID={ghost_gid} from ghost track local={best_ghost.local_id} "
+                    print(f"[GHOST REMEDIATION] Transferred GID={ghost_gid} from ghost track local={ghost_local_id} "
                           f"to active track local={t_active.local_id} (old_gid={old_active_gid}, visual_dist={best_dist:.3f})")
 
         # Detect ID switches
@@ -673,12 +687,18 @@ class SelfWatchPipeline:
             if track:
                 box_val = track.smooth_box.tolist()
 
+                anchor_sim = 0.0
+                anchor_emb = getattr(track, "_anchor_embedding", None)
+                if anchor_emb is not None and track.embedding is not None:
+                    anchor_sim = float(np.dot(anchor_emb, track.embedding))
+
                 if gid in frozen_gids:
                     # FROZEN: do NOT update appearance/fingerprint
                     # Only update trajectory position (no embedding, no crop)
                     self.active_memory.update(
                         gid, None, box_val, track.score, frame_delta,
-                        crop=None, velocity=track.vel.tolist())
+                        crop=None, velocity=track.vel.tolist(),
+                        hits=track.total_hits, anchor_sim=anchor_sim)
                 else:
                     # Normal: full fingerprint update with crop
                     track_crop = self._find_crop_for_track(
@@ -689,7 +709,8 @@ class SelfWatchPipeline:
                     vel = track.vel.tolist()
                     self.active_memory.update(
                         gid, track.embedding, box_val, track.score,
-                        frame_delta, crop=track_crop, velocity=vel)
+                        frame_delta, crop=track_crop, velocity=vel,
+                        hits=track.total_hits, anchor_sim=anchor_sim)
 
         # 2. THINKING: recently lost, within hold window
         for gid, track in thinking_tracks_by_gid.items():
@@ -813,10 +834,17 @@ class SelfWatchPipeline:
                 if t.local_id == local_id:
                     vel = t.vel.tolist()
                     age = t.age
+                    anchor_sim = 0.0
+                    anchor_emb = getattr(t, "_anchor_embedding", None)
+                    if anchor_emb is not None and t.embedding is not None:
+                        anchor_sim = float(np.dot(anchor_emb, t.embedding))
+
                     assoc_data = {
                         "cost": getattr(t, "last_assoc_cost", 0.0),
                         "method": getattr(t, "last_assoc_method", "NEW"),
-                        "cbiou": getattr(t, "cbiou_buffer", 0)
+                        "cbiou": getattr(t, "cbiou_buffer", 0),
+                        "hits": t.total_hits,
+                        "anchor_sim": anchor_sim
                     }
                     break
             display[gid] = (tbox, STATE_ACTIVE, local_id, vel, age, assoc_data)
@@ -828,8 +856,9 @@ class SelfWatchPipeline:
                 if box:
                     am_data = self.active_memory.get_identity(gid)
                     vel = am_data.get("last_velocity", [0, 0]) if am_data else [0, 0]
-                    age = am_data.get("age", 0) if am_data else 0
-                    display[gid] = (box, STATE_THINKING, data.get("owning_lid", "?"), vel, age, {})
+                    hits = am_data.get("hits", 0) if am_data else 0
+                    anchor_sim = am_data.get("anchor_sim", 0.0) if am_data else 0.0
+                    display[gid] = (box, STATE_THINKING, data.get("owning_lid", "?"), vel, age, {"hits": hits, "anchor_sim": anchor_sim})
 
         # ── Visual Identity Metrics ──────────────────────────────────
         # Capture pre-arbitration display for forensic comparison

@@ -1,0 +1,36 @@
+[INSTRUMENTATION] GLOBAL NEW GID ASSIGNED: local=10 -> new_gid=10 (NO_PROPOSAL)
+[TRACKER DEBUG] NEW LOCAL TRACK SPAWNED: local=33 conf=0.62 zero_emb=NO
+[INSTRUMENTATION] TRACK ENTERED LOST STATE: local=33 time_since_update=1 age=90 hits=83
+[TRACKER DEBUG] STrack local=33 RECOVERED! recovery_count=1
+[INSTRUMENTATION] TRACK ENTERED LOST STATE: local=33 time_since_update=1 age=111 hits=84
+[TRACKER DEBUG] STrack local=33 RECOVERED! recovery_count=2
+[INSTRUMENTATION] TRACK ENTERED LOST STATE: local=33 time_since_update=1 age=125 hits=90
+[TRACKER DEBUG] STrack local=33 RECOVERED! recovery_count=3
+[INSTRUMENTATION] TRACK ENTERED LOST STATE: local=33 time_since_update=1 age=130 hits=91
+[TRACKER DEBUG] STrack local=33 RECOVERED! recovery_count=4
+[INSTRUMENTATION] TRACK ENTERED LOST STATE: local=33 time_since_update=1 age=135 hits=95
+[TRACKER DEBUG] STrack local=33 RECOVERED! recovery_count=5
+[INSTRUMENTATION] TRACK ENTERED LOST STATE: local=33 time_since_update=1 age=163 hits=122
+[TRACKER DEBUG] STrack local=33 RECOVERED! recovery_count=6
+[INSTRUMENTATION] TRACK ENTERED LOST STATE: local=33 time_since_update=1 age=175 hits=123
+[TRACKER DEBUG] NEW LOCAL TRACK SPAWNED: local=49 conf=0.69 zero_emb=NO
+[INSTRUMENTATION] GLOBAL NEW GID ASSIGNED: local=49 -> new_gid=33 (NO_PROPOSAL)
+[INSTRUMENTATION] TRACK ENTERED LOST STATE: local=49 time_since_update=1 age=3 hits=2
+[TRACKER DEBUG] STrack local=49 RECOVERED! recovery_count=1
+[TRACKER DEBUG] STrack local=33 RECOVERED! recovery_count=7
+[INSTRUMENTATION] TRACK ENTERED LOST STATE: local=49 time_since_update=1 age=96 hits=92
+[INSTRUMENTATION] TRACK ENTERED LOST STATE: local=33 time_since_update=1 age=362 hits=199
+[TRACKER DEBUG] STrack local=33 RECOVERED! recovery_count=8
+[INSTRUMENTATION] TRACK ENTERED LOST STATE: local=33 time_since_update=1 age=418 hits=200
+[TRACKER DEBUG] STrack local=33 RECOVERED! recovery_count=9
+[INSTRUMENTATION] TRACK ENTERED LOST STATE: local=33 time_since_update=1 age=584 hits=201
+[TRACKER DEBUG] STrack local=33 RECOVERED! recovery_count=10
+[INSTRUMENTATION] TRACK ENTERED LOST STATE: local=33 time_since_update=1 age=597 hits=205
+[TRACKER DEBUG] STrack local=33 RECOVERED! recovery_count=11
+[INSTRUMENTATION] TRACK ENTERED LOST STATE: local=33 time_since_update=1 age=612 hits=216
+[TRACKER DEBUG] STrack local=33 RECOVERED! recovery_count=12
+[INSTRUMENTATION] TRACK ENTERED LOST STATE: local=33 time_since_update=1 age=621 hits=224
+[TRACKER DEBUG] STrack local=33 RECOVERED! recovery_count=13
+[INSTRUMENTATION] TRACK ENTERED LOST STATE: local=33 time_since_update=1 age=639 hits=235
+[TRACKER DEBUG] STrack local=33 RECOVERED! recovery_count=14
+[INSTRUMENTATION] TRACK ENTERED LOST STATE: local=33 time_since_update=1 age=856 hits=237

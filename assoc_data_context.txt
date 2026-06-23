@@ -1,0 +1,20 @@
+            if self.global_id_manager.is_provisional(local_id):
+                continue  # Delay rendering provisional new IDs
+            gid = self.global_id_manager.get_global_id(local_id)
+            vel = None
+            age = 0
+            assoc_data = {}
+            for t in self.tracker.tracks:
+                if t.local_id == local_id:
+                    vel = t.vel.tolist()
+                    age = t.age
+                    assoc_data = {
+                        "cost": getattr(t, "last_assoc_cost", 0.0),
+                        "method": getattr(t, "last_assoc_method", "NEW"),
+                        "cbiou": getattr(t, "cbiou_buffer", 0)
+                    }
+                    break
+            display[gid] = (tbox, STATE_ACTIVE, local_id, vel, age, assoc_data)
+
+        # THINKING tracks: render predicted box (faded)
+        for gid, data in self._id_states.items():

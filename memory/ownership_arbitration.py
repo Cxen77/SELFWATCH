@@ -108,44 +108,69 @@ class OwnershipArbitrationLayer:
 
     def _resolve(self, gid_a, gid_b, display):
         """
-        Keep the established owner. No scoring, no competition.
-
+        Resolve duplicate visual identity by prioritizing absolute maturity 
+        and high-confidence anchor matches.
+        
         Priority:
-          1. If we've seen this pair before, keep the previous winner
-          2. Otherwise: ACTIVE beats THINKING
-          3. Otherwise: higher stability wins
-          4. Otherwise: lower gid (older identity) wins
+          1. Immunity Gate: GID with anchor_similarity > 0.50 wins over one without.
+          2. Absolute Maturity (total hits): Older global identity wins.
+          3. Fallback: ACTIVE vs THINKING state.
+          4. Fallback: Short-term stability counters.
         """
         key = (min(gid_a, gid_b), max(gid_a, gid_b))
-
-        # Already established an owner for this pair — keep them
-        if key in self._visual_owners:
-            owner = self._visual_owners[key]
-            if owner in display:
-                other = gid_b if owner == gid_a else gid_a
-                return owner, other, "keep_established"
-            else:
-                # Previous owner gone, new one takes over
-                other = gid_b if owner == gid_a else gid_a
-                self._visual_owners[key] = other
-                return other, owner, "owner_gone"
-
-        # New overlap — pick winner by seniority
+        
         state_a, state_b = display[gid_a][1], display[gid_b][1]
-        stab_a = self._stability_counters.get(gid_a, 0)
-        stab_b = self._stability_counters.get(gid_b, 0)
+        hits_a = display[gid_a][5].get("hits", 0)
+        hits_b = display[gid_b][5].get("hits", 0)
+        anchor_sim_a = display[gid_a][5].get("anchor_sim", 0.0)
+        anchor_sim_b = display[gid_b][5].get("anchor_sim", 0.0)
 
-        if state_a == STATE_ACTIVE and state_b == STATE_THINKING:
+        # 1. Immunity Gate
+        if anchor_sim_a > 0.50 and anchor_sim_b <= 0.50:
             winner, loser = gid_a, gid_b
+            reason = f"immunity_gate({anchor_sim_a:.2f})"
+        elif anchor_sim_b > 0.50 and anchor_sim_a <= 0.50:
+            winner, loser = gid_b, gid_a
+            reason = f"immunity_gate({anchor_sim_b:.2f})"
+        
+        # 2. Absolute Maturity
+        elif hits_a > hits_b:
+            winner, loser = gid_a, gid_b
+            reason = f"maturity({hits_a}vs{hits_b})"
+        elif hits_b > hits_a:
+            winner, loser = gid_b, gid_a
+            reason = f"maturity({hits_b}vs{hits_a})"
+            
+        # 3. Fallback to state
+        elif state_a == STATE_ACTIVE and state_b == STATE_THINKING:
+            winner, loser = gid_a, gid_b
+            reason = "state(ACTIVEvsTHINKING)"
         elif state_b == STATE_ACTIVE and state_a == STATE_THINKING:
             winner, loser = gid_b, gid_a
-        elif stab_a >= stab_b:
-            winner, loser = gid_a, gid_b
+            reason = "state(ACTIVEvsTHINKING)"
+            
+        # 4. Fallback to stability
         else:
-            winner, loser = gid_b, gid_a
+            stab_a = self._stability_counters.get(gid_a, 0)
+            stab_b = self._stability_counters.get(gid_b, 0)
+            if stab_a >= stab_b:
+                winner, loser = gid_a, gid_b
+                reason = f"seniority({stab_a}vs{stab_b})"
+            else:
+                winner, loser = gid_b, gid_a
+                reason = f"seniority({stab_b}vs{stab_a})"
 
         self._visual_owners[key] = winner
-        return winner, loser, f"seniority({stab_a}vs{stab_b})"
+
+        if gid_a == 10 or gid_b == 10:
+            print(f"[GID10 ARBITRATION] frame={self._frame_count} "
+                  f"gid_a={gid_a} gid_b={gid_b} "
+                  f"state_a={state_a} state_b={state_b} "
+                  f"total_hits_a={hits_a} total_hits_b={hits_b} "
+                  f"anchor_sim_a={anchor_sim_a} anchor_sim_b={anchor_sim_b} "
+                  f"reason={reason} winner={winner} loser={loser}")
+
+        return winner, loser, reason
 
     # ── Stability Tracking ───────────────────────────────────────────
 

@@ -30,7 +30,7 @@ class ActiveMemory:
         self.identities = {}  # gid -> identity data
 
     def update(self, global_id, embedding, box, score, frame_delta=1,
-               crop=None, velocity=None):
+               crop=None, velocity=None, hits=None, anchor_sim=None):
         """
         Update the active memory for a global ID.
 
@@ -62,6 +62,8 @@ class ActiveMemory:
                 "age": 1,
                 "importance": score,
                 "last_velocity": np.array(velocity or [0, 0], dtype=np.float32),
+                "hits": hits if hits is not None else 1,
+                "anchor_sim": anchor_sim if anchor_sim is not None else 0.0,
             }
             return
 
@@ -110,6 +112,11 @@ class ActiveMemory:
         # Update importance
         avg_conf = float(np.mean(identity["confidence_history"]))
         identity["importance"] = (identity["age"] / 30.0) + avg_conf
+        
+        if hits is not None:
+            identity["hits"] = hits
+        if anchor_sim is not None:
+            identity["anchor_sim"] = anchor_sim
 
     def get_identity(self, global_id):
         return self.identities.get(global_id)
