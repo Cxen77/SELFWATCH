@@ -95,3 +95,20 @@ MULTICAM_TRANSITION_MAX_GAP = 120.0    # Max seconds between exit→entry pair
 #  Set to None to disable (zero overhead).
 # ═══════════════════════════════════════════════════════════════════
 TRACE_GID = 28                       # e.g. 3  to trace GID 3
+
+# ═══════════════════════════════════════════════════════════════════
+#  Retail Theft Detection
+# ═══════════════════════════════════════════════════════════════════
+RETAIL_ENABLED = True
+RETAIL_ESP32_URL = "http://192.168.1.100/alert"
+RETAIL_ALERT_THRESHOLD = 70
+RETAIL_ALERT_COOLDOWN = 30.0           # seconds between re-alerts for same person
+RETAIL_ZONES = []                       # Empty = full-frame default zone
+
+# Category-Agnostic Shelf Change Detection
+SHELF_CHANGE_ENABLED = True
+SHELF_CHANGE_ZONES = []                 # Empty = use RETAIL_ZONES; list of (name, x1, y1, x2, y2)
+SHELF_CHANGE_THRESHOLD = 30             # Pixel diff threshold for change detection
+SHELF_CHANGE_MIN_AREA = 400             # Minimum contour area (px^2) to consider
+SHELF_CHANGE_STABLE_FRAMES = 30         # Frames without person to capture reference
+SHELF_CHANGE_CONFIRM_FRAMES = 5         # Frames of persistent change before detection

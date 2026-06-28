@@ -1,0 +1,184 @@
+PHANTOM RECOVERY BRIDGE FORENSIC AUDIT REPORT
+============================================================
+Timestamp: 2026-06-26 00:39:48
+
+SUMMARY STATISTICS
+------------------------------
+Total Candidates: 158
+Accepted: 2
+Rejected: 156
+
+PERFORMANCE METRICS
+------------------------------
+True Positives:  2
+False Positives: 0
+False Negatives: 0
+True Negatives:  156
+Precision: 1.0000 (100.00%)
+Recall:    1.0000 (100.00%)
+F1 Score:  1.0000
+
+RECOMMENDATION
+------------------------------
+RECOMMENDED: Precision >= 95% with 0 false positives. Safe to enable bridge.reactivate().
+
+AUDIT LOG DETAIL
+------------------------------
+frame=00210 lost=0183 det=0 anc=0.000 avg=0.000 dist=057 score=0.172 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0183 det=1 anc=0.000 avg=0.000 dist=057 score=0.172 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0183 det=2 anc=0.000 avg=0.000 dist=057 score=0.172 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0183 det=3 anc=0.000 avg=0.000 dist=057 score=0.172 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0183 det=4 anc=0.000 avg=0.000 dist=057 score=0.172 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0183 det=5 anc=0.000 avg=0.000 dist=057 score=0.172 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0183 det=6 anc=0.000 avg=0.000 dist=057 score=0.172 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0183 det=7 anc=0.000 avg=0.000 dist=057 score=0.172 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0183 det=8 anc=0.000 avg=0.000 dist=057 score=0.172 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0183 det=9 anc=0.000 avg=0.000 dist=057 score=0.172 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0183 det=10 anc=0.000 avg=0.000 dist=057 score=0.171 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0183 det=11 anc=0.000 avg=0.000 dist=057 score=0.171 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0183 det=12 anc=0.000 avg=0.000 dist=057 score=0.171 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0156 det=25 anc=0.000 avg=0.000 dist=098 score=0.151 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0156 det=27 anc=0.000 avg=0.000 dist=098 score=0.151 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0156 det=28 anc=0.000 avg=0.000 dist=098 score=0.151 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0156 det=29 anc=0.000 avg=0.000 dist=098 score=0.151 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0156 det=30 anc=0.000 avg=0.000 dist=098 score=0.151 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0156 det=31 anc=0.000 avg=0.000 dist=098 score=0.151 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0156 det=32 anc=0.000 avg=0.000 dist=098 score=0.151 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0156 det=33 anc=0.000 avg=0.000 dist=098 score=0.151 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0156 det=34 anc=0.000 avg=0.000 dist=098 score=0.151 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0156 det=35 anc=0.000 avg=0.000 dist=098 score=0.151 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0156 det=36 anc=0.000 avg=0.000 dist=098 score=0.151 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0156 det=37 anc=0.000 avg=0.000 dist=098 score=0.151 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0156 det=38 anc=0.000 avg=0.000 dist=098 score=0.151 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0243 det=39 anc=0.000 avg=0.000 dist=192 score=0.104 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0243 det=40 anc=0.000 avg=0.000 dist=193 score=0.104 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0243 det=41 anc=0.000 avg=0.000 dist=192 score=0.104 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0243 det=42 anc=0.000 avg=0.000 dist=192 score=0.104 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0243 det=43 anc=0.000 avg=0.000 dist=193 score=0.104 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0243 det=44 anc=0.000 avg=0.000 dist=192 score=0.104 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0243 det=45 anc=0.000 avg=0.000 dist=193 score=0.104 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0243 det=46 anc=0.000 avg=0.000 dist=193 score=0.104 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0243 det=47 anc=0.000 avg=0.000 dist=192 score=0.104 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0243 det=48 anc=0.000 avg=0.000 dist=193 score=0.104 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0243 det=49 anc=0.000 avg=0.000 dist=192 score=0.104 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0243 det=51 anc=0.000 avg=0.000 dist=193 score=0.104 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0243 det=54 anc=0.000 avg=0.000 dist=192 score=0.104 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0155 det=65 anc=0.000 avg=0.000 dist=113 score=0.144 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0155 det=66 anc=0.000 avg=0.000 dist=112 score=0.144 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0155 det=67 anc=0.000 avg=0.000 dist=113 score=0.144 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0155 det=68 anc=0.000 avg=0.000 dist=112 score=0.144 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0155 det=69 anc=0.000 avg=0.000 dist=112 score=0.144 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0155 det=70 anc=0.000 avg=0.000 dist=113 score=0.144 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0155 det=71 anc=0.000 avg=0.000 dist=113 score=0.144 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0155 det=72 anc=0.000 avg=0.000 dist=112 score=0.144 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0155 det=73 anc=0.000 avg=0.000 dist=113 score=0.144 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0155 det=74 anc=0.000 avg=0.000 dist=112 score=0.144 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0155 det=75 anc=0.000 avg=0.000 dist=112 score=0.144 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0155 det=76 anc=0.000 avg=0.000 dist=112 score=0.144 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00210 lost=0155 det=77 anc=0.000 avg=0.000 dist=112 score=0.144 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0389 det=0 anc=0.000 avg=0.000 dist=080 score=0.160 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0389 det=1 anc=0.000 avg=0.000 dist=080 score=0.160 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0389 det=2 anc=0.000 avg=0.000 dist=080 score=0.160 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0389 det=3 anc=0.000 avg=0.000 dist=080 score=0.160 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0389 det=4 anc=0.000 avg=0.000 dist=080 score=0.160 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0389 det=5 anc=0.000 avg=0.000 dist=080 score=0.160 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0389 det=6 anc=0.000 avg=0.000 dist=080 score=0.160 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0389 det=7 anc=0.000 avg=0.000 dist=080 score=0.160 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0389 det=8 anc=0.000 avg=0.000 dist=080 score=0.160 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0389 det=9 anc=0.000 avg=0.000 dist=080 score=0.160 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0389 det=10 anc=0.000 avg=0.000 dist=080 score=0.160 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0389 det=11 anc=0.000 avg=0.000 dist=080 score=0.160 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0389 det=12 anc=0.000 avg=0.000 dist=080 score=0.160 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0444 det=13 anc=0.000 avg=0.000 dist=056 score=0.172 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0444 det=14 anc=0.000 avg=0.000 dist=056 score=0.172 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0444 det=15 anc=0.000 avg=0.000 dist=056 score=0.172 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0444 det=16 anc=0.000 avg=0.000 dist=056 score=0.172 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0444 det=17 anc=0.000 avg=0.000 dist=056 score=0.172 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0444 det=18 anc=0.000 avg=0.000 dist=056 score=0.172 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0444 det=19 anc=0.000 avg=0.000 dist=056 score=0.172 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0444 det=20 anc=0.000 avg=0.000 dist=056 score=0.172 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0444 det=21 anc=0.000 avg=0.000 dist=056 score=0.172 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0444 det=22 anc=0.000 avg=0.000 dist=056 score=0.172 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0444 det=23 anc=0.000 avg=0.000 dist=056 score=0.172 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0444 det=24 anc=0.000 avg=0.000 dist=056 score=0.172 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0444 det=25 anc=0.000 avg=0.000 dist=056 score=0.172 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0394 det=39 anc=0.000 avg=0.000 dist=111 score=0.145 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0394 det=40 anc=0.000 avg=0.000 dist=111 score=0.145 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0394 det=41 anc=0.000 avg=0.000 dist=111 score=0.145 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0394 det=42 anc=0.000 avg=0.000 dist=111 score=0.145 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0394 det=43 anc=0.000 avg=0.000 dist=111 score=0.145 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0394 det=44 anc=0.000 avg=0.000 dist=111 score=0.145 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0394 det=45 anc=0.000 avg=0.000 dist=111 score=0.145 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0394 det=46 anc=0.000 avg=0.000 dist=111 score=0.145 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0394 det=47 anc=0.000 avg=0.000 dist=111 score=0.145 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0394 det=48 anc=0.000 avg=0.000 dist=111 score=0.145 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0394 det=49 anc=0.000 avg=0.000 dist=111 score=0.145 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0394 det=50 anc=0.000 avg=0.000 dist=111 score=0.145 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00307 lost=0394 det=51 anc=0.000 avg=0.000 dist=111 score=0.145 tsu=044 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=0 anc=0.000 avg=0.000 dist=720 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=1 anc=0.000 avg=0.000 dist=720 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=2 anc=0.000 avg=0.000 dist=720 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=3 anc=0.000 avg=0.000 dist=720 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=4 anc=0.000 avg=0.000 dist=720 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=5 anc=0.000 avg=0.000 dist=720 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=6 anc=0.000 avg=0.000 dist=720 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=7 anc=0.000 avg=0.000 dist=720 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=8 anc=0.000 avg=0.000 dist=720 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=9 anc=0.000 avg=0.000 dist=720 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=10 anc=0.000 avg=0.000 dist=720 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=11 anc=0.000 avg=0.000 dist=720 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=12 anc=0.000 avg=0.000 dist=720 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=13 anc=0.000 avg=0.000 dist=420 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=14 anc=0.000 avg=0.000 dist=420 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=15 anc=0.000 avg=0.000 dist=420 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=16 anc=0.000 avg=0.000 dist=420 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=17 anc=0.000 avg=0.000 dist=419 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=18 anc=0.000 avg=0.000 dist=420 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=19 anc=0.000 avg=0.000 dist=420 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=20 anc=0.000 avg=0.000 dist=420 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=22 anc=0.000 avg=0.000 dist=419 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=23 anc=0.000 avg=0.000 dist=420 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=24 anc=0.000 avg=0.000 dist=419 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=25 anc=0.000 avg=0.000 dist=420 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=26 anc=0.000 avg=0.000 dist=420 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=28 anc=0.000 avg=0.000 dist=602 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=29 anc=0.000 avg=0.000 dist=602 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=30 anc=0.000 avg=0.000 dist=602 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=31 anc=0.000 avg=0.000 dist=602 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=32 anc=0.000 avg=0.000 dist=602 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=33 anc=0.000 avg=0.000 dist=602 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=35 anc=0.000 avg=0.000 dist=602 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=36 anc=0.000 avg=0.000 dist=602 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=37 anc=0.000 avg=0.000 dist=602 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=39 anc=0.000 avg=0.000 dist=602 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=40 anc=0.000 avg=0.000 dist=602 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=42 anc=0.000 avg=0.000 dist=602 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00353 lost=0717 det=45 anc=0.000 avg=0.000 dist=602 score=0.000 tsu=036 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00489 lost=1263 det=13 anc=0.000 avg=0.000 dist=054 score=0.173 tsu=043 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00489 lost=1263 det=14 anc=0.000 avg=0.000 dist=054 score=0.173 tsu=043 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00489 lost=1263 det=15 anc=0.000 avg=0.000 dist=054 score=0.173 tsu=043 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00489 lost=1263 det=16 anc=0.000 avg=0.000 dist=054 score=0.173 tsu=043 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00489 lost=1263 det=17 anc=0.000 avg=0.000 dist=054 score=0.173 tsu=043 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00489 lost=1263 det=18 anc=0.000 avg=0.000 dist=054 score=0.173 tsu=043 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00489 lost=1263 det=19 anc=0.000 avg=0.000 dist=054 score=0.173 tsu=043 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00489 lost=1263 det=20 anc=0.000 avg=0.000 dist=054 score=0.173 tsu=043 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00489 lost=1263 det=21 anc=0.000 avg=0.000 dist=054 score=0.173 tsu=043 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00489 lost=1263 det=22 anc=0.000 avg=0.000 dist=054 score=0.173 tsu=043 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00489 lost=1263 det=23 anc=0.000 avg=0.000 dist=054 score=0.173 tsu=043 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00489 lost=1263 det=24 anc=0.000 avg=0.000 dist=054 score=0.173 tsu=043 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00489 lost=1263 det=25 anc=0.000 avg=0.000 dist=054 score=0.173 tsu=043 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00489 lost=1225 det=26 anc=0.000 avg=0.000 dist=238 score=0.081 tsu=043 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00489 lost=1225 det=27 anc=0.000 avg=0.000 dist=238 score=0.081 tsu=043 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00489 lost=1225 det=28 anc=0.000 avg=0.000 dist=238 score=0.081 tsu=043 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00489 lost=1225 det=29 anc=0.000 avg=0.000 dist=238 score=0.081 tsu=043 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00489 lost=1225 det=30 anc=0.000 avg=0.000 dist=238 score=0.081 tsu=043 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00489 lost=1225 det=31 anc=0.000 avg=0.000 dist=238 score=0.081 tsu=043 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00489 lost=1225 det=32 anc=0.000 avg=0.000 dist=238 score=0.081 tsu=043 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00489 lost=1225 det=33 anc=0.000 avg=0.000 dist=238 score=0.081 tsu=043 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00489 lost=1225 det=34 anc=0.000 avg=0.000 dist=238 score=0.081 tsu=043 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00489 lost=1225 det=35 anc=0.000 avg=0.000 dist=238 score=0.081 tsu=043 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00489 lost=1225 det=36 anc=0.000 avg=0.000 dist=238 score=0.081 tsu=043 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00489 lost=1225 det=37 anc=0.000 avg=0.000 dist=238 score=0.081 tsu=043 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00489 lost=1225 det=38 anc=0.000 avg=0.000 dist=238 score=0.081 tsu=043 would=NO  phase=WITHIN_CLIP_RECOVERY   outcome=TN
+frame=00664 lost=1999 det=26 anc=0.662 avg=0.662 dist=001 score=0.729 tsu=001 would=YES phase=WITHIN_CLIP_RECOVERY   outcome=TP
+frame=00970 lost=2657 det=26 anc=0.676 avg=0.676 dist=001 score=0.741 tsu=001 would=YES phase=WITHIN_CLIP_RECOVERY   outcome=TP

@@ -26,6 +26,7 @@ import cv2
 import numpy as np
 import torch
 import torch.nn.functional as Fnn
+import torchvision
 import torchvision.transforms.functional as TF
 
 from .base import BaseDetector, DetectionResult
@@ -278,12 +279,29 @@ class RTDETRDetector(BaseDetector):
                 predictions, target_sizes=target_sizes)
 
         # ── Extract results (single GPU→CPU transfer) ─────────────────────
+        self._raw_frame_counter = getattr(self, "_raw_frame_counter", 0) + 1
         result = results[0]
-        keep = result["scores"] > conf_threshold
+        raw_keep = result["scores"] > 0.05
+        if raw_keep.any():
+            rk_b = result["boxes"][raw_keep].float().cpu().numpy()
+            rk_s = result["scores"][raw_keep].float().cpu().numpy()
+            rk_l = result["labels"][raw_keep].cpu().numpy()
+            for rb, rs, rl in zip(rk_b, rk_s, rk_l):
+                rcid = int(rl) - 1
+                rcname = _RFDETR_COCO_NAMES.get(int(rl), "object")
+                rbox_str = f"({rb[0]:.1f},{rb[1]:.1f},{rb[2]:.1f},{rb[3]:.1f})"
+                print(f"[RAW DET]\nframe={self._raw_frame_counter}\nclass_id={rcid}\nclass_name={rcname}\nconfidence={rs:.3f}\nbbox={rbox_str}")
 
+        keep = result["scores"] > conf_threshold
         boxes_t  = result["boxes"][keep]   # still GPU
         scores_t = result["scores"][keep]
         labels_t = result["labels"][keep]
+
+        if len(boxes_t) > 0:
+            nms_keep = torchvision.ops.nms(boxes_t, scores_t, iou_threshold=0.45)
+            boxes_t = boxes_t[nms_keep]
+            scores_t = scores_t[nms_keep]
+            labels_t = labels_t[nms_keep]
 
         # Single sync point: move everything at once
         boxes_np  = boxes_t.float().cpu().numpy().astype(np.float32)
@@ -294,7 +312,6 @@ class RTDETRDetector(BaseDetector):
             return DetectionResult.empty()
 
         # ── Remap 1-indexed rfdetr labels → COCO 0-indexed ───────────────
-        # RF-DETR outputs 1 for person. We subtract 1 to match YOLO/ByteTrack (0).
         class_ids = raw_ids - 1
 
         labels = [
@@ -305,10 +322,12 @@ class RTDETRDetector(BaseDetector):
         # ── Filter by target classes ──────────────────────────────────────
         if target_classes is not None:
             mask = np.isin(class_ids, target_classes)
-            boxes_np  = boxes_np[mask]
-            scores_np = scores_np[mask]
-            class_ids = class_ids[mask]
-            labels    = [l for l, m in zip(labels, mask) if m]
+            # Instead of completely discarding non-target classes, remap them
+            # to UNKNOWN_OBJECT (-1) so they can be tracked as generic items.
+            class_ids[~mask] = -1
+            for i, m in enumerate(mask):
+                if not m:
+                    labels[i] = "unknown"
 
         return DetectionResult(
             boxes=boxes_np,
@@ -430,11 +449,29 @@ class RTDETRDetector(BaseDetector):
         # ── 4. Split results per frame ──────────────────────────────────────
         output: list = []
         for i, result in enumerate(results):
+            self._raw_frame_counter = getattr(self, "_raw_frame_counter", 0) + 1
+            raw_keep = result["scores"] > 0.05
+            if raw_keep.any():
+                rk_b = result["boxes"][raw_keep].float().cpu().numpy()
+                rk_s = result["scores"][raw_keep].float().cpu().numpy()
+                rk_l = result["labels"][raw_keep].cpu().numpy()
+                for rb, rs, rl in zip(rk_b, rk_s, rk_l):
+                    rcid = int(rl) - 1
+                    rcname = _RFDETR_COCO_NAMES.get(int(rl), "object")
+                    rbox_str = f"({rb[0]:.1f},{rb[1]:.1f},{rb[2]:.1f},{rb[3]:.1f})"
+                    print(f"[RAW DET]\nframe={self._raw_frame_counter}\nclass_id={rcid}\nclass_name={rcname}\nconfidence={rs:.3f}\nbbox={rbox_str}")
+
             keep = result["scores"] > conf_threshold
 
             boxes_t  = result["boxes"][keep]
             scores_t = result["scores"][keep]
             labels_t = result["labels"][keep]
+
+            if len(boxes_t) > 0:
+                nms_keep = torchvision.ops.nms(boxes_t, scores_t, iou_threshold=0.45)
+                boxes_t = boxes_t[nms_keep]
+                scores_t = scores_t[nms_keep]
+                labels_t = labels_t[nms_keep]
 
             boxes_np  = boxes_t.float().cpu().numpy().astype(np.float32)
             scores_np = scores_t.float().cpu().numpy().astype(np.float32)
@@ -451,10 +488,10 @@ class RTDETRDetector(BaseDetector):
             # Filter by target class
             if target_classes is not None:
                 mask = np.isin(class_ids, target_classes)
-                boxes_np  = boxes_np[mask]
-                scores_np = scores_np[mask]
-                class_ids = class_ids[mask]
-                labels    = [l for l, m in zip(labels, mask) if m]
+                class_ids[~mask] = -1
+                for idx, m in enumerate(mask):
+                    if not m:
+                        labels[idx] = "unknown"
 
             output.append(DetectionResult(
                 boxes=boxes_np,

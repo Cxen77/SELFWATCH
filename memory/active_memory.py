@@ -30,7 +30,7 @@ class ActiveMemory:
         self.identities = {}  # gid -> identity data
 
     def update(self, global_id, embedding, box, score, frame_delta=1,
-               crop=None, velocity=None, hits=None, anchor_sim=None):
+               crop=None, velocity=None, hits=None, anchor_sim=None, class_id=None):
         """
         Update the active memory for a global ID.
 
@@ -64,10 +64,13 @@ class ActiveMemory:
                 "last_velocity": np.array(velocity or [0, 0], dtype=np.float32),
                 "hits": hits if hits is not None else 1,
                 "anchor_sim": anchor_sim if anchor_sim is not None else 0.0,
+                "class_id": class_id if class_id is not None else 0,
             }
             return
 
         identity = self.identities[global_id]
+        if class_id is not None:
+            identity["class_id"] = class_id
         identity["age"] += frame_delta
 
         # Update fingerprint

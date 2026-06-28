@@ -22,7 +22,22 @@
       "Bash(awk 'NR>=1')",
       "Bash(python -)",
       "Read(//tmp/**)",
-      "Bash(powershell *)"
+      "Bash(powershell *)",
+      "Bash(python -c \"from retail import RetailTheftEngine; e = RetailTheftEngine\\(\\); print\\('RetailTheftEngine imported OK'\\); print\\('Modules:', dir\\(e\\)\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('engine/pipeline.py'\\).read\\(\\)\\); print\\('pipeline.py: syntax OK'\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('ui/overlay_renderer.py'\\).read\\(\\)\\); print\\('overlay_renderer.py: syntax OK'\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('engine/pipeline.py', encoding='utf-8'\\).read\\(\\)\\); print\\('pipeline.py: syntax OK'\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('ui/overlay_renderer.py', encoding='utf-8'\\).read\\(\\)\\); print\\('overlay_renderer.py: syntax OK'\\)\")",
+      "Bash(venvScriptspython.exe -c ' *)",
+      "Bash(\".\\\\venv\\\\Scripts\\\\python.exe\" -c \"from rfdetr.assets.coco_classes import COCO_CLASSES; [print\\(f'  rfdetr_1indexed={cid:>3d}  0indexed={cid-1:>3d}  name={name}'\\) for cid, name in sorted\\(COCO_CLASSES\\)]\")",
+      "Bash(python)",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('engine/pipeline.py', encoding='utf-8'\\).read\\(\\)\\); print\\('pipeline.py: OK'\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('retail/rfdetr_taxonomy.py'\\).read\\(\\)\\); print\\('rfdetr_taxonomy.py: OK'\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('retail/retail_config.py'\\).read\\(\\)\\); print\\('retail_config.py: OK'\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('retail/shelf_zone_manager.py'\\).read\\(\\)\\); print\\('shelf_zone_manager.py: OK'\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('retail/ownership_engine.py'\\).read\\(\\)\\); print\\('ownership_engine.py: OK'\\)\")",
+      "Bash(python -c \"import ast; [ast.parse\\(open\\(f\\).read\\(\\)\\) for f in ['memory/ownership_arbitration.py', 'retail/shelf_zone_manager.py', 'retail/ownership_engine.py', 'retail/suspicion_engine.py', 'retail/retail_engine.py']]; print\\('All files parse OK'\\)\")",
+      "WebSearch"
     ]
   }
 }

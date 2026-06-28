@@ -1,0 +1,7 @@
+F#1: 179 total | person=139 handbag=27 suitcase=13
+  best suitcase conf=0.388
+F#2: 143 total | person=117 handbag=26 suitcase=0
+F#3: 192 total | person=134 handbag=36 suitcase=22
+  best suitcase conf=0.292
+F#4: 197 total | person=148 handbag=31 suitcase=18
+  best suitcase conf=0.300

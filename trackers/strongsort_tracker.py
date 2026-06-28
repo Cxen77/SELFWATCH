@@ -77,7 +77,8 @@ class StrongSORTTracker:
 
     def update(self, boxes, scores, embeddings, crops=None, frame_shape=None,
                frame_delta=1, suppress_regions=None, frozen_lids=None, cooldown_lids=None,
-               exit_trajectories=None, collision_partners=None, frame_count=None):
+               exit_trajectories=None, collision_partners=None, frame_count=None,
+               class_ids=None):
         """
         Run one frame of StrongSORT+ tracking.
 
@@ -89,6 +90,10 @@ class StrongSORTTracker:
         exit_trajectories = exit_trajectories or {}
         collision_partners = collision_partners or {}
         frame_delta = max(1, int(frame_delta))
+        if class_ids is None:
+            class_ids = np.zeros(len(boxes), dtype=np.int32)
+        else:
+            class_ids = np.array(class_ids, dtype=np.int32)
 
 
         # Predict all existing tracks forward
@@ -98,7 +103,7 @@ class StrongSORTTracker:
         # Handle empty frame
         if len(boxes) == 0:
             for t in self.tracks:
-                t.mark_lost(frame_delta=frame_delta)
+                t.mark_lost(frame_delta=frame_delta, frame_count=frame_count)
             self._cleanup()
             return self._output()
 
@@ -140,7 +145,7 @@ class StrongSORTTracker:
                 high_boxes, high_embs, high_scores, confirmed_tracks,
                 frame_h=frame_h, frozen_lids=frozen_lids, cooldown_lids=cooldown_lids,
                 exit_trajectories=exit_trajectories, collision_partners=collision_partners,
-                frame_count=frame_count
+                frame_count=frame_count, det_cids=class_ids[high_idx]
             )
 
 
@@ -154,7 +159,7 @@ class StrongSORTTracker:
             trk.update(boxes[orig_i], scores[orig_i], embeddings[orig_i],
                        crop=crop, min_quality_score=self.min_quality_score,
                        frame_shape=frame_shape, sibling_boxes=sibling_boxes,
-                       frame_delta=frame_delta)
+                       frame_delta=frame_delta, class_id=int(class_ids[orig_i]))
             trk.last_assoc_cost = float(fused_cost_c[d_idx, t_idx])
             trk.last_assoc_method = "Fused (App+IoU) [C]"
             trk.cbiou_buffer = 0
@@ -176,7 +181,7 @@ class StrongSORTTracker:
                     rem_boxes, rem_embs, rem_scores, lost_tracks,
                     frame_h=frame_h, frozen_lids=frozen_lids, cooldown_lids=cooldown_lids,
                     exit_trajectories=exit_trajectories, collision_partners=collision_partners,
-                    frame_count=frame_count
+                    frame_count=frame_count, det_cids=class_ids[[high_idx[i] for i in remaining_det_idx]]
                 )
 
 
@@ -188,7 +193,7 @@ class StrongSORTTracker:
                 trk.update(boxes[orig_i], scores[orig_i], embeddings[orig_i],
                            crop=crop, min_quality_score=self.min_quality_score,
                            frame_shape=frame_shape, sibling_boxes=[],
-                           frame_delta=frame_delta)
+                           frame_delta=frame_delta, class_id=int(class_ids[orig_i]))
                 trk.last_assoc_cost = float(fused_cost_l[d_idx, t_idx])
                 trk.last_assoc_method = "Fused (App+IoU)"
                 trk.cbiou_buffer = 0
@@ -211,7 +216,7 @@ class StrongSORTTracker:
 
         if low_boxes and remaining_tracks:
             matched_t2, matched_d2, unmatched_tracks_2, _, cost_iou_2 = \
-                self._iou_associate(low_boxes, remaining_tracks, self.iou_thresh, frozen_lids=frozen_lids, cooldown_lids=cooldown_lids, collision_partners=collision_partners)
+                self._iou_associate(low_boxes, remaining_tracks, self.iou_thresh, frozen_lids=frozen_lids, cooldown_lids=cooldown_lids, collision_partners=collision_partners, det_cids=class_ids[low_idx])
 
 
             for t_idx, d_idx in zip(matched_t2, matched_d2):
@@ -220,7 +225,7 @@ class StrongSORTTracker:
                 # Low-conf: update box but do NOT update embedding
                 trk.update(boxes[orig_i], scores[orig_i], embedding=None,
                            min_quality_score=self.min_quality_score,
-                           frame_delta=frame_delta)
+                           frame_delta=frame_delta, class_id=int(class_ids[orig_i]))
                 trk.last_assoc_cost = float(cost_iou_2[d_idx, t_idx])
                 trk.last_assoc_method = "ByteTrack (Low Conf IoU)"
                 trk.cbiou_buffer = 0
@@ -271,6 +276,8 @@ class StrongSORTTracker:
                     orig_d = remaining_high_dets[r]
                     orig_i = high_idx[orig_d]
                     trk = still_unmatched[c]
+                    if getattr(trk, 'class_id', 0) != class_ids[orig_i]:
+                        continue
                     det_box = boxes[orig_i]
 
 
@@ -312,7 +319,7 @@ class StrongSORTTracker:
                     trk.update(boxes[orig_i], scores[orig_i], embeddings[orig_i],
                                crop=crop, min_quality_score=self.min_quality_score,
                                frame_shape=frame_shape, sibling_boxes=[],
-                               frame_delta=frame_delta)
+                               frame_delta=frame_delta, class_id=int(class_ids[orig_i]))
                     trk.last_assoc_cost = float(biou_cost[r, c])
                     trk.last_assoc_method = "C-BIoU"
                     trk.cbiou_buffer = buffers_used[c]
@@ -363,10 +370,23 @@ class StrongSORTTracker:
                         vel_mag = np.sqrt(trk.vel[0]**2 + trk.vel[1]**2)
                         max_cdist_allowed = min(120, max(40, vel_mag * 8.0))
                                 
-                        print(f"[MATURE TRACK LOST] local={trk.local_id} hits={trk.total_hits} "
-                              f"pred_err={best_dist:.1f}px vel={vel_mag:.1f} max_dist={max_cdist_allowed:.1f} "
-                              f"area_ratio={area_ratio:.2f} aspect_ratio={aspect_ratio_ratio:.2f} "
-                              f"reid_sim={sim:.3f} frozen={trk.local_id in frozen_lids} cd={trk.local_id in cooldown_lids}")
+                        # Compute best IoU with this detection
+                        best_iou = 0.0
+                        if best_det is not None:
+                            pred = trk.predicted_box
+                            x1 = max(best_det[0], pred[0])
+                            y1 = max(best_det[1], pred[1])
+                            x2 = min(best_det[2], pred[2])
+                            y2 = min(best_det[3], pred[3])
+                            inter = max(0, x2 - x1) * max(0, y2 - y1)
+                            area_d = max(1, (best_det[2]-best_det[0]) * (best_det[3]-best_det[1]))
+                            area_t = max(1, (pred[2]-pred[0]) * (pred[3]-pred[1]))
+                            best_iou = inter / (area_d + area_t - inter + 1e-6)
+
+                        gid = trk.global_id
+                        print(f"[ASSOCIATION FAILURE] frame={frame_count} local_id={trk.local_id} "
+                              f"gid={gid} best_iou={best_iou:.3f} best_reid={sim:.3f} "
+                              f"reason=no_match pred_err={best_dist:.1f}px frozen={trk.local_id in frozen_lids}")
 
                         # ── Shadow-only EMA-vs-anchor drift measurement ──
                         # Read-only. Changes NO matching/assignment/recovery
@@ -381,7 +401,139 @@ class StrongSORTTracker:
                                       f"ema={sim:.3f} anchor={anchor_sim:.3f} "
                                       f"gap={anchor_sim - sim:.3f} pred_err={best_dist:.1f}")
 
-            trk.mark_lost(frame_delta=frame_delta)
+            trk.mark_lost(frame_delta=frame_delta, frame_count=frame_count)
+
+        # ══════════════════════════════════════════════════════════════
+        #  PHANTOM RECOVERY BRIDGE — SHADOW / AUDIT MODE
+        #  Pure read-only instrumentation. No state changes.
+        #  Logs what the bridge WOULD do for every unmatched detection
+        #  vs every mature LOST track.
+        # ══════════════════════════════════════════════════════════════
+        if final_unmatched_dets:
+            # Collect candidate LOST tracks: mature, person, have embedding
+            # AUDIT MODE: relaxed criteria for short-clip evaluation:
+            #   - tsu >= 1 (instead of > 1) to catch single-frame LOST events
+            #   - Use averaged embedding as fallback when anchor not yet set
+            #     (anchor requires 100 hits; short clips produce 6-17 hits)
+            bridge_candidates = []
+            for t in self.tracks:
+                has_identity = (getattr(t, '_anchor_embedding', None) is not None
+                                or t.get_averaged_embedding() is not None)
+                if (t.is_lost
+                        and t.time_since_update >= 1
+                        and t.time_since_update <= 120
+                        and t.total_hits >= 2
+                        and has_identity
+                        and getattr(t, 'class_id', 0) == 0
+                        and t.local_id not in frozen_lids
+                        and t.local_id not in cooldown_lids):
+                    bridge_candidates.append(t)
+
+            if bridge_candidates:
+                # Sort unmatched dets by confidence (best first)
+                sorted_unmatched = sorted(
+                    final_unmatched_dets,
+                    key=lambda d_idx: scores[high_idx[d_idx]],
+                    reverse=True)
+
+                used_bridge_tracks = set()
+                reactivated_bridge_dets = set()
+                for d_idx in sorted_unmatched:
+                    orig_i = high_idx[d_idx]
+                    det_emb = embeddings[orig_i]
+                    # Skip zero-vector embeddings (object classes)
+                    if np.sum(np.abs(det_emb)) < 1e-6:
+                        continue
+
+                    det_box = boxes[orig_i]
+                    det_cx = (det_box[0] + det_box[2]) / 2.0
+                    det_cy = (det_box[1] + det_box[3]) / 2.0
+                    det_w = det_box[2] - det_box[0]
+                    det_h = det_box[3] - det_box[1]
+                    det_area = det_w * det_h
+                    det_aspect = det_w / max(det_h, 1)
+
+                    best_track = None
+                    best_score = -1.0
+                    best_anchor_sim = 0.0
+                    best_avg_sim = 0.0
+                    best_raw_dist = 0.0
+                    best_would = False
+
+                    for t in bridge_candidates:
+                        if t in used_bridge_tracks:
+                            continue
+
+                        # 1. Anchor similarity (use avg embedding as fallback)
+                        anchor_ref = getattr(t, '_anchor_embedding', None)
+                        if anchor_ref is None:
+                            anchor_ref = t.get_averaged_embedding()
+                        if anchor_ref is None:
+                            continue
+                        anchor_sim = float(np.dot(anchor_ref, det_emb))
+
+                        # 2. Averaged embedding similarity
+                        avg_emb = t.get_averaged_embedding()
+                        avg_sim = float(np.dot(avg_emb, det_emb)) if avg_emb is not None else anchor_sim
+
+                        # 3. Box morphology (vs last observed, NOT predicted)
+                        obs_box = t._last_observed_box
+                        obs_w = obs_box[2] - obs_box[0]
+                        obs_h = obs_box[3] - obs_box[1]
+                        obs_area = obs_w * obs_h
+                        obs_aspect = obs_w / max(obs_h, 1)
+
+                        area_ratio = det_area / max(obs_area, 1)
+                        aspect_diff = det_aspect / max(obs_aspect, 0.1)
+
+                        # 4. Spatial sanity (vs last observed center, NOT predicted)
+                        obs_cx = (obs_box[0] + obs_box[2]) / 2.0
+                        obs_cy = (obs_box[1] + obs_box[3]) / 2.0
+                        raw_dist = float(np.hypot(det_cx - obs_cx, det_cy - obs_cy))
+
+                        # 5. Compute score
+                        proximity = max(0.0, 1.0 - raw_dist / 400.0)
+                        score = 0.5 * anchor_sim + 0.3 * avg_sim + 0.2 * proximity
+
+                        would = (score >= 0.58
+                                 and anchor_sim >= 0.55
+                                 and avg_sim >= 0.55
+                                 and 0.2 <= area_ratio <= 5.0
+                                 and 0.4 <= aspect_diff <= 2.5
+                                 and raw_dist <= 400)
+
+                        if score > best_score:
+                            best_score = score
+                            best_track = t
+                            best_anchor_sim = anchor_sim
+                            best_avg_sim = avg_sim
+                            best_raw_dist = raw_dist
+                            best_would = would
+
+                    if best_track is not None:
+                        if best_would:
+                            used_bridge_tracks.add(best_track)
+                            # LIVE REACTIVATION: reactivate the phantom track
+                            crop = crops[orig_i] if crops is not None else None
+                            best_track.update(boxes[orig_i], scores[orig_i], embeddings[orig_i],
+                                              crop=crop, min_quality_score=self.min_quality_score,
+                                              frame_shape=frame_shape, sibling_boxes=[],
+                                              frame_delta=frame_delta, class_id=int(class_ids[orig_i]))
+                            best_track.last_assoc_method = "Phantom Recovery Bridge"
+                            reactivated_bridge_dets.add(d_idx)
+                        print(f"[PHANTOM BRIDGE AUDIT] "
+                              f"frame={frame_count} "
+                              f"lost_local={best_track.local_id} "
+                              f"candidate_det={orig_i} "
+                              f"anchor_sim={best_anchor_sim:.3f} "
+                              f"avg_sim={best_avg_sim:.3f} "
+                              f"raw_dist={best_raw_dist:.0f} "
+                              f"score={best_score:.3f} "
+                              f"tsu={best_track.time_since_update} "
+                              f"would_reactivate={'YES' if best_would else 'NO'}")
+
+        if final_unmatched_dets and 'reactivated_bridge_dets' in locals():
+            final_unmatched_dets = [d for d in final_unmatched_dets if d not in reactivated_bridge_dets]
 
         # ── Initialize new tracks from unmatched high-conf dets ──────
         suppress_regions = suppress_regions or []
@@ -486,10 +638,14 @@ class StrongSORTTracker:
                     label="person",
                     confirm_threshold=self.confirm_threshold,
                     embedding_history_size=self.embedding_history,
+                    class_id=int(class_ids[orig_i]),
                 )
                 new_tracks.append(new_track)
+                pclass = "person" if int(class_ids[orig_i]) == 0 else f"object({int(class_ids[orig_i])})"
                 is_zero = "YES" if np.sum(np.abs(embeddings[orig_i])) < 1e-6 else "NO"
                 print(f"  [TRACKER DEBUG] NEW LOCAL TRACK SPAWNED: local={new_track.local_id} conf={scores[orig_i]:.2f} zero_emb={is_zero}")
+                print(f"[TRACK BIRTH] frame={frame_count} local_id={new_track.local_id} class={pclass} "
+                      f"confidence={scores[orig_i]:.3f} bbox=({det_box[0]:.0f},{det_box[1]:.0f},{det_box[2]:.0f},{det_box[3]:.0f})")
 
         # ── Same-Frame Gap Resolution (Reactivation) ────────────────
         valid_new_tracks = []
@@ -524,7 +680,8 @@ class StrongSORTTracker:
                 # REACTIVATE the mature track instead of object replacement!
                 best_same_frame.update(new_trk.box, new_trk.score, new_trk.embedding, 
                                        min_quality_score=self.min_quality_score,
-                                       frame_shape=frame_shape, frame_delta=frame_delta)
+                                       frame_shape=frame_shape, frame_delta=frame_delta,
+                                       class_id=new_trk.class_id)
                 used_same_frame.add(best_same_frame)
                 print(f"  [IDSR SAME FRAME SUCCESS] Reactivated mature track local={best_same_frame.local_id}")
                 # We intentionally do NOT append new_trk to valid_new_tracks, destroying it.
@@ -573,7 +730,7 @@ class StrongSORTTracker:
 
     def _fused_associate(self, det_boxes, det_embs, det_scores, tracks,
                          frame_h=None, frozen_lids=None, cooldown_lids=None,
-                         exit_trajectories=None, collision_partners=None, frame_count=None):
+                         exit_trajectories=None, collision_partners=None, frame_count=None, det_cids=None):
         """
         Hungarian matching using fused appearance + IoU cost matrix.
 
@@ -622,6 +779,8 @@ class StrongSORTTracker:
         is_frozen_arr   = np.array([t.local_id in frozen_lids   for t in tracks], dtype=bool)  # (M,)
         is_cooldown_arr = np.array([t.local_id in cooldown_lids for t in tracks], dtype=bool)  # (M,)
         track_has_emb   = np.array([t.get_averaged_embedding() is not None for t in tracks], dtype=bool)  # (M,)
+        # Phase B: object class mask — non-person tracks use geometry-only matching
+        is_object_arr   = np.array([getattr(t, 'class_id', 0) != 0 for t in tracks], dtype=bool)  # (M,)
 
         # Embeddings matrix (M,512) — use zeros where no embedding
         track_embs = np.zeros((n_trk, 512), dtype=np.float32)
@@ -635,41 +794,45 @@ class StrongSORTTracker:
         iou_dist = 1.0 - iou                                               # (N,M)
 
         # ── Appearance distance (N,M) ─────────────────────────────────
-        # det_embs: (N,512), track_embs: (M,512) — both L2-normalized
-        # Cosine distance = 1 - (det @ trk.T)
-        if det_embs.shape[0] > 0 and np.any(track_has_emb):
-            sim = det_embs @ track_embs.T                                   # (N,M)
-            app_dist = np.ones((n_det, n_trk), dtype=np.float32)
-            app_dist[:, track_has_emb] = (1.0 - sim[:, track_has_emb])    # (N,M)
+        # Cosine distance between detection embeddings and track embeddings
+        # det_embs: (N,512), track_embs: (M,512)
+        if det_embs.shape[0] > 0 and track_embs.shape[0] > 0:
+            # Normalized dot product → cosine similarity
+            det_norms = np.linalg.norm(det_embs, axis=1, keepdims=True)     # (N,1)
+            trk_norms = np.linalg.norm(track_embs, axis=1, keepdims=True)   # (M,1)
+            det_norm = det_embs / np.maximum(det_norms, 1e-6)               # (N,512)
+            trk_norm = track_embs / np.maximum(trk_norms, 1e-6)            # (M,512)
+            cos_sim = det_norm @ trk_norm.T                                 # (N,M)
+            app_dist = 1.0 - cos_sim                                        # (N,M)
         else:
-            app_dist = np.ones((n_det, n_trk), dtype=np.float32)
+            app_dist = np.zeros((n_det, n_trk), dtype=np.float32)
 
-        # ── Compute trajectory-predicted centers for cooldown tracks ───
-        # For each cooldown track with an exit trajectory, override its center
-        # with the trajectory-projected position.
-        traj_cx = trk_cx.copy()                                            # (M,)
-        traj_cy = trk_cy.copy()                                            # (M,)
-        traj_vx = trk_vx.copy()                                            # (M,)
-        traj_vy = trk_vy.copy()                                            # (M,)
-        has_traj = np.zeros(n_trk, dtype=bool)                             # (M,)
+        # Gate: if track has no embedding, appearance is meaningless → set to max
+        app_dist[:, ~track_has_emb] = 1.0
 
-        for j, t in enumerate(tracks):
-            if is_cooldown_arr[j] or is_frozen_arr[j]:
-                traj = exit_trajectories.get(t.local_id)
-                if traj is not None and frame_count is not None:
-                    vx_t, vy_t = traj["velocity"]
-                    frames_elapsed = max(1, frame_count - traj["freeze_frame"])
-                    traj_cx[j] = traj["center"][0] + vx_t * frames_elapsed
-                    traj_cy[j] = traj["center"][1] + vy_t * frames_elapsed
-                    traj_vx[j] = vx_t
-                    traj_vy[j] = vy_t
-                    has_traj[j] = True
+        # ── Trajectory projection for frozen/lost tracks ──────────────
+        # Override track centers with projected positions from exit trajectories
+        has_traj = np.zeros(n_trk, dtype=bool)                              # (M,)
+        traj_cx = trk_cx.copy()                                             # (M,)
+        traj_cy = trk_cy.copy()                                             # (M,)
+        traj_vx = trk_vx.copy()                                             # (M,)
+        traj_vy = trk_vy.copy()                                             # (M,)
+        for c, t in enumerate(tracks):
+            traj = exit_trajectories.get(t.local_id)
+            if traj is not None:
+                has_traj[c] = True
+                frames_elapsed = max(1, frame_count - traj["freeze_frame"]) if frame_count else 1
+                vx_t = traj["velocity"][0]
+                vy_t = traj["velocity"][1]
+                traj_cx[c] = traj["center"][0] + vx_t * frames_elapsed
+                traj_cy[c] = traj["center"][1] + vy_t * frames_elapsed
+                traj_vx[c] = vx_t
+                traj_vy[c] = vy_t
 
-        # ── Center distance matrix (N,M) ─────────────────────────────
-        # Vectorized: (det_cx[:,None] - traj_cx[None,:]) → (N,M)
         diff_cx = det_cx[:, None] - traj_cx[None, :]                       # (N,M)
         diff_cy = det_cy[:, None] - traj_cy[None, :]                       # (N,M)
         center_dist = np.sqrt(diff_cx**2 + diff_cy**2)                     # (N,M)
+
 
         # ── Adaptive appearance weight (N,M) ──────────────────────────
         # Start from base weight, then modify per cognitive state
@@ -690,6 +853,12 @@ class StrongSORTTracker:
             )
         ).astype(np.float32)                                               # (N,M)
 
+        # Phase B: Force appearance_weight = 0.0 for non-person (object) tracks.
+        # Objects have zero-vector embeddings (OSNet bypass), so appearance
+        # distance is meaningless. Pure IoU/geometry matching for objects.
+        if np.any(is_object_arr):
+            eff_app_w[:, is_object_arr] = 0.0
+
         # ── Base fused cost (N,M) ─────────────────────────────────────
         # For cooldown tracks with trajectory: use trajectory distance cost
         # For all others: use fused appearance + IoU
@@ -704,6 +873,10 @@ class StrongSORTTracker:
             cost_eff_app_w_cd * app_dist + (1 - cost_eff_app_w_cd) * dist_cost,
             eff_app_w * app_dist + (1 - eff_app_w) * iou_dist
         ).astype(np.float32)                                               # (N,M)
+
+        if det_cids is not None:
+            trk_cids = np.array([getattr(t, 'class_id', 0) for t in tracks], dtype=np.int32)
+            cost[det_cids[:, None] != trk_cids[None, :]] = GATE_VALUE
 
         # ── Frozen track spatial gating (vectorized) ──────────────────
         # Gate out frozen track cells where detection is too far
@@ -827,10 +1000,25 @@ class StrongSORTTracker:
         too_far = center_dist > max_cdist_allowed                           # (N,M)
 
         # Gate zero-IoU cells: allow if good appearance+speed+distance, else gate
-        cost = np.where(
-            no_iou & ~(good_app_fast & ~too_far),
-            GATE_VALUE, cost
-        )
+        gate_condition = no_iou & ~(good_app_fast & ~too_far)
+        
+        # --- FORENSIC PAN LOGGING ---
+        # Look for tracks that might be failing due to camera pan (e.g. no IOU but good appearance, yet too far)
+        for i, j in np.argwhere(no_iou & good_app_fast & too_far):
+            t = tracks[j]
+            det_cx = (det_boxes_arr[i,0]+det_boxes_arr[i,2])/2
+            det_cy = (det_boxes_arr[i,1]+det_boxes_arr[i,3])/2
+            last_cx = (t._last_observed_box[0]+t._last_observed_box[2])/2
+            last_cy = (t._last_observed_box[1]+t._last_observed_box[3])/2
+            displacement = np.hypot(det_cx - last_cx, det_cy - last_cy)
+            max_dist_val = max_cdist_allowed[i if max_cdist_allowed.shape[0] > 1 else 0, j]
+            print(f"[FORENSIC PAN] frame={frame_count} det={i} local={t.local_id} "
+                  f"pred_center=({(pred_boxes[j,0]+pred_boxes[j,2])/2:.1f}, {(pred_boxes[j,1]+pred_boxes[j,3])/2:.1f}) "
+                  f"det_center=({det_cx:.1f}, {det_cy:.1f}) "
+                  f"pred_err={center_dist[i,j]:.1f}px max_dist={max_dist_val:.1f} "
+                  f"vel={vel_mag[j]:.1f} displacement={displacement:.1f}px -> BLOCKED BY MAX_DISTANCE GATE")
+
+        cost = np.where(gate_condition, GATE_VALUE, cost)
 
         # Low overlap + bad appearance gate
         bad_app_gate = (
@@ -871,7 +1059,7 @@ class StrongSORTTracker:
             for rv, cv in zip(rows_v, cols_v):
                 t = tracks[cv]
                 print(f"[FROZEN APP VETO] frame={frame_count} det={rv} local={t.local_id} "
-                      f"iou={iou[rv,cv]:.3f} app_dist={app_dist[rv,cv]:.3f} → BLOCKED")
+                      f"iou={iou[rv,cv]:.3f} app_dist={app_dist[rv,cv]:.3f} -> BLOCKED")
         cost = np.where(frozen_app_veto, GATE_VALUE, cost)
 
         # ── PHASE 5: Mature Ownership Veto ────────────────────────────
@@ -909,7 +1097,7 @@ class StrongSORTTracker:
                     print(f"[MATURE OWNERSHIP VETO] frame={frame_count} local={t.local_id}"
                           f" gid={t.global_id} hits={t.total_hits}"
                           f" det={rv} iou={iou[rv,cv]:.3f}"
-                          f" anchor_sim={anchor_sim_mat[rv,cv]:.3f} → BLOCKED")
+                          f" anchor_sim={anchor_sim_mat[rv,cv]:.3f} -> BLOCKED")
 
             cost = np.where(mature_ownership_veto, GATE_VALUE, cost)
 
@@ -1328,7 +1516,7 @@ class StrongSORTTracker:
 
 
     @staticmethod
-    def _iou_associate(det_boxes, tracks, iou_threshold, frozen_lids=None, cooldown_lids=None, collision_partners=None):
+    def _iou_associate(det_boxes, tracks, iou_threshold, frozen_lids=None, cooldown_lids=None, collision_partners=None, det_cids=None):
         """Pure IoU Hungarian matching for low-confidence recovery."""
         frozen_lids = frozen_lids or set()
         cooldown_lids = cooldown_lids or set()
@@ -1342,6 +1530,9 @@ class StrongSORTTracker:
         pred_boxes = [t.predicted_box.tolist() for t in tracks]
         iou = iou_matrix(det_boxes, pred_boxes)
         cost = 1.0 - iou
+        if det_cids is not None:
+            trk_cids = np.array([getattr(t, 'class_id', 0) for t in tracks], dtype=np.int32)
+            cost[det_cids[:, None] != trk_cids[None, :]] = 1e5
 
         if cost.size > 0:
             row_idx, col_idx = linear_sum_assignment(cost)

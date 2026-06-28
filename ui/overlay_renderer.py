@@ -11,6 +11,26 @@ COLORS = [
     (255, 0, 255), (255, 255, 0), (128, 0, 128), (0, 128, 128)
 ]
 
+# RF-DETR 0-indexed class names (raw_id - 1).
+# Sourced from rfdetr/assets/coco_classes.py.
+COCO_NAMES = {
+    0:  "Person",
+    26: "Backpack",
+    27: "Umbrella",
+    30: "Handbag",
+    31: "Tie",
+    32: "Suitcase",
+    36: "Sports Ball",
+    43: "Bottle",
+    45: "Wine Glass",
+    46: "Cup",
+    72: "Laptop",
+    75: "Keyboard",
+    76: "Cell Phone",
+    83: "Book",
+    -1: "Unknown",
+}
+
 def id_color(idx):
     return COLORS[idx % len(COLORS)]
 
@@ -90,6 +110,8 @@ class OverlayRenderer:
             vel = item["vel"]
             age = item["age"]
             assoc_data = item["assoc"]
+            track_class_id = item.get("class_id", 0)
+            class_name = COCO_NAMES.get(track_class_id, f"cls{track_class_id}")
             
             x1, y1, x2, y2 = map(int, tbox)
             color_id = color_map.get(gid, gid)
@@ -105,9 +127,11 @@ class OverlayRenderer:
             lbl_parts = []
             if layer_flags.get("tracking"):
                 if layer_flags.get("tracking_ids"): lbl_parts.append(f"G:{gid}|L:{lid}")
+                lbl_parts.append(class_name)
                 lbl_parts.append(f"(T){frozen_flag}" if state == STATE_THINKING else frozen_flag)
                 if layer_flags.get("tracking_age"): lbl_parts.append(f"A:{age}")
             else:
+                lbl_parts.append(class_name)
                 lbl_parts.append(f"(T){frozen_flag}" if state == STATE_THINKING else frozen_flag)
                 
             lbl = " ".join(lbl_parts).strip()
@@ -174,4 +198,184 @@ class OverlayRenderer:
         if cam_label:
             cv2.putText(disp, cam_label, (disp.shape[1] - 250, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 200, 255), 2)
 
+        # ── Retail Theft Detection Overlay ──────────────────────────────
+        retail = stats.get("retail")
+        if retail:
+            self._render_retail(disp, retail, display_items)
+            self._render_interactions(disp, retail)
+
+        # ── Shelf Change Zone Overlay ──────────────────────────────────
+        shelf_change = stats.get("shelf_change")
+        if shelf_change:
+            self._render_shelf_zones(disp, shelf_change)
+
         return disp
+
+    def _render_retail(self, disp, retail, display_items):
+        ownership_map = retail.get("ownership_map", {})
+        suspicion_scores = retail.get("suspicion_scores", {})
+        alerts = retail.get("alerts", [])
+        zone_summary = retail.get("zone_summary", {})
+
+        for obj_gid, info in ownership_map.items():
+            owner_gid = info.get("owner_gid")
+            obj_item = display_items.get(obj_gid)
+            owner_item = display_items.get(owner_gid)
+            if obj_item and owner_item:
+                obj_box = obj_item["box"]
+                own_box = owner_item["box"]
+                oc = (int((obj_box[0]+obj_box[2])/2), int((obj_box[1]+obj_box[3])/2))
+                pc = (int((own_box[0]+own_box[2])/2), int((own_box[1]+own_box[3])/2))
+                cv2.line(disp, oc, pc, (0, 200, 255), 1, cv2.LINE_AA)
+                mid = ((oc[0]+pc[0])//2, (oc[1]+pc[1])//2)
+                score = info.get("ownership_score", 0)
+                cv2.putText(disp, f"OWN:{score:.1f}", mid,
+                            cv2.FONT_HERSHEY_PLAIN, 0.8, (0, 200, 255), 1)
+
+        for p_gid, score in suspicion_scores.items():
+            p_item = display_items.get(p_gid)
+            if not p_item:
+                continue
+            box = p_item["box"]
+            x1, y1 = int(box[0]), int(box[1])
+            if score >= 70:
+                color = (0, 0, 255)
+                label = f"THEFT {score:.0f}"
+            elif score >= 40:
+                color = (0, 200, 255)
+                label = f"SUSPICIOUS {score:.0f}"
+            else:
+                color = (0, 180, 0)
+                label = f"NORMAL {score:.0f}"
+            cv2.putText(disp, label, (x1, y1 - 28),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+
+        if alerts:
+            alert = alerts[-1]
+            banner = f"THEFT ALERT: Person GID={alert['person_gid']} conf={alert.get('confidence', 0):.0%}"
+            h, w = disp.shape[:2]
+            (tw, th), _ = cv2.getTextSize(banner, cv2.FONT_HERSHEY_SIMPLEX, 1.0, 3)
+            bx = (w - tw) // 2
+            cv2.rectangle(disp, (bx - 15, 5), (bx + tw + 15, 40), (0, 0, 200), -1)
+            cv2.putText(disp, banner, (bx, 32),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255), 3)
+
+        zy = disp.shape[0] - 20
+        for zname, zdata in zone_summary.items():
+            cv2.putText(disp, f"{zname}: {zdata.get('total', 0)} items",
+                        (10, zy), cv2.FONT_HERSHEY_PLAIN, 0.9, (200, 200, 100), 1)
+            zy -= 15
+
+    def _render_shelf_zones(self, disp, shelf_change):
+        zones = shelf_change.get("zones", [])
+        zone_status = shelf_change.get("zone_status", {})
+        for zone in zones:
+            zname, x1, y1, x2, y2 = zone
+            has_ref = zone_status.get(zname, False)
+            color = (0, 180, 0) if has_ref else (0, 0, 180)
+            for i in range(0, x2 - x1, 12):
+                sx = x1 + i
+                cv2.line(disp, (sx, y1), (min(sx + 6, x2), y1), color, 1)
+                cv2.line(disp, (sx, y2), (min(sx + 6, x2), y2), color, 1)
+            for i in range(0, y2 - y1, 12):
+                sy = y1 + i
+                cv2.line(disp, (x1, sy), (x1, min(sy + 6, y2)), color, 1)
+                cv2.line(disp, (x2, sy), (x2, min(sy + 6, y2)), color, 1)
+            tag = f"{zname} [REF]" if has_ref else f"{zname} [NO REF]"
+            cv2.putText(disp, tag, (x1 + 4, y2 - 6),
+                        cv2.FONT_HERSHEY_PLAIN, 0.8, color, 1)
+
+    def _render_interactions(self, disp, retail):
+        """Render interaction-driven theft pipeline overlays."""
+        # 1. Active reach zone interactions (cyan dashed box)
+        interactions = retail.get("active_interactions", [])
+        for inter in interactions:
+            rz = inter.get("reach_box")
+            if rz:
+                rx1, ry1, rx2, ry2 = map(int, rz)
+                # Dashed rectangle for reach zone
+                for i in range(rx1, rx2, 8):
+                    cv2.line(disp, (i, ry1), (min(i + 4, rx2), ry1), (255, 255, 0), 1)
+                    cv2.line(disp, (i, ry2), (min(i + 4, rx2), ry2), (255, 255, 0), 1)
+                for i in range(ry1, ry2, 8):
+                    cv2.line(disp, (rx1, i), (rx1, min(i + 4, ry2)), (255, 255, 0), 1)
+                    cv2.line(disp, (rx2, i), (rx2, min(i + 4, ry2)), (255, 255, 0), 1)
+                cv2.putText(disp, f"REACH P:{inter.get('person_gid', '?')}",
+                            (rx1, ry1 - 4), cv2.FONT_HERSHEY_PLAIN, 0.7,
+                            (255, 255, 0), 1)
+
+        # 2. Candidate items (yellow boxes)
+        candidates = retail.get("candidate_items", [])
+        for cand in candidates:
+            if cand.get("promoted"):
+                continue  # Promoted items are rendered by persistence below
+            box = cand.get("box")
+            if box:
+                cx1, cy1, cx2, cy2 = map(int, box)
+                cv2.rectangle(disp, (cx1, cy1), (cx2, cy2), (0, 255, 255), 1)
+                label = f"Cand#{cand['candidate_id']} A:{cand['age']}"
+                cv2.putText(disp, label, (cx1, cy1 - 4),
+                            cv2.FONT_HERSHEY_PLAIN, 0.7, (0, 255, 255), 1)
+
+        # 3. Persistent items (state-colored boxes)
+        persist_items = retail.get("persistent_items", {})
+        for item_gid, item_data in persist_items.items():
+            box = item_data.get("box")
+            state = item_data.get("state", "")
+            parent_gid = item_data.get("parent_gid")
+            concealed = item_data.get("concealed", False)
+
+            if box:
+                ix1, iy1, ix2, iy2 = map(int, box)
+
+                if concealed:
+                    color = (0, 0, 255)  # Red for concealed
+                    # Dashed box locked to parent position
+                    for i in range(ix1, ix2, 8):
+                        cv2.line(disp, (i, iy1), (min(i + 4, ix2), iy1), color, 2)
+                        cv2.line(disp, (i, iy2), (min(i + 4, ix2), iy2), color, 2)
+                    for i in range(iy1, iy2, 8):
+                        cv2.line(disp, (ix1, i), (ix1, min(i + 4, iy2)), color, 2)
+                        cv2.line(disp, (ix2, i), (ix2, min(i + 4, iy2)), color, 2)
+                elif state == "CARRIED":
+                    color = (0, 165, 255)  # Orange for carried
+                    cv2.rectangle(disp, (ix1, iy1), (ix2, iy2), color, 2)
+                elif state == "PICKUP":
+                    color = (0, 255, 255)  # Yellow for pickup
+                    cv2.rectangle(disp, (ix1, iy1), (ix2, iy2), color, 1)
+                else:
+                    color = (200, 200, 200)
+                    cv2.rectangle(disp, (ix1, iy1), (ix2, iy2), color, 1)
+
+                # Label
+                label = f"Item#{item_gid} [{state}]"
+                (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_PLAIN, 0.8, 1)
+                cv2.rectangle(disp, (ix1, iy1 - 14), (ix1 + tw + 4, iy1), color, -1)
+                cv2.putText(disp, label, (ix1 + 2, iy1 - 3),
+                            cv2.FONT_HERSHEY_PLAIN, 0.8, (0, 0, 0), 1)
+
+                # Parent-child link line
+                if parent_gid is not None:
+                    # Draw a line from item center to parent label position
+                    item_cx = (ix1 + ix2) // 2
+                    item_cy = (iy1 + iy2) // 2
+                    cv2.putText(disp, f"OWNER:P{parent_gid}",
+                                (ix1, iy2 + 12), cv2.FONT_HERSHEY_PLAIN, 0.7,
+                                color, 1)
+
+        # 4. Theft alert banner
+        alerts = retail.get("alerts", [])
+        theft_alerts = [a for a in alerts if a.get("alert") == "THEFT"
+                        or a.get("reason")]
+        if theft_alerts:
+            alert = theft_alerts[-1]
+            banner = (f"THEFT: Person {alert.get('person_gid', '?')} | "
+                      f"Item {alert.get('item_gid', '?')} | "
+                      f"{alert.get('origin_zone', '?')}")
+            h, w = disp.shape[:2]
+            (tw, th), _ = cv2.getTextSize(banner, cv2.FONT_HERSHEY_SIMPLEX, 0.9, 3)
+            bx = (w - tw) // 2
+            cv2.rectangle(disp, (bx - 15, 5), (bx + tw + 15, 40), (0, 0, 200), -1)
+            cv2.putText(disp, banner, (bx, 32),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 3)
+

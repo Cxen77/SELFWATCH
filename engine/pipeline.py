@@ -39,6 +39,16 @@ from memory.identity_store import IdentityStore   # Stage 1: read-only shadow la
 
 PERSON_CLASS = 0
 REID_INTERVAL = 12
+
+# Retail: expanded detection classes
+try:
+    from retail.retail_config import RETAIL_TARGET_CLASSES as _RETAIL_CLASSES
+except ImportError:
+    _RETAIL_CLASSES = [0, 26, 30, 32]
+try:
+    from retail.unknown_object import UNKNOWN_OBJECT as _UNKNOWN_CID
+except ImportError:
+    _UNKNOWN_CID = -1
 _REID_CROP_H = 128
 _REID_CROP_W = 128
 
@@ -103,7 +113,42 @@ class SelfWatchPipeline:
         else:
             self._tracer = None
 
+        # ── Retail Theft Detection Engine ──────────────────────────────
+        self._retail_engine = None
+        if getattr(config, 'RETAIL_ENABLED', False):
+            try:
+                from retail import RetailTheftEngine
+                self._retail_engine = RetailTheftEngine()
+                print("[SELFWATCH] Retail theft detection: ENABLED")
+            except ImportError as e:
+                print(f"[SELFWATCH] Retail theft detection: DISABLED ({e})")
+
+        # ── Category-Agnostic Shelf Change Detector ───────────────────
+        self._shelf_change_detector = None
+        if getattr(config, 'SHELF_CHANGE_ENABLED', False):
+            try:
+                from retail.shelf_change_detector import ShelfChangeDetector
+                zones = getattr(config, 'SHELF_CHANGE_ZONES', None)
+                if not zones:
+                    zones = getattr(config, 'RETAIL_ZONES', None)
+                if not zones:
+                    zones = [("ZONE_A", 0, 0, 960, 540)]
+                self._shelf_change_detector = ShelfChangeDetector(
+                    zones=zones,
+                    threshold=getattr(config, 'SHELF_CHANGE_THRESHOLD', 30),
+                    min_area=getattr(config, 'SHELF_CHANGE_MIN_AREA', 400),
+                    stable_frames=getattr(config, 'SHELF_CHANGE_STABLE_FRAMES', 30),
+                    confirm_frames=getattr(config, 'SHELF_CHANGE_CONFIRM_FRAMES', 5),
+                )
+                print(f"[SELFWATCH] Shelf change detection: ENABLED ({len(zones)} zone(s))")
+            except ImportError as e:
+                print(f"[SELFWATCH] Shelf change detection: DISABLED ({e})")
+
         self.frame_count = 0
+
+        # Forensic: detector gap tracking
+        self._prev_person_detected = False
+        self._gap_frame_start = None
 
         # ── Identity state machine ───────────────────────────────────
         # gid -> { state, last_box, last_embedding, velocity, gallery,
@@ -221,27 +266,37 @@ class SelfWatchPipeline:
             # Batched path: results come from shared GPU forward pass
             raw_boxes = [list(b) for b in _inj_det.boxes]
             raw_scores = list(_inj_det.scores)
+            raw_class_ids = list(_inj_det.class_ids) if hasattr(_inj_det, 'class_ids') else [0]*len(raw_boxes)
         elif run_detector:
+            _target = _RETAIL_CLASSES if self._retail_engine else [0, 26, 30, 32]
             det_result = self.detector.detect(
-                frame, conf_threshold=0.35, target_classes=[PERSON_CLASS])
+                frame, conf_threshold=0.15, target_classes=_target)
             raw_boxes = [list(b) for b in det_result.boxes]
             raw_scores = list(det_result.scores)
+            raw_class_ids = list(det_result.class_ids)
         else:
             raw_boxes = []
             raw_scores = []
+            raw_class_ids = []
             for track in self.tracker.tracks:
                 if track.is_confirmed and track.time_since_update <= 1:
                     raw_boxes.append(track.smooth_box.tolist())
                     raw_scores.append(track.score)
+                    raw_class_ids.append(getattr(track, 'class_id', 0))
         t1 = time.perf_counter()
+        # Forensic: [DETECTION] log
+        for _di, (_box, _sc, _cid) in enumerate(zip(raw_boxes, raw_scores, raw_class_ids)):
+            print(f"[DETECTION] frame={self.frame_count} det_id={_di} class={_cid} conf={_sc:.3f} bbox=({_box[0]:.0f},{_box[1]:.0f},{_box[2]:.0f},{_box[3]:.0f})")
 
-        boxes, scores = [], []
+        boxes, scores, class_ids = [], [], []
         raw_crops = []  # Store crops for fingerprint color histograms
-        for box, sc in zip(raw_boxes, raw_scores):
+        for box, sc, cid in zip(raw_boxes, raw_scores, raw_class_ids):
             bx1, by1, bx2, by2 = box
-            if (by2 - by1) >= 60 and (bx2 - bx1) >= 25:
+            geom_ok = ((by2 - by1) >= 60 and (bx2 - bx1) >= 25) if cid == 0 else ((by2 - by1) >= 15 and (bx2 - bx1) >= 15)
+            if geom_ok:
                 boxes.append(box)
                 scores.append(sc)
+                class_ids.append(cid)
                 # Extract raw crop for color histogram (CPU only)
                 x1i, y1i = max(0, int(bx1)), max(0, int(by1))
                 x2i, y2i = min(w, int(bx2)), min(h, int(by2))
@@ -249,6 +304,31 @@ class SelfWatchPipeline:
                     raw_crops.append(frame[y1i:y2i, x1i:x2i].copy())
                 else:
                     raw_crops.append(None)
+
+        # ── Shelf Change Detection (category-agnostic) ───────────────
+        self._last_shelf_change_dets = []
+        if self._shelf_change_detector is not None:
+            person_boxes_for_scd = [b for b, c in zip(boxes, class_ids) if c == 0]
+            known_obj_boxes_for_scd = [b for b, c in zip(boxes, class_ids) if c != 0]
+            unknown_dets = self._shelf_change_detector.update(
+                frame, person_boxes_for_scd, known_obj_boxes_for_scd, self.frame_count)
+            self._last_shelf_change_dets = unknown_dets
+            for det in unknown_dets:
+                boxes.append(det["box"])
+                scores.append(det["confidence"])
+                class_ids.append(_UNKNOWN_CID)
+                raw_crops.append(None)
+
+        # Forensic: [DETECTOR GAP] detection
+        person_detected_this_frame = len(boxes) > 0
+        if self._prev_person_detected and not person_detected_this_frame:
+            self._gap_frame_start = self.frame_count
+            print(f"[DETECTOR GAP START] frame={self.frame_count} class=person")
+        elif not self._prev_person_detected and person_detected_this_frame and self._gap_frame_start is not None:
+            gap_len = self.frame_count - self._gap_frame_start
+            print(f"[DETECTOR GAP END] frame={self.frame_count} gap_frames={gap_len} class=person")
+            self._gap_frame_start = None
+        self._prev_person_detected = person_detected_this_frame
 
         # ── Layer 1B: ReID Embeddings ────────────────────────────────
         # Phase 5: use batched embeddings if injected, else run internally
@@ -340,7 +420,8 @@ class SelfWatchPipeline:
             cooldown_lids=cooldown_lids,
             exit_trajectories=exit_trajectories,
             collision_partners=collision_partners,
-            frame_count=self.frame_count
+            frame_count=self.frame_count,
+            class_ids=class_ids
         )
 
         t_trk1 = time.perf_counter()
@@ -692,13 +773,14 @@ class SelfWatchPipeline:
                 if anchor_emb is not None and track.embedding is not None:
                     anchor_sim = float(np.dot(anchor_emb, track.embedding))
 
+                trk_cid = getattr(track, "class_id", 0)
                 if gid in frozen_gids:
                     # FROZEN: do NOT update appearance/fingerprint
                     # Only update trajectory position (no embedding, no crop)
                     self.active_memory.update(
                         gid, None, box_val, track.score, frame_delta,
                         crop=None, velocity=track.vel.tolist(),
-                        hits=track.total_hits, anchor_sim=anchor_sim)
+                        hits=track.total_hits, anchor_sim=anchor_sim, class_id=trk_cid)
                 else:
                     # Normal: full fingerprint update with crop
                     track_crop = self._find_crop_for_track(
@@ -710,7 +792,7 @@ class SelfWatchPipeline:
                     self.active_memory.update(
                         gid, track.embedding, box_val, track.score,
                         frame_delta, crop=track_crop, velocity=vel,
-                        hits=track.total_hits, anchor_sim=anchor_sim)
+                        hits=track.total_hits, anchor_sim=anchor_sim, class_id=trk_cid)
 
         # 2. THINKING: recently lost, within hold window
         for gid, track in thinking_tracks_by_gid.items():
@@ -816,6 +898,7 @@ class SelfWatchPipeline:
         self._prev_lid_is_prov = current_lid_is_prov
         t_mem1 = time.perf_counter()
 
+        retail_result = None
         # ── Draw ─────────────────────────────────────────────────────
         t_draw0 = time.perf_counter()
 
@@ -844,7 +927,8 @@ class SelfWatchPipeline:
                         "method": getattr(t, "last_assoc_method", "NEW"),
                         "cbiou": getattr(t, "cbiou_buffer", 0),
                         "hits": t.total_hits,
-                        "anchor_sim": anchor_sim
+                        "anchor_sim": anchor_sim,
+                        "class_id": getattr(t, "class_id", 0)
                     }
                     break
             display[gid] = (tbox, STATE_ACTIVE, local_id, vel, age, assoc_data)
@@ -858,7 +942,9 @@ class SelfWatchPipeline:
                     vel = am_data.get("last_velocity", [0, 0]) if am_data else [0, 0]
                     hits = am_data.get("hits", 0) if am_data else 0
                     anchor_sim = am_data.get("anchor_sim", 0.0) if am_data else 0.0
-                    display[gid] = (box, STATE_THINKING, data.get("owning_lid", "?"), vel, age, {"hits": hits, "anchor_sim": anchor_sim})
+                    cid = am_data.get("class_id", 0) if am_data else 0
+                    trk_age = am_data.get("age", 1) if am_data else 1
+                    display[gid] = (box, STATE_THINKING, data.get("owning_lid", "?"), vel, trk_age, {"hits": hits, "anchor_sim": anchor_sim, "class_id": cid})
 
         # ── Visual Identity Metrics ──────────────────────────────────
         # Capture pre-arbitration display for forensic comparison
@@ -946,8 +1032,32 @@ class SelfWatchPipeline:
                 "lid": lid,
                 "vel": vel,
                 "age": age,
-                "assoc": assoc_data
+                "assoc": assoc_data,
+                "class_id": assoc_data.get("class_id", 0) if isinstance(assoc_data, dict) else 0
             }
+
+        if 4 in display_items:
+            ritem = display_items[4]
+            rcid = ritem.get("class_id", 0)
+            coco_map = {0: "Person", 26: "Backpack", 27: "Umbrella", 30: "Handbag", 32: "Suitcase", 36: "Sports Ball", 43: "Bottle", 45: "Wine Glass", 46: "Cup", 72: "Laptop", 75: "Keyboard", 76: "Cell Phone", 83: "Book"}
+            rcname = coco_map.get(rcid, f"cls{rcid}")
+            tcid = 0
+            for trk in self.tracker.tracks:
+                if getattr(trk, "global_id", -1) == 4 or getattr(trk, "local_id", -1) == 26:
+                    tcid = getattr(trk, "class_id", 0)
+                    break
+            tcname = coco_map.get(tcid, f"cls{tcid}")
+            dcid = tcid
+            det_idx = ritem.get("assoc", {}).get("det")
+            if det_idx is not None and isinstance(det_idx, int) and det_idx < len(class_ids):
+                dcid = class_ids[det_idx]
+            dcname = coco_map.get(dcid, f"cls{dcid}")
+            print(f"FRAME {self.frame_count}\ndetector_class={dcid} {dcname}\ntrack_class={tcid} {tcname}\nrenderer_class={rcid} {rcname}")
+
+        if self._retail_engine is not None:
+            retail_result = self._retail_engine.process_frame(
+                display_items, self._id_states, self.frame_count,
+                shelf_change_dets=getattr(self, '_last_shelf_change_dets', None))
 
         recent_rejects_msgs = []
         if layer_flags["forensic"] and layer_flags["for_failure"]:
@@ -980,7 +1090,12 @@ class SelfWatchPipeline:
             "id_switches": len(frame_id_switches) if frame_id_switches else 0,
             "recent_rejects": recent_rejects_msgs,
             "debug_enabled": self.debug_overlay.enabled,
-            "hud": hud_meta
+            "hud": hud_meta,
+            "retail": retail_result,
+            "shelf_change": {
+                "zones": self._shelf_change_detector.zones if self._shelf_change_detector else [],
+                "zone_status": self._shelf_change_detector.zone_status if self._shelf_change_detector else {},
+            },
         }
 
         t_draw1 = time.perf_counter()
@@ -1173,4 +1288,6 @@ class SelfWatchPipeline:
         print(f"  {'FRAME total':14s}: {self._prof['total'] / n:7.2f} ms")
         print(f"  {'Frames':14s}: {n}")
         print("=" * 60)
+        if self._retail_engine is not None:
+            self._retail_engine.close()
         self.event_logger.close()

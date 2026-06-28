@@ -40,6 +40,7 @@ from detectors.trt_detector import TRTDetector
 from reid.trt_embedding_extractor import TRTEmbeddingExtractor
 from trackers import StrongSORTTracker
 from engine.pipeline import SelfWatchPipeline
+from retail.retail_config import RETAIL_TARGET_CLASSES
 
 from .global_registry import GlobalMultiCameraIdentityManager
 from .camera_stream import CameraStream
@@ -449,7 +450,7 @@ class MultiCameraPipeline:
             try:
                 batch_frames = [f for _, f in frames_to_detect]
                 batch_results = self._detector.detect_batch(
-                    batch_frames, conf_threshold=0.35, target_classes=[0])  # 0=person
+                    batch_frames, conf_threshold=0.15, target_classes=RETAIL_TARGET_CLASSES)
                 for (cam_idx, _), result in zip(frames_to_detect, batch_results):
                     batch_det_results[cam_idx] = result
             except Exception as e:
@@ -457,7 +458,7 @@ class MultiCameraPipeline:
                 for cam_idx, frame in frames_to_detect:
                     try:
                         batch_det_results[cam_idx] = self._detector.detect(
-                            frame, conf_threshold=0.35, target_classes=[0])
+                            frame, conf_threshold=0.15, target_classes=RETAIL_TARGET_CLASSES)
                     except Exception as e2:
                         print(f"[MULTICAM] sequential detect also failed ({e2})")
         t_det1 = _time.perf_counter()

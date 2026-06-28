@@ -1,0 +1,493 @@
+
+--- [FRAME 380] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=LOST hits=371 time_lost=9 box=[399, 47, 646, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=372 time_lost=0 box=[673, 184, 822, 473] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=CONF hits=261 time_lost=0 box=[670, 232, 742, 342] method=Fused (App+IoU) [C]
+  Track local=5 gid=5 state=LOST hits=24 time_lost=98 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=172 time_lost=22 box=[397, 180, 569, 535] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=16 time_lost=0 box=[431, 424, 580, 537] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 381] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=LOST hits=371 time_lost=10 box=[399, 47, 646, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=373 time_lost=0 box=[671, 184, 823, 473] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=CONF hits=262 time_lost=0 box=[669, 231, 743, 342] method=Fused (App+IoU) [C]
+  Track local=5 gid=5 state=LOST hits=24 time_lost=99 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=172 time_lost=23 box=[397, 180, 569, 535] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=17 time_lost=0 box=[431, 379, 581, 536] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 382] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=LOST hits=371 time_lost=11 box=[399, 47, 646, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=374 time_lost=0 box=[670, 184, 823, 474] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=CONF hits=263 time_lost=0 box=[668, 231, 743, 342] method=Fused (App+IoU) [C]
+  Track local=5 gid=5 state=LOST hits=24 time_lost=100 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=172 time_lost=24 box=[397, 180, 569, 535] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=18 time_lost=0 box=[430, 374, 581, 536] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 383] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=LOST hits=371 time_lost=12 box=[399, 47, 646, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=375 time_lost=0 box=[668, 184, 822, 474] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=CONF hits=264 time_lost=0 box=[668, 231, 743, 342] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=101 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=172 time_lost=25 box=[397, 180, 569, 535] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=19 time_lost=0 box=[430, 372, 580, 536] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 384] Active Tracks (local->global): {1: 1, 2: 2, 4: 3} ---
+  Track local=1 gid=1 state=LOST hits=371 time_lost=13 box=[399, 47, 646, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=376 time_lost=0 box=[667, 183, 822, 475] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=264 time_lost=1 box=[668, 231, 743, 342] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=102 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=172 time_lost=26 box=[397, 180, 569, 535] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=LOST hits=19 time_lost=1 box=[430, 372, 580, 536] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 385] Active Tracks (local->global): {1: 1, 2: 2, 4: 3} ---
+  Track local=1 gid=1 state=LOST hits=371 time_lost=14 box=[399, 47, 646, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=377 time_lost=0 box=[666, 183, 824, 476] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=264 time_lost=2 box=[668, 231, 743, 342] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=103 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=172 time_lost=27 box=[397, 180, 569, 535] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=LOST hits=19 time_lost=2 box=[430, 372, 580, 536] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 386] Active Tracks (local->global): {1: 1, 2: 2, 4: 3} ---
+  Track local=1 gid=1 state=LOST hits=371 time_lost=15 box=[399, 47, 646, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=378 time_lost=0 box=[664, 183, 826, 475] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=264 time_lost=3 box=[668, 231, 743, 342] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=104 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=172 time_lost=28 box=[397, 180, 569, 535] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=LOST hits=19 time_lost=3 box=[430, 372, 580, 536] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 387] Active Tracks (local->global): {2: 2, 4: 3} ---
+  Track local=1 gid=1 state=LOST hits=371 time_lost=16 box=[399, 47, 646, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=379 time_lost=0 box=[661, 182, 830, 474] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=264 time_lost=4 box=[668, 231, 743, 342] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=105 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=173 time_lost=0 box=[423, 171, 624, 536] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=LOST hits=19 time_lost=4 box=[430, 372, 580, 536] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 388] Active Tracks (local->global): {2: 2, 4: 3} ---
+  Track local=1 gid=1 state=LOST hits=371 time_lost=17 box=[399, 47, 646, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=380 time_lost=0 box=[658, 181, 829, 474] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=264 time_lost=5 box=[668, 231, 743, 342] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=106 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=174 time_lost=0 box=[429, 169, 628, 535] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=LOST hits=19 time_lost=5 box=[430, 372, 580, 536] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 389] Active Tracks (local->global): {2: 2, 4: 3} ---
+  Track local=1 gid=1 state=LOST hits=371 time_lost=18 box=[399, 47, 646, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=381 time_lost=0 box=[657, 181, 819, 473] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=264 time_lost=6 box=[668, 231, 743, 342] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=107 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=175 time_lost=0 box=[429, 169, 629, 535] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=LOST hits=19 time_lost=6 box=[430, 372, 580, 536] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 390] Active Tracks (local->global): {1: 1, 2: 2, 3: 5, 4: 3} ---
+  Track local=1 gid=1 state=LOST hits=371 time_lost=19 box=[399, 47, 646, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=382 time_lost=0 box=[656, 180, 825, 473] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=CONF hits=265 time_lost=0 box=[664, 234, 725, 331] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=108 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=176 time_lost=0 box=[426, 169, 617, 536] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=20 time_lost=0 box=[425, 371, 573, 536] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 391] Active Tracks (local->global): {1: 1, 2: 2, 3: 5, 4: 3} ---
+  Track local=1 gid=1 state=LOST hits=371 time_lost=20 box=[399, 47, 646, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=383 time_lost=0 box=[655, 179, 796, 472] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=CONF hits=266 time_lost=0 box=[659, 231, 722, 328] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=109 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=177 time_lost=0 box=[425, 168, 615, 535] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=21 time_lost=0 box=[424, 371, 571, 536] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 392] Active Tracks (local->global): {1: 1, 2: 2, 3: 5, 4: 3} ---
+  Track local=1 gid=1 state=LOST hits=371 time_lost=21 box=[399, 47, 646, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=384 time_lost=0 box=[653, 179, 794, 472] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=CONF hits=267 time_lost=0 box=[654, 231, 720, 325] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=110 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=178 time_lost=0 box=[422, 165, 622, 535] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=22 time_lost=0 box=[422, 370, 570, 536] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 393] Active Tracks (local->global): {2: 2, 3: 5, 4: 3} ---
+  Track local=1 gid=1 state=LOST hits=371 time_lost=22 box=[399, 47, 646, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=385 time_lost=0 box=[651, 177, 800, 472] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=267 time_lost=1 box=[654, 231, 720, 325] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=111 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=179 time_lost=0 box=[421, 164, 626, 535] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=LOST hits=22 time_lost=1 box=[422, 370, 570, 536] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 394] Active Tracks (local->global): {2: 2, 3: 5, 4: 3} ---
+  Track local=1 gid=1 state=LOST hits=371 time_lost=23 box=[399, 47, 646, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=386 time_lost=0 box=[649, 178, 802, 471] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=CONF hits=268 time_lost=0 box=[649, 234, 712, 324] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=112 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=180 time_lost=0 box=[418, 164, 624, 534] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=LOST hits=22 time_lost=2 box=[422, 370, 570, 536] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 395] Active Tracks (local->global): {1: 1, 2: 2, 3: 5, 4: 3} ---
+  Track local=1 gid=1 state=LOST hits=371 time_lost=24 box=[399, 47, 646, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=387 time_lost=0 box=[646, 179, 803, 471] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=CONF hits=269 time_lost=0 box=[648, 233, 712, 325] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=113 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=180 time_lost=1 box=[418, 164, 624, 534] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=LOST hits=22 time_lost=3 box=[422, 370, 570, 536] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 396] Active Tracks (local->global): {1: 1, 2: 2, 3: 5, 4: 3} ---
+  Track local=1 gid=1 state=LOST hits=371 time_lost=25 box=[399, 47, 646, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=388 time_lost=0 box=[645, 179, 800, 471] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=CONF hits=270 time_lost=0 box=[645, 235, 708, 330] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=114 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=180 time_lost=2 box=[418, 164, 624, 534] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=LOST hits=22 time_lost=4 box=[422, 370, 570, 536] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 397] Active Tracks (local->global): {1: 1, 2: 2, 4: 3} ---
+  Track local=1 gid=1 state=LOST hits=371 time_lost=26 box=[399, 47, 646, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=389 time_lost=0 box=[644, 179, 751, 471] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=270 time_lost=1 box=[645, 235, 708, 330] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=115 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=180 time_lost=3 box=[418, 164, 624, 534] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=LOST hits=22 time_lost=5 box=[422, 370, 570, 536] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 398] Active Tracks (local->global): {1: 1, 2: 2, 4: 3} ---
+  Track local=1 gid=1 state=LOST hits=371 time_lost=27 box=[399, 47, 646, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=390 time_lost=0 box=[644, 179, 746, 472] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=270 time_lost=2 box=[645, 235, 708, 330] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=116 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=180 time_lost=4 box=[418, 164, 624, 534] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=LOST hits=22 time_lost=6 box=[422, 370, 570, 536] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 399] Active Tracks (local->global): {1: 1, 2: 2, 3: 5, 4: 3} ---
+  Track local=1 gid=1 state=LOST hits=371 time_lost=28 box=[399, 47, 646, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=391 time_lost=0 box=[644, 180, 778, 473] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=270 time_lost=3 box=[645, 235, 708, 330] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=117 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=180 time_lost=5 box=[418, 164, 624, 534] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=LOST hits=22 time_lost=7 box=[422, 370, 570, 536] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 400] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=LOST hits=371 time_lost=29 box=[399, 47, 646, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=392 time_lost=0 box=[643, 180, 754, 472] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=CONF hits=271 time_lost=0 box=[640, 234, 704, 337] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=118 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=180 time_lost=6 box=[418, 164, 624, 534] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=23 time_lost=0 box=[407, 417, 561, 538] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=TENT hits=1 time_lost=0 box=[716, 210, 763, 357] method=NEW
+
+--- [FRAME 401] Active Tracks (local->global): {1: 1, 2: 2, 3: 5, 4: 3} ---
+  Track local=1 gid=1 state=CONF hits=372 time_lost=0 box=[397, 49, 636, 537] method=Fused (App+IoU)
+  Track local=2 gid=2 state=CONF hits=393 time_lost=0 box=[643, 181, 777, 473] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=CONF hits=272 time_lost=0 box=[639, 235, 702, 342] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=119 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=180 time_lost=7 box=[418, 164, 624, 534] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=LOST hits=23 time_lost=1 box=[407, 417, 561, 538] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=CONF hits=2 time_lost=0 box=[713, 209, 758, 357] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 402] Active Tracks (local->global): {1: 1, 2: 2, 3: 5, 4: 3} ---
+  Track local=1 gid=1 state=CONF hits=373 time_lost=0 box=[397, 50, 634, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=394 time_lost=0 box=[643, 181, 781, 473] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=CONF hits=273 time_lost=0 box=[638, 235, 701, 343] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=120 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=180 time_lost=8 box=[418, 164, 624, 534] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=LOST hits=23 time_lost=2 box=[407, 417, 561, 538] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=CONF hits=3 time_lost=0 box=[709, 209, 756, 356] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 403] Active Tracks (local->global): {1: 1, 2: 2, 3: 5, 4: 3} ---
+  Track local=1 gid=1 state=CONF hits=374 time_lost=0 box=[395, 51, 634, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=395 time_lost=0 box=[643, 181, 781, 474] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=CONF hits=274 time_lost=0 box=[636, 240, 695, 343] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=121 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=180 time_lost=9 box=[418, 164, 624, 534] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=LOST hits=23 time_lost=3 box=[407, 417, 561, 538] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=CONF hits=4 time_lost=0 box=[710, 210, 758, 355] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 404] Active Tracks (local->global): {1: 1, 2: 2, 3: 5, 4: 3} ---
+  Track local=1 gid=1 state=CONF hits=375 time_lost=0 box=[393, 51, 633, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=396 time_lost=0 box=[641, 181, 776, 475] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=274 time_lost=1 box=[636, 240, 695, 343] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=122 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=180 time_lost=10 box=[418, 164, 624, 534] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=LOST hits=23 time_lost=4 box=[407, 417, 561, 538] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=LOST hits=4 time_lost=1 box=[710, 210, 758, 355] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 405] Active Tracks (local->global): {1: 1, 2: 2, 3: 5, 4: 3} ---
+  Track local=1 gid=1 state=CONF hits=376 time_lost=0 box=[393, 53, 633, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=397 time_lost=0 box=[640, 181, 774, 475] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=274 time_lost=2 box=[636, 240, 695, 343] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=123 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=180 time_lost=11 box=[418, 164, 624, 534] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=LOST hits=23 time_lost=5 box=[407, 417, 561, 538] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=CONF hits=5 time_lost=0 box=[712, 210, 759, 353] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 406] Active Tracks (local->global): {1: 1, 2: 2, 3: 5, 4: 3} ---
+  Track local=1 gid=1 state=CONF hits=377 time_lost=0 box=[392, 54, 634, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=398 time_lost=0 box=[639, 180, 772, 474] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=274 time_lost=3 box=[636, 240, 695, 343] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=124 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=180 time_lost=12 box=[418, 164, 624, 534] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=LOST hits=23 time_lost=6 box=[407, 417, 561, 538] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=CONF hits=6 time_lost=0 box=[712, 210, 759, 351] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 407] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=CONF hits=378 time_lost=0 box=[392, 55, 633, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=399 time_lost=0 box=[638, 180, 767, 475] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=274 time_lost=4 box=[636, 240, 695, 343] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=125 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=181 time_lost=0 box=[400, 180, 564, 535] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=24 time_lost=0 box=[398, 410, 550, 537] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=CONF hits=7 time_lost=0 box=[713, 211, 761, 350] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 408] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=CONF hits=379 time_lost=0 box=[393, 56, 634, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=400 time_lost=0 box=[638, 180, 766, 477] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=CONF hits=275 time_lost=0 box=[634, 233, 691, 347] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=126 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=182 time_lost=0 box=[398, 185, 559, 527] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=25 time_lost=0 box=[398, 405, 548, 526] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=CONF hits=8 time_lost=0 box=[707, 212, 758, 352] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 409] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=CONF hits=380 time_lost=0 box=[399, 57, 637, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=401 time_lost=0 box=[638, 179, 764, 477] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=275 time_lost=1 box=[634, 233, 691, 347] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=127 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=182 time_lost=1 box=[398, 185, 559, 527] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=26 time_lost=0 box=[405, 403, 548, 525] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=CONF hits=9 time_lost=0 box=[706, 213, 756, 352] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 410] Active Tracks (local->global): {1: 1, 2: 2} ---
+  Track local=1 gid=1 state=CONF hits=381 time_lost=0 box=[399, 58, 639, 538] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=402 time_lost=0 box=[639, 179, 760, 477] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=275 time_lost=2 box=[634, 233, 691, 347] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=128 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=182 time_lost=2 box=[398, 185, 559, 527] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=27 time_lost=0 box=[409, 398, 549, 525] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=CONF hits=10 time_lost=0 box=[706, 213, 757, 350] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 411] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=CONF hits=382 time_lost=0 box=[401, 61, 644, 538] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=403 time_lost=0 box=[635, 179, 756, 476] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=CONF hits=276 time_lost=0 box=[633, 232, 691, 349] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=129 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=183 time_lost=0 box=[402, 313, 554, 523] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=28 time_lost=0 box=[414, 396, 551, 524] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=CONF hits=11 time_lost=0 box=[705, 214, 753, 350] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 412] Active Tracks (local->global): {1: 1, 2: 2} ---
+  Track local=1 gid=1 state=CONF hits=383 time_lost=0 box=[404, 64, 650, 538] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=404 time_lost=0 box=[632, 178, 747, 476] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=276 time_lost=1 box=[633, 232, 691, 349] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=130 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=183 time_lost=1 box=[402, 313, 554, 523] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=29 time_lost=0 box=[418, 393, 553, 524] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=CONF hits=12 time_lost=0 box=[708, 214, 756, 353] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 413] Active Tracks (local->global): {1: 1, 2: 2} ---
+  Track local=1 gid=1 state=CONF hits=384 time_lost=0 box=[404, 65, 654, 538] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=405 time_lost=0 box=[633, 177, 744, 477] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=276 time_lost=2 box=[633, 232, 691, 349] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=131 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=183 time_lost=2 box=[402, 313, 554, 523] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=30 time_lost=0 box=[423, 391, 556, 527] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=CONF hits=13 time_lost=0 box=[710, 213, 761, 354] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 414] Active Tracks (local->global): {1: 1, 2: 2} ---
+  Track local=1 gid=1 state=CONF hits=385 time_lost=0 box=[414, 68, 667, 538] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=406 time_lost=0 box=[633, 177, 743, 477] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=276 time_lost=3 box=[633, 232, 691, 349] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=132 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=184 time_lost=0 box=[422, 212, 633, 530] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=31 time_lost=0 box=[427, 390, 562, 532] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=CONF hits=14 time_lost=0 box=[711, 213, 762, 355] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 415] Active Tracks (local->global): {1: 1, 2: 2} ---
+  Track local=1 gid=1 state=CONF hits=386 time_lost=0 box=[423, 70, 669, 538] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=407 time_lost=0 box=[635, 177, 751, 478] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=276 time_lost=4 box=[633, 232, 691, 349] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=133 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=184 time_lost=1 box=[422, 212, 633, 530] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=32 time_lost=0 box=[430, 386, 566, 534] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=CONF hits=15 time_lost=0 box=[708, 214, 761, 355] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 416] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=CONF hits=387 time_lost=0 box=[431, 71, 674, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=408 time_lost=0 box=[640, 177, 771, 482] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=276 time_lost=5 box=[633, 232, 691, 349] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=134 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=185 time_lost=0 box=[431, 197, 627, 531] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=33 time_lost=0 box=[434, 383, 568, 534] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=CONF hits=16 time_lost=0 box=[708, 214, 760, 356] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 417] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=CONF hits=388 time_lost=0 box=[438, 71, 677, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=409 time_lost=0 box=[644, 177, 758, 481] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=276 time_lost=6 box=[633, 232, 691, 349] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=135 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=185 time_lost=1 box=[431, 197, 627, 531] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=34 time_lost=0 box=[439, 382, 567, 530] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=CONF hits=17 time_lost=0 box=[713, 214, 763, 354] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 418] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=CONF hits=389 time_lost=0 box=[439, 71, 679, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=410 time_lost=0 box=[647, 176, 780, 485] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=276 time_lost=7 box=[633, 232, 691, 349] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=136 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=185 time_lost=2 box=[431, 197, 627, 531] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=35 time_lost=0 box=[445, 383, 566, 528] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=CONF hits=18 time_lost=0 box=[716, 214, 769, 357] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 419] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=CONF hits=390 time_lost=0 box=[454, 70, 683, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=411 time_lost=0 box=[650, 176, 782, 487] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=276 time_lost=8 box=[633, 232, 691, 349] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=137 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=185 time_lost=3 box=[431, 197, 627, 531] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=36 time_lost=0 box=[444, 342, 565, 527] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=CONF hits=19 time_lost=0 box=[708, 215, 769, 357] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 420] Active Tracks (local->global): {1: 1, 2: 2, 3: 5, 4: 3} ---
+  Track local=1 gid=1 state=CONF hits=391 time_lost=0 box=[459, 68, 682, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=412 time_lost=0 box=[653, 175, 784, 489] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=276 time_lost=9 box=[633, 232, 691, 349] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=138 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=186 time_lost=0 box=[429, 343, 573, 537] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=37 time_lost=0 box=[450, 364, 564, 516] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=CONF hits=20 time_lost=0 box=[706, 213, 770, 358] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 421] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=CONF hits=392 time_lost=0 box=[452, 65, 682, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=413 time_lost=0 box=[659, 175, 783, 487] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=276 time_lost=10 box=[633, 232, 691, 349] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=139 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=186 time_lost=1 box=[429, 343, 573, 537] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=38 time_lost=0 box=[439, 378, 558, 534] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=CONF hits=21 time_lost=0 box=[709, 213, 775, 359] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 422] Active Tracks (local->global): {1: 1, 2: 2, 3: 5, 4: 3} ---
+  Track local=1 gid=1 state=CONF hits=393 time_lost=0 box=[457, 63, 683, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=414 time_lost=0 box=[664, 175, 785, 486] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=276 time_lost=11 box=[633, 232, 691, 349] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=140 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=186 time_lost=2 box=[429, 343, 573, 537] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=LOST hits=38 time_lost=1 box=[439, 378, 558, 534] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=LOST hits=21 time_lost=1 box=[709, 213, 775, 359] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 423] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=CONF hits=394 time_lost=0 box=[460, 62, 687, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=415 time_lost=0 box=[665, 174, 785, 486] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=276 time_lost=12 box=[633, 232, 691, 349] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=141 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=187 time_lost=0 box=[425, 204, 662, 536] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=39 time_lost=0 box=[431, 380, 555, 537] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=CONF hits=22 time_lost=0 box=[708, 213, 776, 358] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 424] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=CONF hits=395 time_lost=0 box=[459, 61, 689, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=416 time_lost=0 box=[666, 173, 786, 488] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=276 time_lost=13 box=[633, 232, 691, 349] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=142 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=188 time_lost=0 box=[422, 188, 668, 536] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=40 time_lost=0 box=[426, 379, 552, 538] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=CONF hits=23 time_lost=0 box=[711, 209, 781, 358] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 425] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=CONF hits=396 time_lost=0 box=[488, 61, 695, 538] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=417 time_lost=0 box=[669, 173, 788, 484] method=Fused (App+IoU) [C]
+  Track local=3 gid=3 state=LOST hits=276 time_lost=14 box=[633, 232, 691, 349] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=143 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=189 time_lost=0 box=[424, 175, 674, 536] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=41 time_lost=0 box=[430, 381, 551, 539] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=LOST hits=23 time_lost=1 box=[711, 209, 781, 358] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 426] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=CONF hits=397 time_lost=0 box=[491, 61, 701, 538] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=418 time_lost=0 box=[670, 173, 787, 484] method=ByteTrack (Low Conf IoU)
+  Track local=3 gid=3 state=LOST hits=276 time_lost=15 box=[633, 232, 691, 349] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=144 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=190 time_lost=0 box=[434, 269, 623, 537] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=42 time_lost=0 box=[435, 381, 550, 539] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=LOST hits=23 time_lost=2 box=[711, 209, 781, 358] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 427] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=CONF hits=398 time_lost=0 box=[491, 62, 708, 538] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=419 time_lost=0 box=[673, 173, 787, 484] method=ByteTrack (Low Conf IoU)
+  Track local=3 gid=3 state=LOST hits=276 time_lost=16 box=[633, 232, 691, 349] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=145 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=191 time_lost=0 box=[441, 187, 652, 536] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=CONF hits=43 time_lost=0 box=[438, 383, 547, 539] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=CONF hits=24 time_lost=0 box=[721, 209, 783, 360] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 428] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=CONF hits=399 time_lost=0 box=[489, 64, 718, 538] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=420 time_lost=0 box=[674, 173, 789, 485] method=ByteTrack (Low Conf IoU)
+  Track local=3 gid=3 state=LOST hits=276 time_lost=17 box=[633, 232, 691, 349] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=146 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=192 time_lost=0 box=[442, 179, 653, 537] method=ByteTrack (Low Conf IoU)
+  Track local=16 gid=16 state=LOST hits=43 time_lost=1 box=[438, 383, 547, 539] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=CONF hits=25 time_lost=0 box=[714, 215, 788, 359] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 429] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=CONF hits=400 time_lost=0 box=[488, 65, 721, 538] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=421 time_lost=0 box=[674, 173, 788, 485] method=ByteTrack (Low Conf IoU)
+  Track local=3 gid=3 state=LOST hits=276 time_lost=18 box=[633, 232, 691, 349] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=147 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=193 time_lost=0 box=[440, 172, 643, 537] method=Fused (App+IoU) [C]
+  Track local=16 gid=16 state=LOST hits=43 time_lost=2 box=[438, 383, 547, 539] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=CONF hits=26 time_lost=0 box=[676, 175, 758, 465] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 430] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=CONF hits=401 time_lost=0 box=[486, 67, 723, 538] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=422 time_lost=0 box=[674, 172, 795, 485] method=ByteTrack (Low Conf IoU)
+  Track local=3 gid=3 state=LOST hits=276 time_lost=19 box=[633, 232, 691, 349] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=148 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=194 time_lost=0 box=[441, 172, 638, 537] method=Fused (App+IoU) [C]
+  Track local=16 gid=16 state=LOST hits=43 time_lost=3 box=[438, 383, 547, 539] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=LOST hits=26 time_lost=1 box=[676, 175, 758, 465] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 431] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=CONF hits=402 time_lost=0 box=[486, 69, 724, 538] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=423 time_lost=0 box=[674, 172, 796, 487] method=ByteTrack (Low Conf IoU)
+  Track local=3 gid=3 state=LOST hits=276 time_lost=20 box=[633, 232, 691, 349] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=149 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=195 time_lost=0 box=[437, 177, 635, 537] method=Fused (App+IoU) [C]
+  Track local=16 gid=16 state=LOST hits=43 time_lost=4 box=[438, 383, 547, 539] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=LOST hits=26 time_lost=2 box=[676, 175, 758, 465] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 432] Active Tracks (local->global): {1: 1, 2: 2, 3: 5, 4: 3} ---
+  Track local=1 gid=1 state=CONF hits=403 time_lost=0 box=[487, 71, 726, 538] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=424 time_lost=0 box=[674, 172, 795, 488] method=ByteTrack (Low Conf IoU)
+  Track local=3 gid=3 state=LOST hits=276 time_lost=21 box=[633, 232, 691, 349] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=150 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=LOST hits=195 time_lost=1 box=[437, 177, 635, 537] method=Fused (App+IoU) [C]
+  Track local=16 gid=16 state=LOST hits=43 time_lost=5 box=[438, 383, 547, 539] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=LOST hits=26 time_lost=3 box=[676, 175, 758, 465] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 433] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=CONF hits=404 time_lost=0 box=[488, 74, 727, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=425 time_lost=0 box=[674, 172, 797, 490] method=ByteTrack (Low Conf IoU)
+  Track local=3 gid=3 state=LOST hits=276 time_lost=22 box=[633, 232, 691, 349] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=151 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=196 time_lost=0 box=[473, 187, 619, 508] method=Fused (App+IoU)
+  Track local=16 gid=16 state=LOST hits=43 time_lost=6 box=[438, 383, 547, 539] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=LOST hits=26 time_lost=4 box=[676, 175, 758, 465] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 434] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=CONF hits=405 time_lost=0 box=[489, 77, 728, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=426 time_lost=0 box=[673, 171, 795, 491] method=ByteTrack (Low Conf IoU)
+  Track local=3 gid=3 state=LOST hits=276 time_lost=23 box=[633, 232, 691, 349] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=152 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=197 time_lost=0 box=[477, 192, 617, 523] method=Fused (App+IoU) [C]
+  Track local=16 gid=16 state=LOST hits=43 time_lost=7 box=[438, 383, 547, 539] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=LOST hits=26 time_lost=5 box=[676, 175, 758, 465] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 435] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=CONF hits=406 time_lost=0 box=[491, 80, 728, 537] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=427 time_lost=0 box=[673, 170, 806, 495] method=ByteTrack (Low Conf IoU)
+  Track local=3 gid=3 state=LOST hits=276 time_lost=24 box=[633, 232, 691, 349] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=153 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=198 time_lost=0 box=[483, 192, 615, 516] method=Fused (App+IoU) [C]
+  Track local=16 gid=16 state=LOST hits=43 time_lost=8 box=[438, 383, 547, 539] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=LOST hits=26 time_lost=6 box=[676, 175, 758, 465] method=ByteTrack (Low Conf IoU)
+
+--- [FRAME 436] Active Tracks (local->global): {1: 1, 2: 2, 3: 5} ---
+  Track local=1 gid=1 state=CONF hits=407 time_lost=0 box=[493, 84, 729, 536] method=Fused (App+IoU) [C]
+  Track local=2 gid=2 state=CONF hits=428 time_lost=0 box=[674, 169, 802, 498] method=ByteTrack (Low Conf IoU)
+  Track local=3 gid=3 state=LOST hits=276 time_lost=25 box=[633, 232, 691, 349] method=ByteTrack (Low Conf IoU)
+  Track local=5 gid=5 state=LOST hits=24 time_lost=154 box=[769, 182, 891, 281] method=ByteTrack (Low Conf IoU)
+  Track local=8 gid=4 state=CONF hits=199 time_lost=0 box=[487, 194, 616, 515] method=Fused (App+IoU) [C]
+  Track local=16 gid=16 state=LOST hits=43 time_lost=9 box=[438, 383, 547, 539] method=ByteTrack (Low Conf IoU)
+  Track local=18 gid=18 state=LOST hits=26 time_lost=7 box=[676, 175, 758, 465] method=ByteTrack (Low Conf IoU)

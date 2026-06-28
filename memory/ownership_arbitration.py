@@ -94,11 +94,20 @@ class OwnershipArbitrationLayer:
     # ── Overlap Detection ────────────────────────────────────────────
 
     def _find_overlaps(self, display):
-        gids = list(display.keys())
+        # Exclude THINKING tracks from arbitration. Arbitration should only
+        # merge overlapping LIVE detections (STATE_ACTIVE). Predicted ghosts
+        # drifting together should not trigger duplicate suppression.
+        active_gids = [gid for gid, data in display.items() if data[1] == STATE_ACTIVE]
         overlaps = []
-        for i in range(len(gids)):
-            for j in range(i + 1, len(gids)):
-                a, b = gids[i], gids[j]
+        for i in range(len(active_gids)):
+            for j in range(i + 1, len(active_gids)):
+                a, b = active_gids[i], active_gids[j]
+                # Skip cross-class pairs: a person overlapping a bottle/bag
+                # is expected physical reality, not a tracking duplicate.
+                cid_a = display[a][5].get("class_id", 0) if isinstance(display[a][5], dict) else 0
+                cid_b = display[b][5].get("class_id", 0) if isinstance(display[b][5], dict) else 0
+                if cid_a != cid_b:
+                    continue
                 iou = self._iou(display[a][0], display[b][0])
                 if iou > self.DUPLICATE_IOU_THRESH:
                     overlaps.append((a, b, iou))

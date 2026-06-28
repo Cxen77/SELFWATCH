@@ -52,7 +52,8 @@ class STrack:
     STATE_LOST = 2
 
     def __init__(self, box, score, embedding=None, label="object",
-                 confirm_threshold=3, embedding_history_size=10):
+                 confirm_threshold=3, embedding_history_size=10,
+                 class_id=0):
         # IMMUTABLE local tracker ID
         self.local_id = STrack._next_id
         STrack._next_id += 1
@@ -65,6 +66,10 @@ class STrack:
         self.smooth_box = np.array(box, dtype=np.float32)
         self.score = score
         self.label = label
+
+        # COCO class ID (0-indexed). Immutable once set at birth.
+        # 0=person, 26=backpack, 30=handbag, 32=suitcase, 72=laptop, 76=cell phone
+        self.class_id = class_id
 
         # Velocity model
         self.vel = np.zeros(2, dtype=np.float32)
@@ -113,6 +118,7 @@ class STrack:
         self._stable_conf = score
         self._stable_update_count = 0    # How many good updates we've had
         self.recovery_count = 0
+        self.frame_lost = None    # Frame number when track was lost (forensic)
 
         # ── Identity Protection Layer state ──────────────────────────────
         # Anchor embedding is snapshotted at hits==100 and NEVER updated.
@@ -279,13 +285,16 @@ class STrack:
 
     def update(self, box, score, embedding=None,
               crop=None, box_alpha=0.5, min_quality_score=0.4,
-              frame_shape=None, sibling_boxes=None, frame_delta=1):
+              frame_shape=None, sibling_boxes=None, frame_delta=1,
+              class_id=None):
         """
         Update track with a matched detection.
 
         Tracking (box, velocity) always updates.
         Embedding memory ONLY updates if Memory Lock allows it.
         """
+        if class_id is not None:
+            self.class_id = int(class_id)
         frame_delta = max(1, int(frame_delta))
         new_box = np.array(box, dtype=np.float32)
 
@@ -424,12 +433,13 @@ class STrack:
         if self.state == self.STATE_LOST:
             self.state = self.STATE_CONFIRMED
             self.recovery_count += 1
-            print(f"  [TRACKER DEBUG] STrack local={self.local_id} RECOVERED! recovery_count={self.recovery_count}")
+            print(f"[TRACK RECOVERED] local_id={self.local_id} gid={self.global_id} "
+                  f"recovery_count={self.recovery_count} frame_lost={self.frame_lost}")
 
 
     # ── Lost / removal ───────────────────────────────────────────────
 
-    def mark_lost(self, frame_delta=1):
+    def mark_lost(self, frame_delta=1, frame_count=None):
         """Mark track as lost (no match this frame)."""
         frame_delta = max(1, int(frame_delta))
         self.time_since_update += frame_delta
@@ -439,7 +449,11 @@ class STrack:
         self.memory_update_allowed = False
         if self.state == self.STATE_CONFIRMED:
             self.state = self.STATE_LOST
-            print(f"[INSTRUMENTATION] TRACK ENTERED LOST STATE: local={self.local_id} time_since_update={self.time_since_update} age={self.age} hits={self.total_hits}")
+            box = self.smooth_box.tolist()
+            self.frame_lost = frame_count
+            print(f"[TRACK LOST] frame={frame_count} local_id={self.local_id} gid={self.global_id} "
+                  f"hits={self.total_hits} time_since_update={self.time_since_update} "
+                  f"bbox=({box[0]:.0f},{box[1]:.0f},{box[2]:.0f},{box[3]:.0f})")
 
     def should_remove(self, max_lost):
         """Check if this track should be permanently removed.

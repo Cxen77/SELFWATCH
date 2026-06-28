@@ -1,0 +1,52 @@
+[06/27/2026-00:41:16] [TRT] [W] WARNING The logger passed into createInferRuntime differs from one already registered for an existing builder, runtime, or refitter. So the current new logger is ignored, and TensorRT will use the existing one which is returned by nvinfer1::getLogger() instead.
+
+============================================================
+  SELFWATCH Multi-Camera ΓÇö Initializing Shared Models
+============================================================
+[MULTICAM] Backend: TensorRT  engine=C:\Users\Dev\Desktop\SELFWATCH\models\rfdetr_nano_384_fp16.engine
+[TRT] Static batch engine detected: batch=1
+[TRT] Γ£ô TRT detector ready: TRT-RF-DETR-Nano-FP16 (res=384)
+[TRT]   Engine: C:\Users\Dev\Desktop\SELFWATCH\models\rfdetr_nano_384_fp16.engine
+[TRT]   Input resolution: 384
+[TRT-ReID] Warming up TRT engine ΓÇª
+[TRT-ReID] Γ£ô TRT ReID backend ready (Dynamic Batch)
+[TRT-ReID]   Engine : C:\Users\Dev\Desktop\SELFWATCH\models\osnet_x1_0_dyn_fp16.engine
+[TRT-ReID]   Device : cuda:0
+[TRT] Warming up TRT-RF-DETR-Nano-FP16 (res=384) ΓÇª
+[TRT] Warmup complete.
+[MULTICAM] Shared detector: TRT-RF-DETR-Nano-FP16 (res=384)
+[MULTICAM] Shared ReID: TensorRT OSNet x1.0 (512-dim)
+============================================================
+
+[FORENSIC] Identity tracer ACTIVE for GID=28
+[SELFWATCH] Retail theft detection: ENABLED
+[MULTICAM] Added Camera0: Source 0 (source=C:/Users/Dev/Downloads/sh3.mp4)
+[CAM0] Opened: Source 0 (source=C:/Users/Dev/Downloads/sh3.mp4)
+[Profiling] Pipeline load time: 1.47s
+[DETECTION] frame=1 det_id=0 class=0 conf=0.948 bbox=(512,97,800,535)
+[DETECTION] frame=1 det_id=1 class=0 conf=0.858 bbox=(873,181,960,534)
+[DETECTION] frame=1 det_id=2 class=0 conf=0.884 bbox=(818,170,908,517)
+[DETECTION] frame=1 det_id=3 class=0 conf=0.352 bbox=(529,184,588,322)
+  [TRACKER DEBUG] NEW LOCAL TRACK SPAWNED: local=1 conf=0.95 zero_emb=NO
+[TRACK BIRTH] frame=1 local_id=1 class=person confidence=0.948 bbox=(512,97,800,535)
+  [TRACKER DEBUG] NEW LOCAL TRACK SPAWNED: local=2 conf=0.86 zero_emb=NO
+[TRACK BIRTH] frame=1 local_id=2 class=person confidence=0.858 bbox=(873,181,960,534)
+  [TRACKER DEBUG] NEW LOCAL TRACK SPAWNED: local=3 conf=0.88 zero_emb=NO
+[TRACK BIRTH] frame=1 local_id=3 class=person confidence=0.884 bbox=(818,170,908,517)
+[INSTRUMENTATION] GLOBAL NEW GID ASSIGNED: local=1 -> new_gid=1 (NO_PROPOSAL)
+[INSTRUMENTATION] GLOBAL NEW GID ASSIGNED: local=2 -> new_gid=2 (NO_PROPOSAL)
+[INSTRUMENTATION] GLOBAL NEW GID ASSIGNED: local=3 -> new_gid=3 (NO_PROPOSAL)
+[DETECTION] frame=2 det_id=0 class=0 conf=0.947 bbox=(509,99,799,536)
+[DETECTION] frame=2 det_id=1 class=0 conf=0.853 bbox=(872,181,960,534)
+[DETECTION] frame=2 det_id=2 class=0 conf=0.880 bbox=(817,169,908,517)
+[DETECTION] frame=3 det_id=0 class=0 conf=0.947 bbox=(507,99,799,536)
+[DETECTION] frame=3 det_id=1 class=0 conf=0.857 bbox=(872,181,960,534)
+[DETECTION] frame=3 det_id=2 class=0 conf=0.878 bbox=(818,168,907,517)
+[DETECTION] frame=4 det_id=0 class=0 conf=0.949 bbox=(502,100,798,536)
+[DETECTION] frame=4 det_id=1 class=0 conf=0.861 bbox=(871,181,960,533)
+[DETECTION] frame=4 det_id=2 class=0 conf=0.883 bbox=(818,168,908,518)
+[DETECTION] frame=4 det_id=3 class=0 conf=0.370 bbox=(533,183,586,279)
+[DETECTION] frame=5 det_id=0 class=0 conf=0.948 bbox=(500,101,798,536)
+[DETECTION] frame=5 det_id=1 class=0 conf=0.878 bbox=(872,181,960,515)
+...
+[SHELF] zone=ZONE_A object_gid=6 class=Bottle event=ON_SHELF frame=257

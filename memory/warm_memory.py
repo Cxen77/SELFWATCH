@@ -61,6 +61,7 @@ class WarmMemory:
             "decayed_confidence": 1.0,
             "lost_time": current_time,
             "last_decay_time": current_time,
+            "class_id": active_data.get("class_id", 0),
         }
         # Log saved (no print on hot path)
 
