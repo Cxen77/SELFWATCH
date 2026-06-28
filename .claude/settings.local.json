@@ -37,7 +37,8 @@
       "Bash(python -c \"import ast; ast.parse\\(open\\('retail/shelf_zone_manager.py'\\).read\\(\\)\\); print\\('shelf_zone_manager.py: OK'\\)\")",
       "Bash(python -c \"import ast; ast.parse\\(open\\('retail/ownership_engine.py'\\).read\\(\\)\\); print\\('ownership_engine.py: OK'\\)\")",
       "Bash(python -c \"import ast; [ast.parse\\(open\\(f\\).read\\(\\)\\) for f in ['memory/ownership_arbitration.py', 'retail/shelf_zone_manager.py', 'retail/ownership_engine.py', 'retail/suspicion_engine.py', 'retail/retail_engine.py']]; print\\('All files parse OK'\\)\")",
-      "WebSearch"
+      "WebSearch",
+      "Bash(grep -E \"\\\\.\\(py|txt|json\\)$\")"
     ]
   }
 }

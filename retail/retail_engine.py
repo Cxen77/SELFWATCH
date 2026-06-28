@@ -69,11 +69,11 @@ class RetailTheftEngine:
         """
         self._frame_count = frame_count
 
-        from .rfdetr_taxonomy import PERSON, ALL_TRACKED_CLASSES
+        from .rfdetr_taxonomy import PERSON
         persons = [g for g, i in display_items.items()
                    if i.get("class_id", 0) == PERSON]
         objects = [g for g, i in display_items.items()
-                   if i.get("class_id", 0) in ALL_TRACKED_CLASSES]
+                   if i.get("class_id", 0) != PERSON]
 
         if frame_count % 30 == 0:
             n_cand = len(self.candidates.get_active_candidates())
@@ -91,19 +91,19 @@ class RetailTheftEngine:
         # Build proposals from shelf change detections (if available)
         # AND from low-confidence RF-DETR detections already in display_items
         proposals = []
-        if shelf_change_dets:
+        if shelf_change_dets is not None and len(shelf_change_dets) > 0:
             for det in shelf_change_dets:
                 proposals.append(det)
 
-        # Also add any unknown-class detections from display_items
+        # Add all non-person detections as potential merchandise items
         for gid, item in display_items.items():
             cid = item.get("class_id", 0)
-            if cid == -1:  # UNKNOWN_OBJECT
+            if cid != PERSON:
                 proposals.append({
                     "box": item["box"],
-                    "confidence": 0.5,
+                    "confidence": max(0.5, item.get("score", 0.5)),
                     "zone": "auto",
-                    "class_id": -1,
+                    "class_id": cid,
                 })
 
         active_candidates = self.candidates.process_proposals(

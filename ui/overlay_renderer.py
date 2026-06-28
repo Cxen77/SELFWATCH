@@ -111,7 +111,10 @@ class OverlayRenderer:
             age = item["age"]
             assoc_data = item["assoc"]
             track_class_id = item.get("class_id", 0)
-            class_name = COCO_NAMES.get(track_class_id, f"cls{track_class_id}")
+            if track_class_id == 0:
+                class_name = f"Person #{gid}"
+            else:
+                class_name = f"Item #{gid}"
             
             x1, y1, x2, y2 = map(int, tbox)
             color_id = color_map.get(gid, gid)
@@ -213,52 +216,34 @@ class OverlayRenderer:
 
     def _render_retail(self, disp, retail, display_items):
         ownership_map = retail.get("ownership_map", {})
-        suspicion_scores = retail.get("suspicion_scores", {})
         alerts = retail.get("alerts", [])
         zone_summary = retail.get("zone_summary", {})
 
-        for obj_gid, info in ownership_map.items():
-            owner_gid = info.get("owner_gid")
-            obj_item = display_items.get(obj_gid)
-            owner_item = display_items.get(owner_gid)
-            if obj_item and owner_item:
-                obj_box = obj_item["box"]
-                own_box = owner_item["box"]
-                oc = (int((obj_box[0]+obj_box[2])/2), int((obj_box[1]+obj_box[3])/2))
-                pc = (int((own_box[0]+own_box[2])/2), int((own_box[1]+own_box[3])/2))
-                cv2.line(disp, oc, pc, (0, 200, 255), 1, cv2.LINE_AA)
-                mid = ((oc[0]+pc[0])//2, (oc[1]+pc[1])//2)
-                score = info.get("ownership_score", 0)
-                cv2.putText(disp, f"OWN:{score:.1f}", mid,
-                            cv2.FONT_HERSHEY_PLAIN, 0.8, (0, 200, 255), 1)
+        # Determine per-person operational state
+        person_theft = {a.get("person_gid") for a in alerts if a.get("person_gid")}
+        person_with_items = {
+            info.get("owner_gid")
+            for info in ownership_map.values()
+            if info.get("owner_gid") is not None
+        }
 
-        for p_gid, score in suspicion_scores.items():
-            p_item = display_items.get(p_gid)
-            if not p_item:
+        # Show simple NORMAL / OBJECT REMOVED / THEFT DETECTED state per person
+        for gid, item in display_items.items():
+            if item.get("class_id", 0) != 0:
                 continue
-            box = p_item["box"]
+            box = item["box"]
             x1, y1 = int(box[0]), int(box[1])
-            if score >= 70:
-                color = (0, 0, 255)
-                label = f"THEFT {score:.0f}"
-            elif score >= 40:
-                color = (0, 200, 255)
-                label = f"SUSPICIOUS {score:.0f}"
+            if gid in person_theft:
+                cv2.putText(disp, "OBJECT REMOVED", (x1, y1 - 45),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 165, 255), 2)
+                cv2.putText(disp, "THEFT DETECTED", (x1, y1 - 28),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+            elif gid in person_with_items:
+                cv2.putText(disp, "OBJECT REMOVED", (x1, y1 - 28),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 165, 255), 2)
             else:
-                color = (0, 180, 0)
-                label = f"NORMAL {score:.0f}"
-            cv2.putText(disp, label, (x1, y1 - 28),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-
-        if alerts:
-            alert = alerts[-1]
-            banner = f"THEFT ALERT: Person GID={alert['person_gid']} conf={alert.get('confidence', 0):.0%}"
-            h, w = disp.shape[:2]
-            (tw, th), _ = cv2.getTextSize(banner, cv2.FONT_HERSHEY_SIMPLEX, 1.0, 3)
-            bx = (w - tw) // 2
-            cv2.rectangle(disp, (bx - 15, 5), (bx + tw + 15, 40), (0, 0, 200), -1)
-            cv2.putText(disp, banner, (bx, 32),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255), 3)
+                cv2.putText(disp, "NORMAL", (x1, y1 - 28),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 180, 0), 2)
 
         zy = disp.shape[0] - 20
         for zname, zdata in zone_summary.items():
@@ -310,7 +295,7 @@ class OverlayRenderer:
             if cand.get("promoted"):
                 continue  # Promoted items are rendered by persistence below
             box = cand.get("box")
-            if box:
+            if box is not None and len(box) > 0:
                 cx1, cy1, cx2, cy2 = map(int, box)
                 cv2.rectangle(disp, (cx1, cy1), (cx2, cy2), (0, 255, 255), 1)
                 label = f"Cand#{cand['candidate_id']} A:{cand['age']}"
@@ -325,7 +310,7 @@ class OverlayRenderer:
             parent_gid = item_data.get("parent_gid")
             concealed = item_data.get("concealed", False)
 
-            if box:
+            if box is not None and len(box) > 0:
                 ix1, iy1, ix2, iy2 = map(int, box)
 
                 if concealed:
@@ -365,17 +350,20 @@ class OverlayRenderer:
 
         # 4. Theft alert banner
         alerts = retail.get("alerts", [])
-        theft_alerts = [a for a in alerts if a.get("alert") == "THEFT"
-                        or a.get("reason")]
+        theft_alerts = [a for a in alerts if a.get("alert") == "THEFT" or a.get("reason")]
         if theft_alerts:
             alert = theft_alerts[-1]
-            banner = (f"THEFT: Person {alert.get('person_gid', '?')} | "
-                      f"Item {alert.get('item_gid', '?')} | "
-                      f"{alert.get('origin_zone', '?')}")
+            p_gid = alert.get("person_gid", "?")
+            item_gid = alert.get("item_gid")
+            if item_gid is None:
+                obj_gids = alert.get("object_gids", [])
+                item_gid = obj_gids[0] if obj_gids else None
+            item_str = f"  Item #{item_gid}" if item_gid is not None else ""
+            banner = f"!!! THEFT DETECTED   Person #{p_gid}{item_str} !!!"
             h, w = disp.shape[:2]
             (tw, th), _ = cv2.getTextSize(banner, cv2.FONT_HERSHEY_SIMPLEX, 0.9, 3)
             bx = (w - tw) // 2
-            cv2.rectangle(disp, (bx - 15, 5), (bx + tw + 15, 40), (0, 0, 200), -1)
-            cv2.putText(disp, banner, (bx, 32),
+            cv2.rectangle(disp, (bx - 15, 5), (bx + tw + 15, 48), (0, 0, 200), -1)
+            cv2.putText(disp, banner, (bx, 37),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 3)
 

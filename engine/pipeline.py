@@ -937,7 +937,7 @@ class SelfWatchPipeline:
         for gid, data in self._id_states.items():
             if data["state"] == STATE_THINKING and gid not in display:
                 box = data.get("last_box")
-                if box:
+                if box is not None and len(box) > 0:
                     am_data = self.active_memory.get_identity(gid)
                     vel = am_data.get("last_velocity", [0, 0]) if am_data else [0, 0]
                     hits = am_data.get("hits", 0) if am_data else 0
