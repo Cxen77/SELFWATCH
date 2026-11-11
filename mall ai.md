@@ -1,6 +1,6 @@
 # Small AI work and handoff
 
-Updated 8 November 2026. SELFWATCH's priority is person tracking across cameras.
+Updated 11 November 2026. SELFWATCH's priority is person tracking across cameras.
 Use this file for bounded support work that can continue if the main session
 resets. The [master project log](docs/PROJECT_LOG.md) holds research decisions and
 measured results.
@@ -53,3 +53,18 @@ in `docs/TRACKING_STABILITY_AND_FPS.md`, not a new detector replacement.
 Latest verified recovery checkpoint: `runs/research-checkpoint-20261108-tracking-v2/`.
 It contains the source archive, model hashes and selected experiment evidence;
 retain existing datasets and weights in place. Phase 2 is still open.
+
+The continuous MOT17 study is recorded in E22 of `docs/PROJECT_LOG.md`. Native
+frames and labels are in `datasets/mot17-continuity-native-v1/`. The frozen
+margin policy produced 96 switches on the evaluation sequence, down from 122,
+and recovered the same ID in 9 of 13 visibility episodes, up from 7. ByteTrack
+is a reference using the same detections. It reached 36 switches and 46.31%
+HOTA. The next identity experiment compares motion association while retaining
+the existing memory and recovery stages. GitHub branch `codex/v2-replay-perception`
+holds the source checkpoints. No smaller AI has been dispatched.
+
+The scheduled ReID replay is complete in `runs/mot17-continuity-scheduled-v1/`.
+It produced 88 → 79 switches and 39.69% → 40.32% IDF1. The two offline replay
+rates were 13.48 and 15.88 observations/s in a single fixed-order comparison.
+Use E22 for reproduction commands and compare future results against both the
+cached and scheduled runs.

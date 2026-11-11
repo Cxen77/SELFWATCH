@@ -21,12 +21,13 @@ CALIBRATION_FILES=('README.txt',*(path for name in CALIBRATION_CAMERAS.values() 
     (f'calibrations/extrinsic/extr_{name}.xml',f'calibrations/intrinsic_zero/intr_{name}.xml')))
 
 
-def member(reader,info):
+def member(reader,info,offsets=None):
     # The pinned archive has a 4 GiB ZIP offset ambiguity in Python's reader.
     # Match the exact local filename, bound decompression, and check central CRC.
     if not 0<info.file_size<=CAP or not 0<info.compress_size<=CAP:
         raise ValueError('Member exceeds the pilot bound')
-    for offset in (info.header_offset-2**32,info.header_offset):
+    candidates = offsets if offsets is not None else (info.header_offset-2**32,info.header_offset)
+    for offset in candidates:
         if not 0<=offset<=reader.size-30:
             continue
         reader.seek(offset)

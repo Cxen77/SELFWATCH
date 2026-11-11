@@ -1,6 +1,6 @@
 # SELFWATCH master plan and research log
 
-**Updated: 8 November 2026**
+**Updated: 11 November 2026**
 
 **Current stage: 2**
 
@@ -93,7 +93,7 @@ table from this file.
 - [x] Compare bounded hand refinement on CPU and CUDA; save raw/gated accuracy, score coverage and incremental latency.
 - [ ] Measure visible hand/body accuracy by size, view angle and occlusion.
 - [ ] Calibrate separate hand-model scores on development data and validate a sampled/event-driven inference schedule before live integration.
-- [ ] Verify crowded and multi-person views with independent complete labels.
+- [x] Evaluate crowded and multi-person footage with independent MOT17 labels. Verify the supported retail views before Gate B.
 - [ ] Select and freeze a supported accuracy/latency operating point; pass Gate B.
 
 ### Stage 3 — camera geometry
@@ -893,9 +893,82 @@ forecast error remain unmeasured. Do not fill these with detector counts or
 numerical-equivalence results. Interactive camera smoke recordings are excluded from public dataset results. Keep retrospective corrections separate from the
 decision that was possible online.
 
-**Next work:** score continuous labelled crossings/occlusions, compare ambiguity
-retention and clean-gallery updates against the existing controller, and verify
-longer 1/2/3-camera capacity. Geometry plus appearance passed its bounded
-cross-view test but temporal ID changes still need improvement. Obtain complete
-labels for supported retail views and preserve final evaluation until settings
-are frozen. Hand inference, custody and POS are supplementary.
+### E22 — continuous identity tracking on two MOT17 sequences
+
+Downloaded 1,125 native JPEGs and the official labels from two complete
+[MOT17](https://motchallenge.net/data/MOT17/) training sequences. MOT17-02
+provided 600 development frames and MOT17-09 provided 525 evaluation frames.
+Both have 30 Hz source timestamps. The bounded download verifies the exact ZIP
+member name, length and CRC before recording SHA-256 in the dataset manifest.
+The tracker processes 1280 × 720 inputs. The evaluator receives boxes mapped
+back to native 1920 × 1080 coordinates.
+
+All four policies received identical detections and eligible cached OSNet
+features. The original tracker served as the baseline. One alternative required
+fresh, clean features for local gallery updates. Another required a 0.03 margin
+between association costs. The fourth combined both. Development selected the
+margin policy after 52 → 44 switches, with HOTA 19.73% → 20.78% and recall
+15.80% → 15.33%. The policy and its source hashes were frozen before scoring
+the evaluation sequence. Standard metrics use [TrackEval](https://github.com/JonathonLuiten/TrackEval)
+at `12c8791b303e0a0b50f753af204249e622d0281a`, with scalar dtype aliases updated
+for NumPy. The original MOT17 distractor rules apply.
+
+| Held-out MOT17-09 policy | ID switches | IDF1 | HOTA | Person recall |
+|---|---:|---:|---:|---:|
+| Original memory tracker | 122 | 55.01% | 40.85% | 52.90% |
+| Fresh local gallery updates | 95 | 51.74% | 39.92% | 54.55% |
+| Frozen 0.03 association margin | 96 | 57.79% | 42.88% | 54.22% |
+| Fresh updates and margin | 111 | 50.10% | 38.91% | 54.10% |
+| ByteTrack on the same detections | 36 | 57.18% | 46.31% | 62.59% |
+
+The margin reduced identity false positives from 713 to 643 and improved
+same-ID recovery from 7 to 9 of 13 labelled low-visibility episodes. The recovery
+diagnostic requires two consecutive clean matches to the pre-occlusion ID within
+one second of the first clean return. All four CLEAR traces agreed exactly with
+TrackEval's ID-switch counts. Gallery filtering alone increased switches from
+52 to 73 on development and reduced IDF1 by 3.28 percentage points on evaluation.
+ByteTrack's stronger HOTA and recall support testing its motion association
+alongside the existing recovery and identity memory. These results describe
+single-camera tracking. Live multi-camera retail validation remains open.
+
+A second replay ran the original and frozen margin policies with the portal's
+scheduled ReID, pose disabled, and the same 525 evaluation frames. Switches
+fell from 88 to 79, IDF1 rose from 39.69% to 40.32%, and HOTA rose from 33.16%
+to 33.82%. Offline throughput was 13.48 and 15.88 observations per second,
+respectively. Each policy ran once in a fixed order. Use those rates as replay
+measurements. Repeat in alternating order to estimate a policy speed effect.
+The benchmark includes decoding, tracking, SQLite, JPEG encoding and JSON
+serialization. The scheduled configuration generated 366 and 374 fresh
+embeddings. Its lower identity scores make ReID scheduling another candidate
+for controlled tests. The source policy remains available through the offline
+benchmark while supported retail footage and multi-camera validation are pending.
+
+Saved evidence under `runs/mot17-continuity-development-v1/`,
+`runs/mot17-continuity-evaluation-v1/` and `runs/mot17-bytetrack-evaluation-v1/`.
+Scheduled ReID measurements are in `runs/mot17-continuity-scheduled-v1/`.
+The frozen selection is `runs/mot17-continuity-policy-v1.json`. The research
+branch is `codex/v2-replay-perception` on GitHub. Datasets, model files, local
+recordings and raw run artifacts stay in the local workspace.
+
+From the repository root, use the existing v2 environment and local detector
+and OSNet weights. Prepare the pinned evaluator and download the two sequences
+with the commands below. Use fresh output directories for each rerun.
+
+```powershell
+git clone https://github.com/JonathonLuiten/TrackEval.git .runtime/TrackEval
+git -C .runtime/TrackEval checkout --detach 12c8791b303e0a0b50f753af204249e622d0281a
+python -m scripts.prepare_trackeval
+python -m scripts.download_mot17_native
+python -m selfwatch_v2.mot_continuity cache --sequence MOT17-02-FRCNN --output runs/mot17-dev-cache
+python -m selfwatch_v2.mot_continuity replay --sequence MOT17-02-FRCNN --cache runs/mot17-dev-cache --output runs/mot17-dev --cases baseline clean_memory strict_margin clean_margin
+python -m selfwatch_v2.mot_policy --study runs/mot17-dev --cache runs/mot17-dev-cache --output runs/mot17-policy.json
+python -m selfwatch_v2.mot_continuity cache --sequence MOT17-09-FRCNN --output runs/mot17-eval-cache
+python -m selfwatch_v2.mot_continuity replay --sequence MOT17-09-FRCNN --cache runs/mot17-eval-cache --output runs/mot17-eval --cases baseline clean_memory strict_margin clean_margin --policy runs/mot17-policy.json
+python -m selfwatch_v2.mot_failure_analysis --study runs/mot17-eval
+python -m scripts.profile_mot17_continuity --policy runs/mot17-policy.json --output runs/mot17-scheduled
+```
+
+**Next work** compares motion association with the existing memory on labelled
+retail footage, then measures longer runs on one, two and three cameras.
+The camera geometry experiment improved cross-view sharing. The continuous MOT17
+test measures a separate problem, maintaining one ID over time within each view.
