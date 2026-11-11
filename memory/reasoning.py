@@ -22,8 +22,9 @@ def _l2_norm(v):
 
 
 class CognitiveReasoning:
-    def __init__(self, retrieval_threshold=0.82):
+    def __init__(self, retrieval_threshold=0.82, reference_hz=15.):
         self.retrieval_threshold = retrieval_threshold
+        self.reference_hz = reference_hz
 
     def evaluate_tracks(self, tracks, phantom_tracker, active_memory, warm_memory,
                         thinking_identities, current_time, frame_delta=1,
@@ -219,7 +220,7 @@ class CognitiveReasoning:
                     vel = mem["velocity"]
                     vx = float(vel[0]) if hasattr(vel, '__len__') else 0.0
                     vy = float(vel[1]) if hasattr(vel, '__len__') else 0.0
-                    frames_elapsed = dt_s * 15.0
+                    frames_elapsed = dt_s * self.reference_hz
                     pred_cx = old_cx + vx * frames_elapsed
                     pred_cy = old_cy + vy * frames_elapsed
                     pred_dist = math.hypot(new_cx - pred_cx, new_cy - pred_cy)
@@ -227,7 +228,7 @@ class CognitiveReasoning:
                         continue
                 else:
                     dist = math.hypot(new_cx - old_cx, new_cy - old_cy)
-                    if dist > min(3000.0, 250.0 * (dt_s * 15) + 200.0):
+                    if dist > min(3000.0, 250.0 * (dt_s * self.reference_hz) + 200.0):
                         continue
 
             embs = mem["embeddings"]

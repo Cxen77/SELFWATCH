@@ -36,6 +36,7 @@ from memory.event_log import CognitiveEventLogger
 from memory.metrics import TrackingMetrics
 from memory.debug_overlay import DebugOverlay, DebugLayerManager
 from memory.identity_store import IdentityStore   # Stage 1: read-only shadow layer
+from memory.topology import SceneTopology
 
 PERSON_CLASS = 0
 REID_INTERVAL = 12
@@ -72,11 +73,20 @@ def id_color(tid):
 
 
 class SelfWatchPipeline:
-    def __init__(self, detector, reid, tracker, enable_debug_overlay=True):
+    def __init__(self, detector, reid, tracker, enable_debug_overlay=True, *,
+                 preserve_frame_size=False, event_clock=None, event_ticks=False,
+                 log_dir="logs", event_logging=None, enable_retail=None,
+                 enable_shelf_change=None, enable_tracer=None,
+                 min_person_size=(25, 60)):
         # Layer 1
         self.detector = detector
         self.reid = reid
         self.tracker = tracker
+        # Explicit adapters can supply capture time without changing legacy defaults.
+        self.preserve_frame_size = preserve_frame_size
+        self.event_clock = event_clock or time.perf_counter
+        self.event_ticks = event_ticks
+        self.min_person_size = min_person_size
 
         # Layer 2-5
         self.global_id_manager = GlobalIdentityManager()
@@ -94,10 +104,11 @@ class SelfWatchPipeline:
         # ── Stage 1 shadow layer (read-only; influences NO live decision) ──
         # Mirrors durable per-identity state and measures shadow-divergence.
         self.identity_store = IdentityStore()
+        self.topology = SceneTopology()
 
         # Observability
         self.event_logger = CognitiveEventLogger(
-            log_dir="logs", enabled=config.MEMORY_EVENT_LOGGING)
+            log_dir=log_dir, enabled=config.MEMORY_EVENT_LOGGING if event_logging is None else event_logging)
         self.metrics = TrackingMetrics()
         self.phantom_tracker._logger = self.event_logger
         self.phantom_tracker._metrics = self.metrics
@@ -106,7 +117,7 @@ class SelfWatchPipeline:
 
         # ── Forensic Identity Tracer (zero cost when TRACE_GID is None) ──
         _trace_gid = getattr(config, 'TRACE_GID', None)
-        if _trace_gid is not None:
+        if _trace_gid is not None and enable_tracer is not False:
             from memory.identity_tracer import IdentityTracer
             self._tracer = IdentityTracer(_trace_gid, self.global_id_manager)
             print(f"[FORENSIC] Identity tracer ACTIVE for GID={_trace_gid}")
@@ -115,7 +126,7 @@ class SelfWatchPipeline:
 
         # ── Retail Theft Detection Engine ──────────────────────────────
         self._retail_engine = None
-        if getattr(config, 'RETAIL_ENABLED', False):
+        if getattr(config, 'RETAIL_ENABLED', False) if enable_retail is None else enable_retail:
             try:
                 from retail import RetailTheftEngine
                 self._retail_engine = RetailTheftEngine()
@@ -125,7 +136,7 @@ class SelfWatchPipeline:
 
         # ── Category-Agnostic Shelf Change Detector ───────────────────
         self._shelf_change_detector = None
-        if getattr(config, 'SHELF_CHANGE_ENABLED', False):
+        if getattr(config, 'SHELF_CHANGE_ENABLED', False) if enable_shelf_change is None else enable_shelf_change:
             try:
                 from retail.shelf_change_detector import ShelfChangeDetector
                 zones = getattr(config, 'SHELF_CHANGE_ZONES', None)
@@ -246,14 +257,17 @@ class SelfWatchPipeline:
         loop_start = time.perf_counter()
         
         # Optimize memory and rendering speed
-        frame = cv2.resize(frame, (960, 540))
+        if not self.preserve_frame_size:
+            frame = cv2.resize(frame, (960, 540))
         
         frame_delta = max(1, int(frame_delta))
-        self.frame_count += 1
+        self.frame_count += frame_delta if self.event_ticks else 1
         is_reid_frame = (
+            self._injected_emb is not None or
             (self.frame_count % REID_INTERVAL == 0) or (self.frame_count <= 2)
         )
         h, w = frame.shape[:2]
+        self.topology.set_frame_dims(frame.shape)
 
         # ── Phase 5: use batched detection if injected, else run internally ──
         DETECTOR_INTERVAL = getattr(config, 'DETECTOR_INTERVAL', 2)
@@ -292,7 +306,7 @@ class SelfWatchPipeline:
         raw_crops = []  # Store crops for fingerprint color histograms
         for box, sc, cid in zip(raw_boxes, raw_scores, raw_class_ids):
             bx1, by1, bx2, by2 = box
-            geom_ok = ((by2 - by1) >= 60 and (bx2 - bx1) >= 25) if cid == 0 else ((by2 - by1) >= 15 and (bx2 - bx1) >= 15)
+            geom_ok = ((by2 - by1) >= self.min_person_size[1] and (bx2 - bx1) >= self.min_person_size[0]) if cid == 0 else ((by2 - by1) >= 15 and (bx2 - bx1) >= 15)
             if geom_ok:
                 boxes.append(box)
                 scores.append(sc)
@@ -335,7 +349,7 @@ class SelfWatchPipeline:
         _inj_emb = self._injected_emb  # None means: run ReID locally
         t_reid0 = time.perf_counter()
         if len(boxes) > 0:
-            if _inj_emb is not None and is_reid_frame:
+            if _inj_emb is not None:
                 # Batched path: use the slice already computed for this camera
                 if len(_inj_emb) == len(boxes):
                     embeddings = _inj_emb
@@ -476,7 +490,8 @@ class SelfWatchPipeline:
             confirmed_velocities[gid] = trk.vel.tolist()
 
         frozen_gids = self.occlusion_manager.update(
-            confirmed_boxes, velocities=confirmed_velocities)
+            confirmed_boxes, velocities=confirmed_velocities,
+            frame_delta=frame_delta if self.event_ticks else 1)
 
         # ── Ambiguity-Aware Identity Freezing ────────────────────────
         # Freeze identities that have weak/ambiguous association or
@@ -566,7 +581,7 @@ class SelfWatchPipeline:
             self.tracker.tracks, self.phantom_tracker,
             self.active_memory, self.warm_memory,
             self._get_thinking_identities(),
-            time.perf_counter(), frame_delta, self.metrics,
+            self.event_clock(), frame_delta, self.metrics,
             restricted_gids=self.occlusion_manager.restricted_gids
         )
         t_reas1 = time.perf_counter()
@@ -581,7 +596,8 @@ class SelfWatchPipeline:
         t_id0 = time.perf_counter()
         self.global_id_manager.update(
             self.tracker.tracks, proposals, frozen_gids=frozen_gids,
-            occlusion_manager=self.occlusion_manager)
+            occlusion_manager=self.occlusion_manager,
+            frame_delta=frame_delta if self.event_ticks else 1)
 
         # ── Ghost Track Remediation (Rebind & Deactivate) ───────────
         # Target Point 3: detect detached ghost trajectories and transfer
@@ -763,10 +779,13 @@ class SelfWatchPipeline:
                 gid, owning_lid=track.local_id if track else None,
                 box=track.smooth_box.tolist() if track else None,
                 velocity=track.vel.tolist() if track else None)
+            if gid in frozen_gids:
+                self.ownership_sm.freeze(gid, reason="overlap_or_ambiguity")
 
             # Update active memory with fingerprint features
             if track:
                 box_val = track.smooth_box.tolist()
+                self.topology.update_position(gid,box_val)
 
                 anchor_sim = 0.0
                 anchor_emb = getattr(track, "_anchor_embedding", None)
@@ -840,9 +859,7 @@ class SelfWatchPipeline:
         # 4. Tick phantoms, handle PHANTOM -> DEAD
         about_to_expire = {}
         for tid, phantom in self.phantom_tracker.phantoms.items():
-            future_age = phantom.age_frames + frame_delta
-            future_conf = phantom.confidence * (0.97 ** frame_delta)
-            if future_age >= self.phantom_tracker.max_phantom_age or future_conf < 0.15:
+            if phantom.will_expire(frame_delta,self.phantom_tracker.max_phantom_age,confidence_cutoff=.15):
                 about_to_expire[tid] = phantom
 
         for gid, phantom in about_to_expire.items():
@@ -855,7 +872,7 @@ class SelfWatchPipeline:
                 "trajectory": [phantom.position],
                 "last_velocity": phantom.velocity,
             }
-            self.warm_memory.save_identity(gid, data, time.perf_counter())
+            self.warm_memory.save_identity(gid, data, self.event_clock())
             self.metrics.record_memory_save(gid, phantom.age_frames)
             self.event_logger.log("warm_save", gid)
             self._set_state(gid, STATE_DEAD)
@@ -892,7 +909,7 @@ class SelfWatchPipeline:
             self.ownership_sm.remove(gid)
 
         # Decay warm memory
-        self.warm_memory.decay(time.perf_counter())
+        self.warm_memory.decay(self.event_clock())
 
         self._prev_lid_to_gid = current_lid_to_gid
         self._prev_lid_is_prov = current_lid_is_prov
@@ -1167,6 +1184,7 @@ class SelfWatchPipeline:
             "suppress_regions": suppress_regions,
             "frozen_gids": list(frozen_gids),
             "rendering_metadata": rendering_metadata,
+            "suppressed_entries": suppressed_entries,
         }
 
     # ── Crop Lookup ────────────────────────────────────────────────────

@@ -5,10 +5,14 @@ import numpy as np
 STATE_ACTIVE = 0
 STATE_THINKING = 1
 
-# Color map from UI
+# Modern Lean Palette (BGR for OpenCV)
 COLORS = [
-    (0, 255, 0), (255, 0, 0), (0, 0, 255), (0, 255, 255),
-    (255, 0, 255), (255, 255, 0), (128, 0, 128), (0, 128, 128)
+    (235, 99, 37),   # Blue
+    (199, 132, 2),   # Sky
+    (136, 148, 13),  # Teal
+    (229, 70, 79),   # Indigo
+    (105, 150, 5),   # Emerald
+    (6, 119, 217),   # Amber
 ]
 
 # RF-DETR 0-indexed class names (raw_id - 1).
@@ -141,10 +145,10 @@ class OverlayRenderer:
             thickness = 1 if state == STATE_THINKING else 2
             cv2.rectangle(disp, (x1, y1), (x2, y2), color, thickness)
             
-            # Label background
-            (tw, th), _ = cv2.getTextSize(lbl, cv2.FONT_HERSHEY_SIMPLEX, 0.55, 2)
-            cv2.rectangle(disp, (x1, y1 - 22), (x1 + tw + 6, y1), color, -1)
-            cv2.putText(disp, lbl, (x1 + 3, y1 - 6), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 0, 0), 2)
+            # Modern dark tag label
+            (tw, th), _ = cv2.getTextSize(lbl, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+            cv2.rectangle(disp, (x1, y1 - 20), (x1 + tw + 8, y1), (15, 15, 18), -1)
+            cv2.putText(disp, lbl, (x1 + 4, y1 - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
             
             # Forensic details
             if assoc_data and stats.get("debug_enabled") and layer_flags.get("association"):

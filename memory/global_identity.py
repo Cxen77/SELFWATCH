@@ -104,8 +104,8 @@ class GlobalIdentityManager:
         window = int(activation * 4.5)
         return max(5, min(45, window))
 
-    def update(self, tracks, proposals=None, frozen_gids=None, occlusion_manager=None):
-        self._frame_count += 1
+    def update(self, tracks, proposals=None, frozen_gids=None, occlusion_manager=None, frame_delta=1):
+        self._frame_count += max(1, int(frame_delta))
         proposals = proposals or []
         frozen_gids = frozen_gids or set()
         self._occlusion_manager = occlusion_manager  # Store reference for exit region checks

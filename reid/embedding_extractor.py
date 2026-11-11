@@ -15,7 +15,7 @@ from __future__ import annotations
 import os
 from collections import OrderedDict
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Tuple
 
 import cv2
 import numpy as np
@@ -232,6 +232,9 @@ class EmbeddingExtractor:
                       Defaults to weights/osnet/osnet_x1_0_msmt17.pth.
         device:       "cuda:0", "cpu", or None (auto-detect).
         half:         Use FP16 inference on CUDA (default True).
+        strict_weights: Reject missing backbone/embedding tensors when True.
+        input_size:   Crop height/width. Legacy default 128x128; v2 uses 256x128.
+        max_batch:    Capacity of the reusable staging buffers (1 to 64).
     """
 
     def __init__(
@@ -239,7 +242,14 @@ class EmbeddingExtractor:
         weights_path: Optional[Union[str, Path]] = None,
         device: Optional[str] = None,
         half: bool = True,
+        strict_weights: bool = False,
+        input_size: Tuple[int, int] = (128, 128),
+        max_batch: int = 64,
     ):
+        if min(input_size) < 32 or not 1 <= max_batch <= 64:
+            raise ValueError("Invalid OSNet input size or batch capacity")
+        self.input_height, self.input_width = input_size
+        self.strict_weights = strict_weights
         # Resolve device
         if device is None:
             self._device = torch.device(
@@ -261,7 +271,7 @@ class EmbeddingExtractor:
         # Preprocessing pipeline
         self._transform = transforms.Compose([
             transforms.ToPILImage(),
-            transforms.Resize((_INPUT_HEIGHT, _INPUT_WIDTH)),
+            transforms.Resize((self.input_height, self.input_width)),
             transforms.ToTensor(),
             transforms.Normalize(mean=_PIXEL_MEAN, std=_PIXEL_STD),
         ])
@@ -274,15 +284,15 @@ class EmbeddingExtractor:
         # Pre-allocate a pinned-memory CPU staging buffer sized to the maximum
         # expected batch (64 crops). This eliminates per-call malloc and the
         # cudaMalloc fragmentation spike that causes the ~1388ms outlier.
-        self._MAX_BATCH = 64
+        self._MAX_BATCH = max_batch
         if self._device.type == "cuda":
             # Pinned (page-locked) memory — allows async DMA to GPU
             self._pinned_buf = torch.zeros(
-                (self._MAX_BATCH, 3, _INPUT_HEIGHT, _INPUT_WIDTH),
+                (self._MAX_BATCH, 3, self.input_height, self.input_width),
                 dtype=torch.float32, pin_memory=True)
             # Pre-allocated GPU batch tensor — reused every call
             self._gpu_buf = torch.zeros(
-                (self._MAX_BATCH, 3, _INPUT_HEIGHT, _INPUT_WIDTH),
+                (self._MAX_BATCH, 3, self.input_height, self.input_width),
                 dtype=torch.float16 if self._half else torch.float32,
                 device=self._device)
             # GPU-side ImageNet normalization constants (broadcast-friendly)
@@ -299,7 +309,7 @@ class EmbeddingExtractor:
             print("[SELFWATCH] OSNet: warming up GPU allocator ...")
             with torch.cuda.stream(self._reid_stream):
                 _dummy = torch.zeros(
-                    (1, 3, _INPUT_HEIGHT, _INPUT_WIDTH),
+                    (1, 3, self.input_height, self.input_width),
                     dtype=torch.float16 if self._half else torch.float32,
                     device=self._device)
                 with torch.inference_mode():
@@ -325,7 +335,7 @@ class EmbeddingExtractor:
             )
 
         checkpoint = torch.load(
-            weights_path, map_location="cpu", weights_only=False
+            weights_path, map_location="cpu", weights_only=True
         )
 
         # Handle wrapped checkpoints (some save under 'state_dict' key)
@@ -346,6 +356,11 @@ class EmbeddingExtractor:
             k: v for k, v in cleaned.items()
             if k in model_dict and model_dict[k].shape == v.shape
         }
+        missing = [key for key in model_dict if key not in matched and not key.endswith("num_batches_tracked")]
+        self.load_report = dict(matched=len(matched), expected=len(model_dict), missing_feature_keys=missing,
+                                ignored_checkpoint_keys=sorted(set(cleaned)-set(matched)))
+        if self.strict_weights and missing:
+            raise ValueError(f"Incomplete OSNet feature checkpoint: {missing[:8]}")
         model_dict.update(matched)
         self._model.load_state_dict(model_dict)
 
@@ -450,6 +465,10 @@ class EmbeddingExtractor:
         """
         if not crops:
             return np.empty((0, _EMBEDDING_DIM), dtype=np.float32)
+        if len(crops) > self._MAX_BATCH:
+            raise ValueError(f"OSNet batch exceeds configured capacity {self._MAX_BATCH}")
+        if any(c.shape != (self.input_height, self.input_width, 3) or c.dtype != np.uint8 for c in crops):
+            raise ValueError("OSNet crops must be uint8 BGR images resized to the configured input size")
         batch = self._preprocess_batch_fast(crops)
         # Run inference on the dedicated ReID stream if available
         stream = self._reid_stream

@@ -53,6 +53,8 @@ class StrongSORTTracker:
         # New parameters
         biou_buffer=15,          # px: C-BIoU box expansion
         ambiguity_margin=0.0,    # AMI: disabled (crowd gating handles it)
+        allow_weak_births=False,
+        weak_birth_thresh=0.25,
     ):
         self.appearance_weight = appearance_weight
         self.high_thresh = high_thresh
@@ -65,6 +67,8 @@ class StrongSORTTracker:
         self.min_quality_score = min_quality_score
         self.biou_buffer = biou_buffer
         self.ambiguity_margin = ambiguity_margin
+        self.allow_weak_births = allow_weak_births
+        self.weak_birth_thresh = weak_birth_thresh
 
         self.tracks = []   # All active tracks (confirmed + tentative + lost)
 
@@ -214,6 +218,7 @@ class StrongSORTTracker:
         remaining_tracks = unmatched_conf_tracks + unmatched_lost_tracks
 
 
+        matched_low = set()
         if low_boxes and remaining_tracks:
             matched_t2, matched_d2, unmatched_tracks_2, _, cost_iou_2 = \
                 self._iou_associate(low_boxes, remaining_tracks, self.iou_thresh, frozen_lids=frozen_lids, cooldown_lids=cooldown_lids, collision_partners=collision_partners, det_cids=class_ids[low_idx])
@@ -222,6 +227,7 @@ class StrongSORTTracker:
             for t_idx, d_idx in zip(matched_t2, matched_d2):
                 trk = remaining_tracks[t_idx]
                 orig_i = low_idx[d_idx]
+                matched_low.add(orig_i)
                 # Low-conf: update box but do NOT update embedding
                 trk.update(boxes[orig_i], scores[orig_i], embedding=None,
                            min_quality_score=self.min_quality_score,
@@ -546,9 +552,12 @@ class StrongSORTTracker:
         if active_count > 6:
             birth_thresh = min(0.7, self.high_thresh + 0.1)
 
-        for d_idx in final_unmatched_dets:
-            orig_i = high_idx[d_idx]
-            if scores[orig_i] >= birth_thresh:
+        birth_candidates=[(high_idx[d_idx],False) for d_idx in final_unmatched_dets]
+        if self.allow_weak_births and active_count<=6:
+            birth_candidates.extend((i,True) for i in low_idx if i not in matched_low and
+                                    scores[i]>=self.weak_birth_thresh and int(class_ids[i])==0)
+        for orig_i,weak_birth in birth_candidates:
+            if scores[orig_i] >= (self.weak_birth_thresh if weak_birth else birth_thresh):
                 det_box = boxes[orig_i]
 
                 # Check suppression regions
@@ -636,10 +645,11 @@ class StrongSORTTracker:
                 new_track = STrack(
                     det_box, scores[orig_i], embeddings[orig_i],
                     label="person",
-                    confirm_threshold=self.confirm_threshold,
+                    confirm_threshold=max(2,self.confirm_threshold) if weak_birth else self.confirm_threshold,
                     embedding_history_size=self.embedding_history,
                     class_id=int(class_ids[orig_i]),
                 )
+                new_track.weak_birth = weak_birth
                 new_tracks.append(new_track)
                 pclass = "person" if int(class_ids[orig_i]) == 0 else f"object({int(class_ids[orig_i])})"
                 is_zero = "YES" if np.sum(np.abs(embeddings[orig_i])) < 1e-6 else "NO"
@@ -1630,7 +1640,9 @@ class StrongSORTTracker:
         """Remove dead tracks. Save to IDSR history before removal."""
         survivors = []
         for t in self.tracks:
-            if t.should_remove(self.max_lost):
+            weak_unconfirmed_lost=(getattr(t,'weak_birth',False) and t.total_hits<t.confirm_threshold
+                                   and t.time_since_update>0)
+            if t.should_remove(self.max_lost) or weak_unconfirmed_lost:
                 print(f"  [TRACKER DEBUG] TRACK DIED: local={t.local_id} hits={t.total_hits} age={t.age}")
                 # Save to IDSR history for potential rectification
                 if t.total_hits >= 3:  # Only save meaningful tracks

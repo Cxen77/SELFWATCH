@@ -1,0 +1,8 @@
+# Install CUDA-enabled torch separately for the target GPU before these packages.
+# Lock exact resolved versions in the environment after the first real smoke run.
+ultralytics==8.4.194
+opencv-python==5.0.0.93
+opencv-contrib-python==5.0.0.93
+scipy>=1.13,<2
+onnxruntime>=1.20,<2
+rtmlib==0.0.16

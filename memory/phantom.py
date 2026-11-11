@@ -90,6 +90,20 @@ class PhantomTrack:
 
         # ── Confidence decay ─────────────────────────────────────────
         # Base decay
+        self.confidence = self.confidence_after(frame_delta)
+
+        # Search radius grows, but slower for moving phantoms (cone handles it)
+        if self._direction is not None:
+            self.search_radius = 60.0 + self.age_frames * 4.0
+        else:
+            self.search_radius = 80.0 + self.age_frames * 8.0
+
+        # Dampen velocity over time (friction)
+        self.velocity *= 0.95 ** frame_delta
+
+    def confidence_after(self, frame_delta=1):
+        """Use the exact prediction decay for pre-expiry archival as well."""
+        frame_delta=max(1,int(frame_delta))
         base_decay = 0.96 ** frame_delta
 
         # Extra penalty if no recent motion agreement
@@ -100,16 +114,12 @@ class PhantomTrack:
         if self.is_static_occluder:
             base_decay = max(base_decay, 0.98 ** frame_delta)
 
-        self.confidence *= base_decay
+        return self.confidence * base_decay
 
-        # Search radius grows, but slower for moving phantoms (cone handles it)
-        if self._direction is not None:
-            self.search_radius = 60.0 + self.age_frames * 4.0
-        else:
-            self.search_radius = 80.0 + self.age_frames * 8.0
-
-        # Dampen velocity over time (friction)
-        self.velocity *= 0.95 ** frame_delta
+    def will_expire(self, frame_delta, max_age=90, confidence_cutoff=.10):
+        effective_max_age=int(max_age*1.5) if self.is_static_occluder else max_age
+        return (self.age_frames+frame_delta>=effective_max_age or
+                self.confidence_after(frame_delta)<confidence_cutoff)
 
     @property
     def center(self):

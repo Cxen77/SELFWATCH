@@ -43,7 +43,7 @@ class CameraStream:
                  pipeline,
                  global_registry: GlobalMultiCameraIdentityManager,
                  event_bus: CameraEventBus,
-                 label: str = ""):
+                 label: str = "", capture_backend=None, capture_size=None):
         """
         Args:
             camera_id: Unique integer ID for this camera
@@ -59,6 +59,8 @@ class CameraStream:
         self.global_registry = global_registry
         self.event_bus = event_bus
         self.label = label or f"Camera{camera_id}"
+        self.capture_backend=capture_backend
+        self.capture_size=capture_size
 
         # Video capture
         self._cap: Optional[cv2.VideoCapture] = None
@@ -94,7 +96,11 @@ class CameraStream:
 
     def open(self) -> bool:
         """Open the video source and start the async capture thread."""
-        self._cap = cv2.VideoCapture(self.source)
+        self._cap = (cv2.VideoCapture(self.source,self.capture_backend) if self.capture_backend is not None
+                     else cv2.VideoCapture(self.source))
+        if self.capture_size and isinstance(self.source,int):
+            self._cap.set(cv2.CAP_PROP_FRAME_WIDTH,self.capture_size[0])
+            self._cap.set(cv2.CAP_PROP_FRAME_HEIGHT,self.capture_size[1])
         self._is_open = self._cap.isOpened()
 
         if self._is_open:

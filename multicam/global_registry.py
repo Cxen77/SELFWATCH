@@ -23,7 +23,7 @@ Thread safety:
 import time
 import threading
 import numpy as np
-from typing import Dict, Optional, List, Tuple, Set, Any
+from typing import Dict, Optional, List, Tuple, Set, Any, Callable
 from dataclasses import dataclass, field
 
 
@@ -46,6 +46,7 @@ class DormantIdentity:
     total_observations: int             # Lifetime observation count
     entry_camera: int                   # First camera this identity appeared in
     trajectory_summary: Dict[str, Any] = field(default_factory=dict)
+    clock: Optional[Callable[[], float]] = field(default=None, repr=False, compare=False)
 
     def decay(self, rate: float = 0.995):
         """Apply exponential decay to dormant confidence."""
@@ -53,7 +54,7 @@ class DormantIdentity:
 
     @property
     def age_seconds(self) -> float:
-        return time.time() - self.last_seen_time
+        return (self.clock or time.time)() - self.last_seen_time
 
 
 # ── Cross-Camera Memory Entry ──────────────────────────────────────────
@@ -119,8 +120,10 @@ class GlobalMultiCameraIdentityManager:
                  dormant_decay_rate: float = 0.995,
                  dormant_min_confidence: float = 0.05,
                  max_dormant: int = 200,
-                 max_embedding_gallery: int = 10):
+                 max_embedding_gallery: int = 10,
+                 clock: Optional[Callable[[], float]] = None):
         self._lock = threading.Lock()
+        self._clock = clock or time.time
 
         # Global ID counter (monotonically increasing)
         self._next_global_id = 1
@@ -209,7 +212,7 @@ class GlobalMultiCameraIdentityManager:
             self._active_per_camera[camera_id].add(global_id)
 
             # Initialize or update memory entry
-            now = time.time()
+            now = self._clock()
             if global_id not in self._memory:
                 self._memory[global_id] = GlobalMemoryEntry(
                     global_id=global_id,
@@ -304,7 +307,7 @@ class GlobalMultiCameraIdentityManager:
                 return
 
             entry.last_seen_camera = camera_id
-            entry.last_seen_time = time.time()
+            entry.last_seen_time = self._clock()
             entry.last_seen_frame = frame_index
             entry.total_observations += 1
             entry.confidence = min(1.0, entry.confidence + 0.01)
@@ -350,7 +353,7 @@ class GlobalMultiCameraIdentityManager:
                 embeddings=[e.copy() for e in entry.embedding_history[-self._max_embedding_gallery:]],
                 stable_embedding=entry.stable_embedding.copy() if entry.stable_embedding is not None else None,
                 last_seen_camera=camera_id,
-                last_seen_time=time.time(),
+                last_seen_time=self._clock(),
                 last_seen_frame=frame_index,
                 last_box=entry.last_box,
                 last_velocity=entry.last_velocity,
@@ -358,6 +361,7 @@ class GlobalMultiCameraIdentityManager:
                 total_observations=entry.total_observations,
                 entry_camera=entry.camera_history[0] if entry.camera_history else camera_id,
                 trajectory_summary=entry.trajectory_summary.copy(),
+                clock=self._clock,
             )
 
             # Enforce max dormant limit
@@ -409,6 +413,15 @@ class GlobalMultiCameraIdentityManager:
         with self._lock:
             return self._memory.get(global_id)
 
+    def forget_inactive(self, global_id: int) -> bool:
+        """Drop an inactive gallery when a bounded caller evicts it; never reuse IDs."""
+        with self._lock:
+            if self._global_to_local.get(global_id):
+                return False
+            self._memory.pop(global_id, None)
+            self._dormant.pop(global_id, None)
+            return True
+
     def get_active_global_ids(self, camera_id: Optional[int] = None) -> Set[int]:
         """Get all active global IDs, optionally filtered by camera."""
         with self._lock:
@@ -434,7 +447,8 @@ class GlobalMultiCameraIdentityManager:
         with self._lock:
             return {
                 **self._stats,
-                "active_global_ids": sum(
+                "active_global_ids": len(set().union(*self._active_per_camera.values())),
+                "active_view_assignments": sum(
                     len(s) for s in self._active_per_camera.values()),
                 "dormant_count": len(self._dormant),
                 "total_memory_entries": len(self._memory),

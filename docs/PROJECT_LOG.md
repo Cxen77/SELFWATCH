@@ -1,0 +1,901 @@
+# SELFWATCH master plan and research log
+
+**Updated: 8 November 2026**
+
+**Current stage: 2**
+
+**Status summary:** Stage 2 remains open. Multi-camera person tracking is the priority. A frozen geometry-plus-appearance prototype improves shared IDs on a separate outdoor segment, but does not reduce sampled temporal ID changes. Crowded FPS profiling and CUDA-graph ReID optimization are implemented; full retail identity continuity and three-camera capacity remain unvalidated.
+
+This is the living record for the project. Update its checkboxes, stage table
+and experiment notes after work is verified. Mark a stage complete only when
+its completion condition is satisfied. Link numerical claims to retained
+artifacts. Keep failed experiments and distinguish implementation, numerical
+equivalence, independent accuracy and deployment capacity.
+
+## Purpose and research question
+
+SELFWATCH's core job is to detect and track people across multiple cameras, keep
+their shared IDs consistent, and recover tracks when people reappear. Measure
+identity continuity and false links on independent labels. Body and hand pose
+are optional; retail item custody remains an extension of the tracking system.
+Later, combine calibrated zones and transaction evidence to produce an unresolved
+exit review. Payment, intent and a future action must not be inferred as facts
+from a person approaching an exit.
+
+The proposed research question is whether uncertainty-preserving, revisable
+cross-camera identity memory improves downstream custody and exit review under
+fixed inference/storage budgets. This is a hypothesis to test, not established
+novelty. Combining YOLO, ReID and memory alone is not a new contribution.
+
+## Stage checklist
+
+The numbers below follow Section 11 of the original
+`Desktop/SELFWATCH_RESEARCH/EXECUTION_PLAN_V2.md`. The site derives its phase
+table from this file.
+
+| Stage | Work | Status | Evidence and completion condition |
+|---|---|---|---|
+| 0 | Freeze and inventory | Done | Original commit preserved; hardware, dependencies, fuzzy checkpoint and old modules inventoried. |
+| 1 | Replay and contracts | Done | Timestamped camera/epoch observations, bounded ordered replay, durable idempotent store and regression checks implemented. |
+| 2 | Perception pilot | In progress | Annotated comparison and FPS profiling exist; overhead recall is insufficient and independent hand/pose accuracy remains unmeasured. |
+| 3 | Camera geometry | Not started | Complete only after calibration, zones/topology, clock-skew measurement and independent geometric error checks. |
+| 4 | Global identity memory | Partly implemented early | Shared authority and old cognitive protections restored; complete only with independently measured handoff coverage, false merges and recovery quality. |
+| 5 | Item and interaction evidence | Not started | Needs supported products, causal take/put/transfer evidence and annotated interaction evaluation. |
+| 6 | Revisable custody | Not started | Needs event dependencies, candidate ownership, bounded retention and verified rollback/recompute after corrections. |
+| 7 | Exit / POS integration | Not started | Needs directional zones, simulated transactions and late/canceled/group-payment scenarios with evidence-backed review. |
+| 8 | Targeted fine-tuning | Pilot trained, not promoted | Nine epochs completed; matched evaluation and transfer check retained. Significant errors and transfer failure prevent default integration. |
+| 9 | Depth / forecast extensions | Not started | Requires reliable geometry first, then causal depth/forecast baselines and measured incremental benefit. |
+| 10 | Research evaluation | Not started | Needs locked settings, independent complete labels, ablations, adverse slices and confidence intervals. |
+| 11 | Paper and release | Not started | Complete only when claims, novelty, limitations and reproducibility match retained experimental evidence. |
+
+### Stage 0 — freeze and inventory
+
+- [x] Preserve original project and Git baseline `09f6f3ed1c7668cdee99a8a8a5ee0c6b1a55fee2`.
+- [x] Work on `codex/v2-replay-perception`; retain old code and experiment directories.
+- [x] Record RTX 4060 Laptop GPU, 8,188 MiB VRAM, i7-13620H and 16 GB host RAM.
+- [x] Locate the fuzzy project's exact SH17 YOLO checkpoint and specialized body/PPE classes.
+- [x] Audit original tracking, phantom, warm-memory, ownership and multicamera modules.
+- [x] Preserve dependency/model provenance and the original project context archive.
+
+### Stage 1 — replay and contracts
+
+- [x] Explicit boxes, optional polygons and landmark schemas in original input-pixel coordinates.
+- [x] Camera ID, stream epoch, frame index, event/receipt times and timestamp method.
+- [x] Merge replay by recorded event time with bounded buffering.
+- [x] Accept explicit irregular source timestamps; reject inconsistent counts/order.
+- [x] Preserve model-local class names instead of assuming class zero means person.
+- [x] Immutable SQLite observations with duplicate/conflict checks.
+- [x] Tests for ordering, reconnect scope, coordinates and persistence.
+
+### Stage 2 — perception pilot, current work
+
+- [x] Integrate YOLO26n segmentation, RTMW 133-point whole body and OSNet.
+- [x] Restore original identity protection through injected observations, without a second RF-DETR call.
+- [x] Obtain paired RetailAction samples and verify source timestamp availability.
+- [x] Build recorded review, landmark/mask toggles and independent-label export/evaluation tools.
+- [x] Download an independently annotated overhead subset before model-based selection.
+- [x] Lock development / validation / sealed final-test scene groups.
+- [x] Compare 640, 960, four-orientation and selective-recovery perception on identical images.
+- [x] Record quality, timing, failure cases and frozen development selection.
+- [x] Add uploads, camera selection, laptop-camera capture and saved review to the site.
+- [x] Display actual per-view/total processing FPS and pipeline stage timings.
+- [x] Profile CPU/GPU pose, verify numerical equivalence and bound GPU memory allocation.
+- [x] Use one persistent GPU worker and remeasure Detailed/Fast modes.
+- [x] Profile crowded public frames and isolate detector, pose, ReID, memory and persistence costs.
+- [x] Validate CUDA-graph ReID with changing real inputs and compare complete tracking outputs against eager execution.
+- [x] Offer Tracking, Balanced and Detailed modes with explicit optional-landmark limits.
+- [x] Expand the development-only labelled image pool to 280 images across the same seven development scenes.
+- [x] Decode/export and inspect expanded person targets across small-person and crowded overhead layouts.
+- [ ] Independently annotate and score visibility/occlusion slices; source person boxes alone do not provide these labels.
+- [x] Evaluate a separate domain-trained person detector against its own pretrained baseline; retain gains and regressions.
+- [x] Download a frozen public whole-body validation subset with independent body/hand labels and preserve source/licensing metadata.
+- [x] Measure GT-crop versus detector-conditioned body/hand PCK, with missing detections retained in denominators.
+- [x] Compare bounded hand refinement on CPU and CUDA; save raw/gated accuracy, score coverage and incremental latency.
+- [ ] Measure visible hand/body accuracy by size, view angle and occlusion.
+- [ ] Calibrate separate hand-model scores on development data and validate a sampled/event-driven inference schedule before live integration.
+- [ ] Verify crowded and multi-person views with independent complete labels.
+- [ ] Select and freeze a supported accuracy/latency operating point; pass Gate B.
+
+### Stage 3 — camera geometry
+
+- [x] Verify published WILDTRACK calibration and run a frozen, offline floor-plus-appearance linking experiment on a separate time segment.
+- [ ] Establish actual camera models, view layout and measurable clock offsets.
+- [ ] Calibrate lens distortion and intrinsics/extrinsics or floor homographies.
+- [ ] Define aisle, shelf, checkout and directional exit zones on valid geometry.
+- [ ] Project appropriate foot contacts to a common floor map with uncertainty.
+- [ ] Measure independent-point error and handle missing/uncertain cameras.
+
+### Stage 4 — global identity memory
+
+- [x] One outward-facing global Person-ID authority; old engine IDs are camera-local tokens.
+- [x] Restore StrongSORT, phantom/warm retrieval, fingerprints, ownership locks and shadow audit.
+- [x] Keep clean per-view galleries; reject low-confidence and overlapping appearance crops.
+- [x] Add overlapping-view appearance candidates, ambiguity margins and abstention.
+- [x] Preserve held owners without rendering predicted people as observed.
+- [x] Compare fixed perception inputs across baseline, original and weak-birth policies.
+- [x] Add an online IDF1 evaluator that rejects incomplete ground truth and future-alias leakage.
+- [x] Score a bounded, independently labelled three-camera WILDTRACK pilot with a camera-local control.
+- [x] Compare geometry-only and geometry-plus-appearance controls while preserving online assignments and recording sampled ID changes.
+- [ ] Obtain complete independently reviewed identities across crowded synchronized views.
+- [ ] Measure false merges, handoff precision/coverage, IDF1 and recovery delay.
+- [ ] Add validated geometry/time constraints from Stage 3.
+- [ ] Compare uncertainty retention and revisions to simpler association baselines; pass Gate C.
+
+### Stages 5–7 — interaction, custody and POS
+
+- [ ] Stage 5: define supported SKUs and unknown-product behavior; acquire suitable labels.
+- [ ] Stage 5: implement causal take/put/transfer evidence and cross-view event deduplication.
+- [ ] Stage 5: evaluate interaction precision/recall on visible and occluded cases.
+- [ ] Stage 6: create an event ledger with source observations and dependency indexes.
+- [ ] Stage 6: maintain bounded alternative custody states and reversible corrections.
+- [ ] Stage 6: test identity correction, returns and handoffs without duplicate events; pass Gate D.
+- [ ] Stage 7: create a POS simulator and transaction schema with completion, cancellation and reversal.
+- [ ] Stage 7: test late events, outages, partial/group baskets and directional exits.
+- [ ] Stage 7: evaluate an evidence-backed unresolved-exit review queue; pass Gate E.
+
+### Stage 8 — targeted fine-tuning
+
+- [x] Prepare a person-box pilot export using development/validation scenes only.
+- [x] Preserve final-test scenes and define a bounded 4060 training recipe.
+- [x] Expand the development-only person-box pilot to 280 images and audit its targets.
+- [ ] Acquire representative supported-camera training and evaluation labels before the main experiment.
+- [x] Train one small person detector separately; record checkpoint/license/seed/configuration.
+- [x] Compare to the same architecture's pretrained model with identical inputs, settings and timing scope.
+- [ ] Tune confidence/calibration on validation; freeze before final testing.
+- [ ] Repeat important learned comparisons across seeds when feasible.
+
+This early pilot responds to Stage 2's measured detector errors. It does not
+mean Stages 3–7 are complete or that a trained checkpoint has passed deployment gates.
+
+### Stages 9–11 — extensions, evaluation and paper
+
+- [ ] Stage 9: establish constant-velocity/Kalman forecasting and calibrated floor-map baselines.
+- [ ] Stage 9: compare low-rate causal depth and compact probabilistic forecasts.
+- [ ] Stage 9: retain extensions only if downstream benefit justifies total compute cost.
+- [ ] Stage 10: lock datasets/settings and evaluate independent held-out outcomes.
+- [ ] Stage 10: run oracle identity/interaction, memory-policy and budget-matched ablations.
+- [ ] Stage 10: report adverse slices, dropped frames, frame age, false reviews and uncertainty intervals.
+- [ ] Stage 11: audit closest prior art; narrow or reject the novelty claim if needed; pass Gate F.
+- [ ] Stage 11: write methods, results, limitations and reproducibility from the experiment ledger.
+- [ ] Stage 11: prepare an appropriately scoped release and demonstration.
+
+## Decision gates
+
+| Code | Gate | Status | Completion condition |
+|---|---|---|---|
+| A | Visible evidence | Open | Target footage actually resolves the hands/items required for the supported task. |
+| B | Perception | Not passed | Useful detection/pose quality and latency on the declared laptop and scene range. |
+| C | Identity | Not passed | Independently measured handoff coverage, false merges and recovery reliability. |
+| D | Custody | Not evaluated | Better ownership results than an immediate top-1 baseline at matched budgets. |
+| E | Exit review | Not evaluated | Truthful payment evidence and enough normal activity to measure false reviews. |
+| F | Research contribution | Not evaluated | Close prior-art review and controlled experiments substantiate the claimed contribution. |
+
+## Working implementation and assumptions
+
+- Repository: `C:/Users/Dev/Desktop/SELFWATCH`; research library: `C:/Users/Dev/Desktop/SELFWATCH_RESEARCH`.
+- Python 3.11 environment and exact packages: `requirements-v2-lock.txt`. Model paths/hashes appear in every run's `run.json`.
+- Models: `weights/v2/yolo26n-seg.pt`, `weights/v2/rtmw/wholebody133.onnx`, `weights/osnet/osnet_x1_0_msmt17.pth`.
+- YOLO segmentation and RTMW landmarks are separate capabilities; pose points are not anatomical pixel masks. Hidden fingers are not invented observations.
+- ReID uses appearance, not names or a face-recognition database. Similar clothing can require no-match/ambiguity.
+- The original camera-local cognitive engine receives YOLO/OSNet evidence; it cannot trigger hidden detector/ReID inference. SharedIdentity alone assigns global Person IDs.
+- Appearance admission: detection score ≥.4, no strong person overlap, usable crop size; scheduled fresh extraction. Shared candidates use .78 similarity, .06 margin and repeated support. These thresholds are experimental.
+- Original low-score birth restrictions remain in the main path. Experimental repeated weak births are a separate policy comparison, not proven identity improvement.
+- CPU owns capture, preprocessing, tracking/memory, storage and display. One persistent thread serializes GPU inference. CPU pose uses a bounded worker; GPU pose stays in the GPU owner thread.
+- Detailed studio mode estimates up to four people per frame. Fast mode keeps boxes, ReID and identity memory while skipping pose and mask-polygon conversion.
+- Live capture replaces stale pending frames; replay drops none. Live times are receipt/dequeue estimates, not measured hardware synchronization.
+- The app is local at `http://127.0.0.1:8766/` (8765 redirects here); start with `.\scripts\start-studio.ps1`. Source uploads/camera actions are explicit; natural completion and Stop release capture.
+- There is no validated metric depth, product custody, POS settlement or operational retail alert yet.
+
+## Experiment and decision ledger
+
+The entries below consolidate existing artifacts and work verified on 2 November
+2026. Old plan/review dates remain in their source files; no unrecorded start/end
+times are asserted here.
+
+### E01 — source audit and literature
+
+The fuzzy model was a specialized SH17 YOLO checkpoint, so its body/PPE classes
+cannot be attributed to every pretrained YOLO model. RF-DETR's configured box
+interface did not supply full hand anatomy. Preserve the old source and compare
+matching capabilities rather than choosing a detector by name alone.
+
+The research library now contains **32 verified original PDFs** with source URL,
+byte size, page count and SHA-256 in `paper_manifest.json`, indexed in
+`PAPERS_INDEX.md`. Literature notes are in `RESEARCH_PLAN.md`. New local dataset
+references are `papers/WEPDTOF_WACV2022.pdf` (10 pages) and
+`papers/LOAF_ICCV2023.pdf` (11 pages). These older foundations supplement the
+recent-paper review; their dates must remain explicit.
+
+### E02 — restored combined cognitive pipeline
+
+Artifact: `runs/combined-cognitive-v2-000398/`; details:
+`docs/OLD_PROJECT_INTEGRATION.md` and `docs/REID_AND_SCHEDULING.md`.
+
+Recorded two-view replay combines YOLO, RTMW, OSNet and original memory.
+The retained 64-observation run has 54 tracked person observations, 56 posed
+person observations and one experimental cross-view link. Both final views
+display Person 1. This is an integration demonstration with one shopper,
+not ground-truth identity accuracy. Topology and contradictions remain advisory;
+gait is not used on sparse irregular samples.
+
+### E03 — fixed-input identity policy study
+
+Artifact: `runs/identity-study-pilot-v3/`; protocol: `docs/IDENTITY_STUDY.md`.
+
+Fourteen paired clips provide 848 camera observations and 577 person detections.
+The same cached perception/appearance evidence is fed to a motion baseline,
+original cognitive engine and experimental repeated-weak-birth policy.
+Assigned detections are 577 / 496 / 533; distinct local tokens are 58 / 24 / 27.
+These are coverage and fragmentation diagnostics, **not accuracy**: suppressing
+IDs can reduce both token count and assignment coverage. The maximum detected
+occupancy is three people per view. Independent complete identity labels are
+still required before reporting IDF1 or claiming fewer genuine ID switches.
+
+### E04 — independently annotated overhead detector comparison
+
+Dataset: `datasets/wepdtof-pilot/`; artifact: `runs/overhead-detector-pilot-v1/`;
+protocol/details: `docs/OVERHEAD_DETECTOR_STUDY.md`.
+
+Before inference, select eight uniform-midpoint images per source clip: 128
+images from 16 clips / 14 scene groups. Keep segments of one video together.
+Use 56 development images / seven groups; 32 validation images / three groups;
+40 sealed final-test images / four groups. Final-test files are checksum-verified
+but not decoded, inferred, exported to training or shown in the comparison.
+Range requests read 197,435,892 bytes of the 5,435,073,011-byte official archive.
+All saved files have checksums; dataset notices are preserved.
+
+Protocol: confidence .25; person-center ROI filtering; identical neutral-114 ROI
+masking for every model; rotated source annotations clipped and converted to
+enclosing axis-aligned boxes; one-to-one matching at IoU .5. This is a custom
+pilot, **not the authors' rotated-AP benchmark**. There are 262 validation targets.
+
+| Candidate | TP / FP / FN | Precision / recall | F1 | Mean detector ms |
+|---|---|---|---|---|
+| Native 640 | 61 / 21 / 201 | .744 / .233 | .355 | 60.6 |
+| Native 960 | 92 / 31 / 170 | .748 / .351 | .478 | 78.2 |
+| Four orientations 640 | 83 / 48 / 179 | .634 / .317 | .422 | 230.1 |
+| Weak-view rotation 640 | 61 / 17 / 201 | .782 / .233 | .359 | 140.5 |
+
+Development selected four orientations before validation. Its validation
+generalization was poorer than 960. Keep that negative result; do not silently
+replace the frozen choice. No candidate met the 50 ms development P95 budget.
+V1 uses the lower empirical P95 quantile; its exact source is archived. New
+runners use nearest-rank P95 and automatic source snapshots.
+
+Decision: rotation remains off by default; prioritize domain adaptation and
+small-person error analysis. Tracker changes cannot recover never-observed
+people. Higher validation recall is still far below a deployment-quality result.
+
+### E05 — memory-triggered detection recovery
+
+Artifact: `runs/combined-memory-recovery-016699/`.
+
+Recent missing-owner regions can request a same-model cardinal-rotation probe.
+Requests are camera/epoch/frame scoped, expire after two seconds and are throttled
+at .5 seconds per camera. Memory does not create detections; actual model outputs
+are inverse-mapped to the original coordinates and score-preserving NMS is used.
+
+The 32-observation integration run made 16 probes / 80 detector passes, with nine
+missing-memory-region requests. It produced no cross-view link in that short
+sample. This verifies execution, not a tracking or accuracy improvement.
+
+### E06 — training preparation, not a trained model
+
+Artifact: `datasets/wepdtof-detector-pilot/`.
+
+Export 56 development images / 698 person boxes and 32 validation images / 262
+boxes. Exclude sealed final-test scenes. Preserve ROI preprocessing, source/pixel/
+label hashes, `data.yaml`, notices and a bounded recipe: batch 4, 640 pixels,
+20 epochs, seed 42, zero loader workers. This is a pipeline pilot; more suitable
+training data is required for the main comparison. Person boxes cannot supervise
+segmentation masks, hand landmarks, products, metric depth or ReID. No training
+or fine-tuned checkpoint exists yet.
+
+### E07 — pose-device failures and numerical validation
+
+Failed artifacts: `runs/gpu-pose-pilot-000398.log` and
+`runs/gpu-pose-pilot-v2-000398.log`. ORT arena caps of 512 MiB and 1 GiB failed on
+a convolution-workspace request of 686,824,704 bytes amid other allocations.
+The 2 GiB arena configuration succeeded; keep these failures in the record.
+
+Matched successful runs: `runs/cpu-pose-profile-000398/` and
+`runs/gpu-pose-pilot-v3-000398/`; comparison:
+`runs/pose-device-comparison.json`.
+
+| Runtime | Observations | Wall seconds after model loading | Offline observations/s | Mean pose ms |
+|---|---|---|---|---|
+| CPU pose, bounded CPU/GPU overlap | 64 | 15.650 | 4.09 | 202.20 |
+| GPU pose, serialized GPU calls | 64 | 3.506 | 18.25 | 15.99 |
+
+Both use the same person crops and produce 56 posed person observations.
+Across 7,448 joints, 1,438 score ≥.45 in both outputs; confident-joint maximum
+coordinate difference is zero. Maximum over all joints is .893 pixels, maximum
+score difference below .000005, and Person assignments agree on every frame.
+This is numerical equivalence, **not independent pose accuracy**.
+
+Runtime provenance: isolated official PyPI `onnxruntime-gpu==1.26.0`, CUDA 12
+compatible with Torch CUDA 12.8; wheel size 226,539,455 bytes and SHA-256
+`cc5329aad02d9745cc3ae9cdb185bfa1aad242a7bf89b8c471280002ec40f98a`.
+The normal CPU environment remains intact. The 2 GiB arena cap excludes Torch,
+CUDA context and other applications; it is not total GPU memory consumption.
+Auto mode requires the local validation marker and at least 3 GiB free at startup.
+
+### E08 — website worker and FPS profile
+
+Artifacts: `runs/studio-fps-comparison.json` (initial implementation) and
+`runs/studio-fps-comparison-v2.json` (persistent GPU worker); the files retain
+individual run IDs and stage timings.
+
+The first implementation recreated an inference thread per session and incurred
+repeated GPU startup cost. On its warmed-weight trials, Detailed averaged 5.51
+and Fast 7.61 observations/s. Retain this failed implementation's measurements.
+
+After persistent-worker reuse, run a warmup then Detailed / Fast / Fast / Detailed
+on the same 64 timestamped paired observations per trial, one visible person per
+view. Detailed trials: 23.80 and 20.97 observations/s, mean **22.39**. Fast trials:
+39.70 and 38.55, mean **39.13**. These are aggregate rates across two recorded views.
+Raw boxes, scores, class labels and Person assignments agree across all four
+trials. Fast intentionally omits pose and mask polygons. The UI additionally
+reports recent processing FPS per view and total; preview redraws are not counted.
+
+This is an exploratory same-host replay profile, not crowded-store or three-camera
+capacity. Unrelated OS activity, short trials and only two repeats limit inference.
+Preserve the distinction between standalone CLI, website, live capture, recent
+rate and whole-run throughput when writing results.
+
+### E09 — real source controls and capture lifecycle
+
+The original CameraStream is reused for local capture. Native and browser-camera
+selection, upload progress, source offsets, maximum frame limits, Detailed/Fast
+options, Stop and saved review are implemented at `http://127.0.0.1:8765/`.
+The optional browser camera request did not complete in the in-app browser; a
+bounded timeout and local-capture path address that behavior.
+
+Real laptop-camera smoke: `runs/studio-32d6eb309b60ee53/`, 30 processed frames,
+9.6 recent processing FPS and 44 stale captured frames replaced. This was before
+the persistent-worker improvement. The capture closed after completion. It is
+functionality evidence, excluded from the public dataset experiment.
+
+Real UI upload: a local `rank0_video.mp4` was selected through the file picker,
+uploaded, decoded and persisted. `runs/studio-5efa49df9e968cd3/` completed an
+eight-observation source-processing smoke. Its container-FPS playback estimate
+is explicitly distinguished from the dataset sample's supplied irregular times.
+Detailed UI/control documentation: `docs/CAMERA_WORKSPACE.md`.
+
+### E10 — checks and reproducibility checkpoint
+
+- [x] CPU/GPU numerical-equivalence experiment passed on matched observations.
+- [x] Actual file-picker upload and processing completed.
+- [x] Actual local-camera capture completed and released the device.
+- [x] Warm website Detailed/Fast profile completed with identical box/ID assignments.
+- [x] Final v2 regression suite: 94 tests passed, including master-log/site synchronization.
+- [x] Nine original multicamera checks passed again; retained log is `runs/original-multicam-check.log`.
+- [x] `pip check`, JavaScript syntax checks and `git diff --check` passed after the implementation update.
+- [x] Run final regression/checks after the master-log/site synchronization change; site returns all 12 stages and six gates from this file.
+- [x] Save a source checkpoint and manifest for later paper reproduction: `runs/research-checkpoint-20261102/`.
+
+Current supporting artifacts remain in their original directories. Source
+checkpoint: `runs/research-checkpoint-20261102/`, containing changed source/docs,
+checksums and original Git baseline, without datasets, model binaries or private
+camera images. Git work is not represented as a published release.
+
+## Continuation log — 3 November 2026
+
+### E11 — later FPS replication and bounded development expansion
+
+The later warmed website repetitions were slower than E08: `runs/studio-fps-comparison-v3.json`
+recorded Detailed mean 8.39 and Fast mean 12.84 observations/s. V4, after smaller
+live packets and shared revision-encoded responses, recorded Detailed mean 9.63
+(trials 8.11 / 11.15) and Fast mean 12.13 (12.15 / 12.11). Software/client state
+and host conditions differed; do not treat these as a controlled causal ablation
+or replace the earlier results selectively. E08's 22.39 / 39.13 values are historical
+warmed-workload observations, not stable capacity guarantees. GPU clock/load
+samples are saved in `runs/fps-hardware-samples.json`; they do not establish a
+single cause for the variation. The UI must continue to show actual processing
+FPS, independently of redraws and recorded playback.
+
+Lazy detector, pose and full ReID API warmups now occur in the loading phase.
+Synthetic warmup is never tracked, stored or displayed as camera evidence.
+`runs/studio-e905d8d0e37b1b42/` retained the first-session 64-observation result
+(9.110 seconds after loading); it must not be described as the faster warm case.
+
+`datasets/wepdtof-development-expanded/` is complete: 280 labelled development
+images, selected uniformly and unioned with the original development samples,
+across only the same seven locked development scenes. Download payload: 322,216,436 bytes. Validation and sealed-test
+images were not added. The extension records its parent selection hash, source
+ETag, member CRC/SHA-256 and bounded transfer manifest. Preparation and training
+of an expanded export remain pending. No fine-tuned weights exist.
+
+### E12 — portal failure report and corrective work
+
+The user reported that camera options did not work, the layout was poor and Play /
+Pause were missing. Inspection found the familiar port 8766 refusing connections;
+the earlier source screen ran on 8765, used a separate recorded-review screen,
+and allowed confusing mixed video/camera selection. These are usability failures
+that are not negated by earlier isolated smoke checks.
+
+Corrective work implemented and browser-verified: one canonical portal on 8766 with 8765 redirecting;
+separate Videos / Cameras / Demo source choices; immediate Start laptop camera;
+bounded detection of available camera indices; original CameraStream capture via
+DirectShow on Windows; visible recorded Play/Pause, seek, step, reset and speed
+controls; real analysis pause/resume and Stop; full-frame scaling without inner
+cropping; and source controls that stay visible in the narrow app pane.
+
+- [x] Canonical service and redirect implemented; backend redirect/pause/detection checks passed.
+- [x] Recorded demo Play advanced the timestamp; Pause held it at 2.8 seconds in browser verification.
+- [x] New layout inspected in the actual narrow pane; clipped video scrolling corrected.
+- [x] Verify camera detection and one-click laptop capture through the new portal: one available camera (index 0), actual frames and Person 1 observed.
+- [x] Verify live pause/resume/Stop releases capture and saves replay: `runs/studio-8e5a98fd2c4b09d8/`, 260 observations, controls logged and CameraStream closed.
+- [x] Verify new upload selection, replay, seek/step, reset and 0.5× speed: `runs/studio-e2a801d1980cf36f/`, 32 observations. Uploaded replay paused at frame 15 / 2.5 s; narrow app-pane layout inspected.
+- [x] Final implementation checks: 101 v2 tests, nine original multicamera checks, JavaScript syntax, pip check and git diff whitespace check passed.
+- [x] Save a verified source checkpoint after this corrective work: `runs/research-checkpoint-20261103/` (105 changed source/docs files, model/evidence hashes; training still in progress at capture).
+
+### E13 — expanded targets and first domain adaptation pilot
+
+The development-only extension was exported with the original frozen parent
+supplying validation: `datasets/wepdtof-detector-expanded-v1/`. Counts are 280
+development images / 3,481 person boxes and 32 validation images / 262 boxes.
+The exporter rejects a mismatched parent selection, development extensions
+containing non-development scenes, absent validation and duplicate image IDs.
+Five new partition tests passed; the complete v2 suite now passes 106 tests
+(`runs/v2-check-20261103.log`).
+
+`runs/person-target-audit-v1/audit.json` records verification of every exported
+pixel hash, label hash, count and normalized box boundary. Two deterministic
+development-only target sheets (smallest target and largest person count per
+scene) were visually inspected. They show fish-eye distortion, people at many
+orientations, dense layouts and very small targets. There are 2,509 development
+boxes below 1% of full-image area, including 358 below 0.1%. These size statistics
+do not measure visibility or detector quality. Occlusion labels are still absent.
+No sealed-test image was decoded, exported, reviewed or inferred.
+
+A separate official YOLO26n detection checkpoint was downloaded from the
+[Ultralytics v8.4.0 asset release](https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo26n.pt),
+5,544,453 bytes, SHA-256
+`9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef`.
+Size and hash match the official release API digest. The existing segmentation,
+whole-body and ReID weights remain available. The
+[official training API](https://docs.ultralytics.com/modes/train/) was checked
+against the locally pinned package; no package upgrade was performed.
+
+Experiment `runs/overhead-training/person-domain-expanded-v1/` uses the frozen
+20-epoch maximum recipe, batch 4, 640 pixels, seed 42, zero data-loader workers,
+rotation augmentation, mixed precision and patience 5. The actual automatically
+selected optimizer is AdamW, initial learning rate 0.002. Its experiment lock
+records source/export/audit/initial-weight hashes, versions and hardware.
+An additional official checkpoint copy was fetched by Ultralytics' AMP check;
+it is a software precision check, not another training dataset or trained model.
+One GPU training job runs at a time; the portal is idle with cameras closed.
+The hidden follow-up `scripts.finish_person_pilot` is queued to wait for successful
+training, then benchmark the pretrained and best adapted checkpoints sequentially.
+Its state is `runs/person-domain-comparison-v2/status.json`; the resulting
+`comparison.json` / `REPORT.md` will reject mismatched split locks, protocol,
+image IDs, processed pixel hashes or ground-truth targets. It stops on a training
+failure and never promotes a model. Two additional comparison-integrity tests
+passed. Validation is used to select the best training checkpoint; it is not an
+untouched final-test result. The retained software checkpoint captures the code
+and this in-progress experiment state; later runtime results remain separate.
+The first waiting follow-up was canceled before any benchmark to correct a
+legacy report label that assumed segmentation weights. The replacement uses the
+actual checkpoint task/name; detector inference settings were not changed.
+Correction after result review: `runs/v2-check-20261103-final.log` ran 108 tests
+in 9.367 seconds with ONE FAILURE, rather than the previously reported full pass.
+The progress-page test expected the obsolete literal `Prepared only` for Stage 8.
+The subsequent 112-test run also retained that failure in
+`runs/v2-check-person-results.log`. Both failed logs are preserved. The test has
+now been changed to verify evolving status values using a controlled fixture;
+the actual master-file check validates its complete schema without freezing a
+past stage description. Compile and whitespace checks passed separately.
+
+- [x] Expanded export and complete pixel/target integrity audit.
+- [x] Inspect development target sheets; preserve figures and size counts.
+- [x] Verify the separate pretrained detector's official size/SHA-256.
+- [x] Launch the fixed single-seed training pilot; retain configuration and logs.
+- [x] Finish training and retain best/last checkpoint hashes and early-stop logs.
+- [x] Compare against its own pretrained detector using the frozen person-box protocol.
+- [x] Document measured gains/failures and decide to retain the current portal model; see E14.
+
+### E14 — completed detector pilot, failure analysis and integration decision
+
+Training completed successfully in `runs/overhead-training/person-domain-expanded-v1/`.
+Patience 5 stopped training after nine epochs; epoch 4 was best by validation
+fitness. Epoch-loop time was 472.628 seconds; experiment lifecycle including
+preflight/loading/final evaluation was longer. Best checkpoint SHA-256:
+`2a3a23d5b10a0e431670f9772f27f4e653b1463675222e7b1591adb66dc646f2`;
+last checkpoint SHA-256:
+`a54fb823c2a919b13d76e54634e9fa8a338a56c18fa9e86bcda682ea0253c969`.
+Both files' sizes and hashes were verified. The retained research copy,
+`weights/v2/person-domain-expanded-v1/`, includes `detector.pt`, a model card,
+actual training arguments and the dataset notice. Publisher licensing options
+are recorded with the [official source](https://www.ultralytics.com/license);
+no license agreement or account form was submitted.
+
+The sequential comparison finished in `runs/person-domain-comparison-v2/`.
+Both runs have unchanged source snapshots and identical split locks, processed
+pixel hashes and ground truth. Fixed diagnostic: confidence .25, IoU .5,
+ROI-neutral input, enclosing AABB targets; detector-only latency. There are
+32 validation images / 262 person targets in three held-out scene groups.
+This validation set selected the training checkpoint and is not untouched test data.
+
+| Validation case | Pretrained F1 | Adapted F1 | Pretrained recall | Adapted recall | Adapted mean / P95 ms |
+|---|---:|---:|---:|---:|---:|
+| Native 640 | .3006 | .4848 | .1870 | .3969 | 43.2 / 59.9 |
+| Native 960 | .4858 | .3077 | .3588 | .2595 | 49.4 / 60.6 |
+| Four orientations 640 | .4011 | .5009 | .2824 | .5534 | 187.3 / 224.8 |
+| Selective recovery 640 | .3006 | .4883 | .1870 | .4771 | 143.1 / 206.1 |
+
+At native 640, TP increased 49→104, FP increased 15→63 and FN decreased
+213→158. Paired target analysis found 74 rescued targets but 19 newly lost
+targets. The development-selected quality candidate was native 960 for BOTH
+checkpoints; its validation degradation must be reported, rather than choosing
+640 retrospectively and calling it the winning system. No candidate met the
+predeclared 50 ms detector P95 budget on development. Timing excludes pose,
+ReID, camera capture and saving; it is not full-system multi-camera FPS.
+
+`runs/person-domain-errors-v1/` contains checked per-scene and target-size counts
+and a visually inspected failure figure. Native-640 adapted recall increased in
+all three validation scenes, but remained .371 (exhibition), .365 (jewelry store)
+and .472 (repair store). Both models recalled **0/12** targets smaller than 0.1%
+of image area. For 0.1–1% targets, recall was 7/111→23/111; for larger targets,
+42/139→81/139. These bins describe target area, not measured occlusion or hands.
+
+A separate ordinary-retail transfer check used the SAME 64 timestamped
+observations of paired clip 000398, unchanged GPU whole-body pose, OSNet and
+original cognitive tracker. Saved report: `runs/person-transfer-report-v1/`.
+The adapted model returned 57 raw person detections, all scores below .35;
+none reached the existing .5 strong-birth or .4 appearance-admission thresholds,
+so it produced zero assigned track observations. The existing segmentation path
+returned 56 person detections and 54 assigned track observations, plus 18
+non-person detections; it recorded one experimental cross-camera link.
+These are functional outputs on unlabeled footage, NOT detection/ReID accuracy.
+The failure shows why a detector-only F1 gain cannot justify replacing the
+complete pipeline or globally weakening its identity protections.
+
+**Decision:** do not promote the fisheye-trained detector to the portal or lower
+identity thresholds to force IDs. Keep the existing general segmentation,
+whole-body, OSNet and old memory integration. Preserve the trained branch for
+controlled domain-specific experiments. Stage 2 and Gates A–C remain open.
+Next detector work needs supported-camera labels, a mixed-domain control and
+explicit confidence/admission calibration on development data; hand/body
+visibility evaluation remains a separate requirement. Repeating training without
+these checks would not resolve the observed transfer failure.
+
+Verification after fixing the stale status test: **113 tests passed in 8.916 s**,
+`runs/v2-check-person-results-fixed.log`; compile and whitespace checks passed.
+The earlier 108/112-test failed logs are retained and explicitly corrected above.
+No sealed-test image was decoded, exported, reviewed or inferred in this work.
+
+- [x] Complete and verify training checkpoints and the matched comparison.
+- [x] Inspect failure figures and quantify scene/size-specific errors.
+- [x] Run ordinary-retail transfer through whole-body, ReID and original memory.
+- [x] Record a decision to retain the current portal model and preserve the candidate model card.
+- [x] Fix the stale progress test and verify 113 passing tests, compile and whitespace checks.
+- [x] Save and verify a post-results source/evidence checkpoint: `runs/research-checkpoint-20261103-results/` (108 source/docs files, model hashes, results and preserved failed/passing test logs).
+
+## Continuation log — 4 November 2026
+
+### E15 — whole-body labels downloaded while evaluation tools were built
+
+The user requested background data downloads alongside useful implementation.
+The author-linked [COCO-WholeBody](https://github.com/jin-s13/COCO-WholeBody)
+validation annotations and a frozen 64-image diagnostic are saved in
+`datasets/coco-wholebody-pilot-v2/`. Sampling used uniform midpoint strata over
+sorted image IDs with at least one noncrowd body-labelled person, before any
+inference; no model-based image filtering was used. All annotations for the
+selected images are retained, including crowd records for explicit exclusions.
+
+There are 255 person annotations, 250 noncrowd people and 110 valid annotated
+hand parts. The annotation file is 132,970,317 bytes, SHA-256
+`f8272e9c12f3a42457033ebc75da1167546edf1be5e2ffaf586d6ee97541ff6e`.
+The 64 JPEGs total 10,206,692 bytes. Selection SHA-256:
+`08a1523634951da40aaabc1d475f8959c2ad2d032b4d44e92ce7beb95471f757`.
+Every downloaded file is hash-verified before evaluation. Original per-image
+licences/URLs and the authors' research/noncommercial annotation notice are retained.
+This public validation diagnostic is NOT training data or a new untouched retail test.
+
+Transfer failures are preserved: the first request returned the large-file
+download notice; the first binary transfer hit the 96 MiB cap. The source size
+was then checked (132,970,317 bytes), the cap set to 160 MiB, and the incomplete
+96 MiB file retained in `datasets/coco-wholebody-pilot/`. The image alias had a
+TLS hostname-validation failure; the same public COCO S3 bucket was accessed
+through its verified HTTPS endpoint. Completed annotations were reused while
+image downloading resumed. Successful-file byte counts exclude failed-attempt
+traffic; they must not be presented as the total network transfer.
+
+- [x] Download and freeze validation annotations/images independently of model results.
+- [x] Retain file/selection checksums, source notices and failed transfer records.
+- [x] Implement annotation layout/validity parsing and bounded model-free tests.
+- [x] Download original COCO-WholeBody (2007.11858, 28 pages) and RTMPose
+  (2303.07399, 11 pages) papers, verify PDFs and retain extracted text/hashes.
+  These are older supporting references, not newly published methods. The
+  verified research library now contains 34 PDFs; its prior manifest is backed up.
+
+### E16 — separate detection, body-pose and hand-localization errors
+
+`runs/wholebody-validation-v2/` is the current frozen diagnostic. It uses the
+existing YOLO26n-seg person boxes at confidence .25, RTMW 192×256, IoU .5 person
+matching, and top-six detected-person pose admission. The GT-crop case poses all
+noncrowd labelled person boxes for diagnosis. Wrapper calls group at most three
+ROIs, but inspection of RTMLib confirms **one model forward per ROI, actual batch 1**.
+The earlier v1 metadata misleadingly called the grouping `pose_batch_size=3`;
+v2 corrects this wording and repeats the run. Reported body/hand PCK counts
+agree between v1/v2. Both source snapshots remain unchanged during their runs.
+
+Metrics are custom PCK diagnostics, NOT official OKS AP. Body/foot tolerance is
+5% of sqrt(original person-box area); hand/face tolerance is 10% of sqrt(original
+part-box area). Body-visible (v=2), body-occluded (v=1) and body-labelled (v>0)
+are separate. Valid hand/foot/face parts use v>0 reliability, including fractional
+values as documented by the authors; fractional hand reliability is not relabelled
+as visible/occluded. Invalid/unlabelled parts supply no invented ground truth.
+Missing person associations and matches excluded by the six-person crop limit
+keep their eligible-joint denominators and contribute zero correct predictions.
+
+| Diagnostic | Visible-body PCK (1,805 joints) | Hand PCK (2,301 joints) | Hand score coverage at .45 |
+|---|---:|---:|---:|
+| RTMW with GT person boxes | .8249 | .3751 | .9757 |
+| Detector + RTMW | .7191 | .3577 | .9379 |
+
+Of 250 noncrowd person boxes, 191 matched a detected person and 59 did not;
+30 matches had no pose under the admission limit. Five crowd annotations were
+excluded. The 43 unmatched predictions are not official detector false positives:
+some can overlap crowds or otherwise unscored people. Hand accuracy remains poor
+even with known person boxes; a better person detector alone will not solve it.
+GT crops diagnose the localization dependency but are not guaranteed to give
+higher pose PCK for every individual hand than a differently framed detected crop.
+
+RTMW's hand score coverage .9757 alongside PCK .3751 demonstrates that its raw
+landmark scores are not calibrated correctness probabilities. Gated PCK at .45
+is reported alongside raw PCK and coverage; no confidence threshold was fitted here.
+
+### E17 — specialized hand refinement and placement on the laptop
+
+The official [RTMLib hand model list](https://github.com/Tau-J/rtmlib/blob/main/rtmlib/tools/solution/hand.py)
+provided two bounded downloads under `weights/v2/hand/`: RTMPose-m hand pose
+(55,080,248-byte ONNX, SHA-256
+`39e858936bca0f94c09847d4e70b68a51d6c0adac61f36b457fcadb54621cd29`)
+and RTMDet-nano hand detection (4,010,667-byte ONNX). Archive CRCs and local SHA-256
+provenance are retained. Only the pose model was evaluated here; the separate
+hand detector was downloaded but is not evaluated or enabled.
+
+The hand experiment consumes the SAME cached detector/whole-body outputs.
+Its practical ROIs use at least eight whole-body hand points scoring >=.45,
+their enclosing box with minimum 16-pixel sides, clipped to the image. Up to six
+hands per image are selected by median qualifying point score with deterministic
+ties. No GT constructs or selects these ROIs. Selected hands replace all 21
+points; unselected hands retain baseline points, with no GT-based or cross-model
+score cherry-picking. A separate GT-hand-box case is diagnostic only.
+
+| Hand case, same 2,301 reliable joints | Raw PCK | Gated PCK at .45 | Score coverage |
+|---|---:|---:|---:|
+| Whole-body, GT person boxes | .3751 | .3742 | .9757 |
+| Whole-body detector pipeline | .3577 | .3577 | .9379 |
+| Hand model, GT hand boxes | .5954 | .0500 | .0582 |
+| Predicted-ROI hand refinement | .4637 | .0508 | .1169 |
+
+CPU-only inference used CPUExecutionProvider with two intra-op threads and
+sequential batch-one crops (`runs/hand-refinement-validation-v1/`). It refined
+212 hand ROIs, deferred 27 under the six-hand limit, and used 110 GT hands in
+the oracle diagnostic. Incremental practical refinement averaged 382.2 ms/image,
+P95 720.0 ms. This is too costly for an every-frame CPU extension on this workload.
+
+The CUDA repetition (`runs/hand-refinement-validation-gpu-v1/`) used the isolated
+ORT 1.26.0 runtime, a 1 GiB hand-session arena limit and the same model/inputs/ROIs.
+Incremental mean was 55.5 ms/image, P95 108.6 ms. Raw hand PCK remained .4637;
+58,520 full-body/hand coordinate triples were compared across saved outputs,
+with max coordinate difference .210 pixels and raw-score difference 2.921e-6.
+This is numerical/provider verification and indicative separate-run timing, not
+proof of accuracy from equivalence, simultaneous residency, or three-camera FPS.
+The baseline detector/whole-body compute and ReID are excluded from these costs.
+RTMW's 2 GiB and hand-model's 1 GiB session limits are not total process VRAM.
+
+**Decision:** preserve this hand-refinement candidate offline. Its raw localization
+improvement is useful, but reusing RTMW's .45 display threshold would hide most
+specialized-model output. Do not rescale scores or select a threshold on this
+already-inspected validation subset. Calibrate on development data, then evaluate
+on supported retail views and validate low-rate/event-driven scheduling and
+combined VRAM/latency before enabling it. Pixel decoding, crop geometry, memory,
+storage and UI belong on CPU; these measurements favor GPU for the added neural
+inference when it is scheduled. No production hand model or identity threshold
+was changed. Stage 2 and Gates A–C remain open.
+
+Figures were exported as PNG/SVG in `runs/wholebody-figures-v1/` and visually
+inspected. Hand examples select the three largest valid GT hand areas among
+matched/posed people, one per image, without selecting for improvement. Their
+GT-centred zooms are review-only and are not inference crops. Missing or incorrect
+predictions remain scored in full-image coordinates. The original downloaded
+dataset and all measured failures are preserved for paper writing.
+
+- [x] Run and retain whole-body oracle/detector diagnostics and corrected batch metadata.
+- [x] Evaluate bounded hand-only refinement on CPU and CUDA with fixed ROIs.
+- [x] Reconcile cached baseline joint counts exactly and compare providers numerically.
+- [x] Export and visually inspect quantitative/qualitative research figures.
+- [x] Verify 123 passing tests (`runs/v2-check-hand-refinement.log`, 9.670 s), compile and whitespace checks.
+- [x] Save and verify `runs/research-checkpoint-20261104/`: 116 source/docs files, model hashes, dataset manifest, test logs, numeric results and research figures.
+- [ ] Collect development calibration labels and validate retail transfer plus combined scheduling before hand-model integration.
+
+## Continuation log — 6 November 2026
+
+### E18 — tracking priority, frontend run and supplementary hand experiment
+
+The user clarified that SELFWATCH is a multi-camera video person tracking
+system and asked to run the model and frontend. The portal ran at
+http://127.0.0.1:8768/ on the local machine. Re-analysing the built-in two-view
+retail clip processed 64 observations and recorded one cross-camera link.
+The saved review at `runs/studio-a45768d723e0974f/` shows Person 1 on both
+views at 9.30 s; `tracking-preview.png` is from that public recording.
+These are working system outputs on an unlabelled clip. A separate live camera
+session started from the frontend and was allowed to finish independently.
+
+The in-progress hand experiment was completed as supplementary work. Two
+image-disjoint 48-image subsets were frozen from unused COCO-WholeBody validation
+images before inference. The old diagnostic image IDs and exact file hashes
+were excluded. Selection required at least one valid labelled hand. Development
+alone selected the specialist score threshold of .35, using a 75% correctness
+floor and 10% coverage floor among matched, refined, labelled joints. The
+policy was written before evaluation. At the frozen threshold, 331 of 426
+emitted labelled joints were correct (77.7%); correct yield across all 2,488
+eligible joints was 13.3%. The .45 control yielded 101 correct joints (4.1% of
+all eligible). These are localization diagnostics on hand-enriched public
+images. They do not measure false hands on unlabelled people or retail transfer.
+See `runs/hand-calibration-policy-v1.json` and
+`runs/hand-calibration-evaluation-v1.json`. No hand model was enabled in the
+frontend. Scheduling an additional hand stage is deferred in favor of tracking.
+
+### E19 — first labelled three-camera person tracking diagnostic
+
+Downloaded a frozen subset of [EPFL WILDTRACK](https://www.epfl.ch/labs/cvlab/data/data-wildtrack/):
+C1/C3/C5 at 18 consecutive annotated timestamps (1700–1785, step 5),
+54 images and 18 source label files. The pinned ZIP required handling a 4 GiB
+offset ambiguity. The bounded member reader requires the exact local filename
+and validates the central CRC and uncompressed length. The transfer was
+201,467,559 bytes; file hashes and source revision are in
+`datasets/wildtrack-pilot-v1/manifest.json`. The original CVPR paper, extracted
+text and checksum are saved in the research library (35 PDFs).
+
+The study uses the same YOLO26n-seg boxes and eligible OSNet features for
+all tracking policies. It evaluates online IDs at IoU .5 using published
+projected boxes (802 boxes, 22 subject IDs). The detector matched 541 boxes.
+The full-view IDF1 diagnostic charges unmatched predictions even outside the
+labelled ground region; it is not WILDTRACK's official metric. In the
+synchronized pair columns, coverage is reported against 686 labelled
+same-person view pairs. False sharing counts differently labelled people
+receiving the same ID in two matched observations at the same timestamp.
+
+| Policy | Diagnostic IDF1 | Same person matched in both views | Correct shared IDs | False shared pairs |
+|---|---:|---:|---:|---:|
+| Motion/IoU + shared identity | 33.4% | 307 | 1 | 3 |
+| Legacy cognitive + shared identity | 39.7% | 200 | 1 | 0 |
+| Tentative weak births + shared identity | 37.1% | 229 | 1 | 0 |
+| Same legacy tracks, camera-local IDs | 39.4% | 200 | 0 | 0 |
+
+The legacy controller's near-equality with the camera-local control is a
+failure of cross-camera coverage, despite the frontend replay working.
+Among 686 labelled same-person view pairs, 307 were detected in both views,
+226 had eligible embeddings in both, and only 2 of those reached the existing
+.78 cosine threshold. Both of those cleared the .06 margin in the separate
+single-timestamp comparison. This isolates an appearance bottleneck on these
+camera angles; it does not justify reducing the threshold without testing
+false links on a separate segment. Tracking improvements should compare
+view-aware appearance evidence and camera geometry against camera-local and
+appearance-only controls. No policy threshold or live default changed.
+
+Results, frozen predictions/features, converted labels and the appearance
+funnel are under `runs/wildtrack-tracking-v1/`. This is one outdoor segment
+at 2 Hz; continuous handoff, store transfer, dense-view quality and live
+three-camera throughput remain open. 127 v2 tests passed; the new tests cover
+archive corruption, source-box conversion, pair coverage and score abstention.
+
+## Paper-writing notes
+
+### E20 — frozen geometry and appearance experiment, completed 6 November; audited 8 November
+
+The calibration/evaluation subset download completed: C1/C3/C5, 12 annotated
+timestamps 1300-1355 step 5, plus pinned original calibration files. Development
+used the earlier 1700-1785 segment. Verified undistorted intrinsics, Rodrigues
+extrinsics, centimetre-to-metre conversion and the official floor grid. Matching
+uses mutual nearest floor points, ambiguity margin, two adjacent sightings and
+clean appearance corroboration. Settings were selected on development before
+evaluation: radius .75 m, margin .25 m, cosine .55. Development yielded 66 correct
+shared pairs and 1 false shared pair; evaluation yielded 51 correct and 0 false,
+against 108 same-person pairs matched in both views and 494 possible pairs.
+Diagnostic IDF1 increased from .33825 to .41298. The geometry-only arm failed
+the development precision gate and remains a diagnostic control.
+
+Temporal audit is essential: sampled global-ID changes increased from 10 to 15
+as provisional camera-local IDs were joined; local-ID changes remained 10.
+These are sampled changes, not full-sequence CLEAR IDSW. Thus this experiment
+supports better cross-view sharing, not reduced temporal switching. No final
+aliases were used to improve online scores. Source consistency with published
+projected boxes is not independent physical calibration accuracy. The prototype
+is offline, unbounded for long runs, and not installed as a live camera policy.
+Results: `runs/wildtrack-geometry-policy-v2.json`,
+`wildtrack-geometry-evaluation-v2.json` and
+`wildtrack-geometry-temporal-diagnostics-v2.json`.
+
+### E21 — crowded FPS and further tracking literature, 8 November
+
+Read and downloaded six additional primary PDFs: OA-SORT (2026), TrackTrack
+(2025), ARC-SORT (October 2026 preprint), on-the-fly homography calibration
+(September 2026 preprint), BoostTrack++ (2025 revision), and the older Deep
+OC-SORT baseline (2023). The research manifest now has 41 verified papers.
+Official TrackTrack and BoostTrack implementations were inspected and their
+source revisions/checksums retained. Decisions, limitations and ordered next
+experiments are in `docs/TRACKING_STABILITY_AND_FPS.md`.
+
+The public crowded profile uses 12 WILDTRACK C1 observations, 1280x720,
+8-17 detected people, predecoded images and original 2 Hz timestamps. Includes
+tracking, SQLite, JPEG encoding and JSON, excludes browser/capture and final
+review export. The isolated eager control measured 3.56 FPS detailed and 7.19
+FPS tracking-only. Detailed costs: pose 109 ms, ReID 68 ms, detector 55 ms,
+cognitive memory/association 9 ms. Initial unhandled ReID batch shapes caused
+large cold stalls; cold and warm measurements are retained separately.
+
+Added fixed warmed batch buckets and CUDA graph replay for OSNet, with a
+single GPU owner and persistent buffers. Changed real-input checks at batches
+1/2/4/8/16 yielded maximum embedding error 0; padding error was at most 3e-8.
+Graph-enabled complete trials: detailed 4.30/4.15 FPS; balanced 6.74/6.08;
+tracking-only 10.42/10.06. All six graph trials and both eager controls produced
+identical local/global assignment signatures on these frames. This is numerical
+and behavioral agreement, not independently established identity accuracy.
+See `runs/crowded-tracking-graph-20261108.json`,
+`crowded-tracking-eager-control-20261108.json` and
+`reid-graph-validation-20261108.json`. The first scheduled benchmark overlapped
+CPU tests and is retained as a diagnostic, not the isolated headline comparison.
+
+Tracking is now the frontend default. ReID, original phantom/warm recovery and
+shared memory remain active. Balanced rotates up to two current detections into
+pose per view every .5 source seconds, with no stale keypoint reuse; Detailed
+retains up to four poses per frame and mask outlines. Detection/tracking still
+process every replay observation. CPU performs association/memory, decode and
+delivery; GPU performs neural inference. CPU pose remains a bounded-worker
+alternative. `--no-reid-graph` preserves an explicit eager comparison path.
+Persistence and publication timings were added to server telemetry. Crowded
+retail accuracy, longer clips and 1/2/3-camera live capacity are still open.
+
+Verification: 139 v2 tests passed in 10.165 s; compile, JavaScript syntax and
+whitespace checks passed. Geometry unit cases cover ambiguous neighbours,
+two-sighting confirmation, appearance corroboration, gaps, camera collisions
+and transitive-distance rejection. Scheduling tests cover view/epoch isolation,
+bounded state, rotating selection and absence of stale keypoints. All 41 paper
+PDF sizes/checksums match the library manifest; six new extracted texts are
+nonempty. `runs/tracking-performance-20261108/` retains a regenerable figure
+and source-checksummed measurement summary. Public sample frontend smoke
+verification is recorded separately from labelled accuracy experiments.
+
+Frontend smoke: Balanced run `studio-aca7697912adc9a3` and Tracking run
+`studio-bb009542bd2727ac` each completed 64 observations with one cross-camera
+link. Browser checks verified the mode help, fresh-landmark capability limits,
+play/pause labels and final Person 1 on both public camera views. The final
+Tracking run reported recent aggregate 13.39 observations/s (6.76/6.80 per view),
+on the easier paired sample, not the crowded stress input. The service remains
+on http://127.0.0.1:8768/. No private camera was opened. Screenshot and state
+receipt: `runs/tracking-performance-20261108/portal-preview.png` and
+`runs/tracking-portal-smoke-20261108.json`.
+
+- [x] Save and verify `runs/research-checkpoint-20261108-tracking-v2/`: changed source/docs, model hashes, research manifest, frozen identity results, performance trials, test log and public UI proof. Source cap explicitly raised to 8 MiB to retain two existing ~4 MiB project-context documents; private camera recordings remain excluded.
+
+Keep these sections ready to populate from the ledger: problem and hypotheses;
+closest prior art; perception/identity/event contracts; memory admission and
+revision rules; scheduling and resource budgets; datasets and annotation protocol;
+causal evaluation; results and ablations; failure analysis; limitations and release.
+
+Required comparisons still include standard tracker/ReID, original memory,
+immediate top-1 versus uncertain associations, clean versus contaminated galleries,
+bounded retention, geometry/no-geometry, oracle identity/interaction, and camera-only
+versus simulated/real POS. Report useful coverage alongside error. Reduced ID
+counts or zero alerts on a few clips do not establish success.
+
+Independent IDF1 results now exist for the bounded WILDTRACK diagnostic (E19).
+Complete labelled retail identities and a separately frozen evaluation remain open.
+HOTA is not implemented in the current evaluator. Take/put accuracy, custody error,
+payment reconciliation, false reviews per camera-hour, metric geometry error and
+forecast error remain unmeasured. Do not fill these with detector counts or
+numerical-equivalence results. Interactive camera smoke recordings are excluded from public dataset results. Keep retrospective corrections separate from the
+decision that was possible online.
+
+**Next work:** score continuous labelled crossings/occlusions, compare ambiguity
+retention and clean-gallery updates against the existing controller, and verify
+longer 1/2/3-camera capacity. Geometry plus appearance passed its bounded
+cross-view test but temporal ID changes still need improvement. Obtain complete
+labels for supported retail views and preserve final evaluation until settings
+are frozen. Hand inference, custody and POS are supplementary.

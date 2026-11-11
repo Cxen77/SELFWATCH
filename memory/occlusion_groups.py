@@ -51,7 +51,7 @@ class OcclusionGroupManager:
 
         self._frame_count = 0
 
-    def update(self, confirmed_boxes, velocities=None):
+    def update(self, confirmed_boxes, velocities=None, frame_delta=1):
         """
         Detect overlapping tracks and return frozen gid set.
 
@@ -62,7 +62,8 @@ class OcclusionGroupManager:
         Returns:
             set of gids that should be FROZEN (no ID changes, no emb updates)
         """
-        self._frame_count += 1
+        self._frame_delta = max(1, int(frame_delta))
+        self._frame_count += self._frame_delta
         velocities = velocities or {}
 
         currently_overlapping = set()
@@ -153,7 +154,7 @@ class OcclusionGroupManager:
         expired = []
         for gid in self._overlap_counter:
             if gid not in currently_overlapping:
-                self._overlap_counter[gid] += 1
+                self._overlap_counter[gid] += self._frame_delta
                 # Use longer cooldown for static occluder type
                 cooldown = self.STATIC_COOLDOWN if self._overlap_type.get(gid) == "static" else self.SEPARATION_COOLDOWN
                 if self._overlap_counter[gid] > cooldown:
@@ -168,7 +169,7 @@ class OcclusionGroupManager:
         """Decrement post-freeze cooldowns and remove expired ones."""
         expired = []
         for gid in self._post_freeze_cooldown:
-            self._post_freeze_cooldown[gid] -= 1
+            self._post_freeze_cooldown[gid] -= self._frame_delta
             if self._post_freeze_cooldown[gid] <= 0:
                 expired.append(gid)
         for gid in expired:

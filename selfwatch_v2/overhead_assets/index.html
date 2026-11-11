@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SELFWATCH overhead detection study</title><link rel="stylesheet" href="overhead.css"><script src="overhead.js" defer></script></head>
+<body><header><strong>SELFWATCH</strong><span>Overhead-camera detector study</span><a href="REPORT.md">Recorded report</a></header>
+<main><h1>Find the people the detector misses.</h1><p class="intro">Compare the same annotated image at different input sizes and orientations. This is an independent-image pilot, with no tracking or invented video timing.</p>
+<p id="status" role="status">Loading recorded results…</p>
+<div id="workspace" hidden>
+<section class="controls" aria-label="Comparison controls">
+<label>Partition<select id="partition"><option value="validation">Validation scenes</option><option value="development">Development scenes</option></select></label>
+<label>Scene<select id="scene"><option value="all">All scenes</option></select></label>
+<label>Compare with<select id="candidate"></select></label>
+<label class="toggle"><input id="gt" type="checkbox" checked>Annotated people</label>
+<label class="toggle"><input id="pred" type="checkbox" checked>Detections</label>
+</section>
+<div class="transport"><button id="previous">Previous</button><label for="image">Image <output id="position"></output></label><input id="image" type="range" min="0" max="0" value="0"><button id="next">Next</button></div>
+<p id="frame-title" class="frame-title"></p>
+<div class="comparison">
+<section class="view"><h2>Native input / 640</h2><canvas id="baseline" aria-label="Native input detections and annotations" role="img"></canvas><p id="baseline-result"></p></section>
+<section class="view"><h2 id="candidate-title"></h2><canvas id="alternative" aria-label="Comparison detections and annotations" role="img"></canvas><p id="candidate-result"></p></section>
+</div>
+<p class="legend"><span><i class="target"></i>Dashed yellow: annotation</span><span><i class="matched"></i>Blue: matched detection</span><span><i class="unmatched"></i>Pink: unmatched detection</span></p>
+<p class="note">A detection matches one annotation at box IoU ≥ 0.5. Boxes enclose the original rotated annotations; this diagnostic differs from the published rotated-box AP benchmark.</p>
+<section aria-labelledby="results-heading"><h2 id="results-heading">Whole-partition results</h2><p id="selection"></p><div class="table-wrap"><table><thead><tr><th scope="col">Candidate</th><th scope="col">Matched</th><th scope="col">Extra</th><th scope="col">Missed</th><th scope="col">Precision</th><th scope="col">Recall</th><th scope="col">F1</th><th scope="col">Mean ms</th><th scope="col">P95 ms</th></tr></thead><tbody id="metrics"></tbody></table></div></section>
+<details><summary>Dataset, hardware limits and protocol</summary><p id="protocol"></p><p>Latency covers the detector and coordinate mapping after warmup. It excludes image loading, pose, ReID, memory and export, and does not establish live multi-camera FPS. The final 40 test images remain sealed. Rotation adds GPU passes using the same resident weights.</p><p>Source: <a href="https://vip.bu.edu/projects/vsns/cossy/datasets/wepdtof/">WEPDTOF, Boston University</a>. Noncommercial research use; see the local dataset NOTICE.txt. No payment or item-custody accuracy is measured here.</p><a href="data.json">Download recorded results</a></details>
+</div></main><footer>Person evidence first. Identity and memory cannot recover a person that perception never observes.</footer></body></html>

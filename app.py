@@ -163,7 +163,7 @@ class SelfWatchApp(ctk.CTk):
         self.sources_textbox = ctk.CTkTextbox(self.side_panel_scroll, height=60)
         self.sources_textbox.pack(fill="x", padx=10, pady=2)
         
-        self.btn_start = ctk.CTkButton(self.side_panel_scroll, text="Γû╢ Start Multi-Camera", command=self.start_multi_camera, fg_color="#2b7b3b", hover_color="#1e5c2a")
+        self.btn_start = ctk.CTkButton(self.side_panel_scroll, text="▶ Start Multi-Camera", command=self.start_multi_camera, fg_color="#09090b", hover_color="#27272a")
         self.btn_start.pack(pady=10, padx=10, fill="x")
 
         # Event Log

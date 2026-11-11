@@ -63,6 +63,12 @@ class CognitiveAttention:
         self._last_recovery = {}        # track_id -> frame_count when recovered
         self._reid_skip_counters = {}   # track_id -> frames since last ReID
 
+    def forget(self, track_id):
+        """Release scheduling metadata for an expired tracklet."""
+        self._tiers.pop(track_id, None)
+        self._last_recovery.pop(track_id, None)
+        self._reid_skip_counters.pop(track_id, None)
+
     def update_tier(self, track_id, track_age, is_confirmed,
                     identity_state=None, frame_count=0):
         """

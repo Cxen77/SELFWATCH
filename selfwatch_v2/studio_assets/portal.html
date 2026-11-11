@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SELFWATCH — Multi-Camera Cognitive Studio</title>
+  <link rel="stylesheet" href="/portal.css">
+  <script src="/portal.js" defer></script>
+</head>
+<body>
+<div class="efferd-app">
+  <!-- Left Navigation Sidebar (Efferd Inspired) -->
+  <aside class="efferd-sidebar" aria-label="Main Navigation">
+    <div class="sidebar-brand">
+      <div class="brand-logo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="3"/>
+          <circle cx="12" cy="10" r="3"/>
+          <path d="M8 21h8"/>
+          <path d="M12 17v4"/>
+        </svg>
+      </div>
+      <div class="brand-info">
+        <a class="brand-title" href="/">SELFWATCH</a>
+        <span class="brand-subtitle">Vision Studio</span>
+      </div>
+    </div>
+
+    <!-- Quick Action Button -->
+    <div class="sidebar-action-row">
+      <button id="sidebar-action-btn" class="sidebar-primary-btn" onclick="document.getElementById('start').click()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <span>Run Pipeline</span>
+      </button>
+      <button class="sidebar-search-btn" title="Toggle settings" onclick="const s = document.getElementById('settings'); s.open = !s.open;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
+    </div>
+
+    <!-- Navigation Links -->
+    <nav class="sidebar-nav" aria-label="Project navigation">
+      <div class="nav-section-title">OVERVIEW</div>
+      <a href="/" class="nav-item active">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
+        <span>Overview</span>
+      </a>
+
+      <div class="nav-section-title">INPUT SOURCES</div>
+      <button class="nav-item source-nav-btn" data-source="sample" aria-pressed="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <span>Paired Retail Demo</span>
+      </button>
+      <button class="nav-item source-nav-btn" data-source="cameras" aria-pressed="false">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+        <span>Live Cameras</span>
+      </button>
+      <button class="nav-item source-nav-btn" data-source="videos" aria-pressed="false">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 8-6 4 6 4V8Z"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>
+        <span>Store Footage</span>
+      </button>
+
+      <div class="nav-section-title">RESEARCH &amp; LABS</div>
+      <a href="/plan/" class="nav-item">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span>Project Plan</span>
+      </a>
+      <a href="/research/combined/" class="nav-item">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
+        <span>Annotation Lab</span>
+      </a>
+      <a href="/project-log.md" class="nav-item">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <span>Master Research Log</span>
+      </a>
+    </nav>
+
+    <!-- Sidebar Bottom Promo Card (Efferd Shadcn Style) -->
+    <div class="sidebar-feature-card">
+      <div class="feature-badge">v2.4</div>
+      <div class="feature-title">Cognitive Memory Engine</div>
+      <div class="feature-desc">Cross-camera ReID arbitration &amp; trajectory persistence.</div>
+      <a href="/plan/" class="feature-link">View implementation ↗</a>
+    </div>
+
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+      <div class="system-status-indicator">
+        <span class="status-pulse-dot"></span>
+        <span id="connection">Local / Connected</span>
+      </div>
+      <button class="sidebar-help-btn" onclick="document.getElementById('settings').open = true;">System Settings</button>
+    </div>
+  </aside>
+
+  <!-- Main Content Wrapper -->
+  <div class="efferd-main-wrapper">
+    <!-- Top Header Navigation -->
+    <header class="efferd-topbar">
+      <div class="topbar-left">
+        <button class="topbar-icon-btn" title="Toggle Navigation">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+        </button>
+        <div class="breadcrumb">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
+          <span class="breadcrumb-item">Overview</span>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <span id="source-count" class="topbar-source-hint">2 camera views open</span>
+        <button class="topbar-icon-btn" title="Export review" onclick="document.getElementById('full-review').click()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+        </button>
+        <button class="topbar-icon-btn" title="Activity alerts">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        </button>
+        <div class="user-avatar" title="SELFWATCH Engineer">SW</div>
+      </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="efferd-content">
+      <!-- Row 1: KPI Stat Cards (4 Clean Cards like Efferd!) -->
+      <section class="efferd-kpi-grid" aria-label="Key Performance Indicators">
+        <div class="kpi-card">
+          <div class="kpi-label">Active identities</div>
+          <div class="kpi-value" id="kpi-identities">2</div>
+          <div class="kpi-trend trend-up">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            <span>Tracked in memory</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-label">Processing throughput</div>
+          <div class="kpi-value"><span id="fps-total">—</span> <span class="kpi-unit">FPS</span></div>
+          <div class="kpi-trend trend-neutral">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span id="fps-label">Standby</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-label">Processed observations</div>
+          <div class="kpi-value" id="kpi-frames">600</div>
+          <div class="kpi-trend trend-up">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            <span>Across camera views</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-label">Arbitration status</div>
+          <div class="kpi-value" id="kpi-status-text">Active</div>
+          <div class="kpi-trend">
+            <span id="run-state" class="status-pill" data-state="recorded">Recorded</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Row 2: Main Workspace Grid (Studio Left + Controls Right) -->
+      <div class="efferd-workspace-grid">
+        <!-- Left Hero Card: Video Observation Studio -->
+        <section class="efferd-card studio-card" aria-label="Camera Observation Studio">
+          <div class="card-header">
+            <div class="header-text-block">
+              <h1 id="view-title" class="card-title">Recorded demo</h1>
+              <p id="view-subtitle" class="card-subtitle">Loading source observations…</p>
+            </div>
+            <div class="header-controls">
+              <!-- Overlay Toggle Chips -->
+              <div class="toggles-pill-group" role="group" aria-label="Visual Overlays">
+                <label class="toggle-pill"><input id="boxes" type="checkbox" checked><span>Person IDs</span></label>
+                <label class="toggle-pill"><input id="body" type="checkbox" checked><span>Body</span></label>
+                <label class="toggle-pill"><input id="hands" type="checkbox" checked><span>Hands</span></label>
+                <label class="toggle-pill"><input id="masks" type="checkbox"><span>Masks</span></label>
+                <label class="toggle-pill"><input id="face" type="checkbox"><span>Face</span></label>
+              </div>
+              <button id="stop" class="btn-stop" disabled>Stop analysis</button>
+            </div>
+          </div>
+
+          <!-- Notification Toast Banner -->
+          <div id="message" class="efferd-alert" role="status" hidden></div>
+
+          <!-- Camera Grid Viewport Area -->
+          <div class="view-area-container">
+            <div id="empty" class="empty-state">
+              <div class="empty-icon-circle">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                  <circle cx="12" cy="13" r="3"/>
+                </svg>
+              </div>
+              <h2 id="empty-title">Choose a source to begin</h2>
+              <p id="empty-detail">Open the demo, upload footage, or start your laptop camera.</p>
+            </div>
+            <div id="views" class="camera-grid"></div>
+          </div>
+
+          <!-- Playback Transport Bar -->
+          <div class="efferd-transport" aria-label="Playback controls">
+            <div class="transport-actions">
+              <button id="previous" class="transport-btn" aria-label="Previous observation" title="Previous observation">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <button id="play" class="btn-play" aria-label="Play recording">
+                <span>Play</span>
+              </button>
+              <button id="next" class="transport-btn" aria-label="Next observation" title="Next observation">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+              <button id="reset" class="transport-text-btn">Reset</button>
+            </div>
+
+            <div class="transport-slider-wrapper">
+              <input id="timeline" type="range" min="0" max="0" value="0" aria-label="Recording timeline">
+            </div>
+
+            <div class="transport-meta">
+              <output id="time">0:00 / 0:00</output>
+              <label class="speed-selector-label" for="speed">
+                <select id="speed" aria-label="Playback speed">
+                  <option value="0.5">0.5×</option>
+                  <option value="1" selected>1×</option>
+                  <option value="2">2×</option>
+                  <option value="4">4×</option>
+                </select>
+              </label>
+              <span id="frame-count" class="transport-frame-badge">Recorded observations</span>
+              <span id="transport-note" class="transport-status-note">Recorded playback</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Right Side Column: Source Configuration & Identity Memory -->
+        <div class="efferd-side-column">
+          <!-- Input Source Configuration Card -->
+          <section class="efferd-card source-config-card" aria-label="Source Settings">
+            <div class="card-header borderless">
+              <div>
+                <h2 class="card-title-sm">Input Sources</h2>
+                <p class="card-subtitle-sm">Select footage, live cameras, or demo</p>
+              </div>
+            </div>
+
+            <!-- Segmented Pill Tabs -->
+            <div class="source-tabs-segmented" role="group" aria-label="Source type">
+              <button data-source="sample" aria-pressed="true">Demo</button>
+              <button data-source="cameras" aria-pressed="false">Cameras</button>
+              <button data-source="videos" aria-pressed="false">Videos</button>
+            </div>
+
+            <div class="source-panels-wrapper">
+              <!-- Videos Section -->
+              <section id="source-videos" hidden>
+                <label class="file-drop-area" for="files">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <span>Choose video footage</span>
+                  <small>Up to 3 views · Max 512 MiB each</small>
+                </label>
+                <input id="files" type="file" aria-label="Upload videos" accept="video/*,.mkv,.m4v" multiple hidden>
+                <progress id="upload-progress" value="0" max="100" hidden></progress>
+                <p id="upload-status" class="hint" aria-live="polite"></p>
+                <div id="uploads" class="source-list"></div>
+              </section>
+
+              <!-- Cameras Section -->
+              <section id="source-cameras" hidden>
+                <button id="laptop" class="btn-dark full">Start laptop camera</button>
+                <div class="form-row-device">
+                  <label for="device">Connected camera</label>
+                  <button id="find" class="btn-ghost-sm">Detect</button>
+                </div>
+                <select id="device" class="form-select full"><option value="0">Camera 0 / built-in</option></select>
+                <button id="add-camera" class="btn-secondary full">Add selected camera</button>
+                <div id="camera-sources" class="source-list"></div>
+                <p id="camera-status" class="hint">Use Detect to check available devices.</p>
+
+                <details class="browser-settings-collapsible">
+                  <summary>Browser camera capture</summary>
+                  <p class="hint">Alternative in-browser capture.</p>
+                  <button id="find-browser" class="btn-secondary full">Find browser cameras</button>
+                  <label for="browser-device">Browser device</label>
+                  <select id="browser-device" class="form-select full"><option value="">Default browser camera</option></select>
+                  <button id="add-browser" class="btn-secondary full">Add browser camera</button>
+                  <div id="browser-sources"></div>
+                </details>
+              </section>
+
+              <!-- Sample Demo Section -->
+              <section id="source-sample">
+                <button id="open-demo" class="btn-dark full">Open recorded demo</button>
+                <div class="demo-facts-card">
+                  <div class="fact-row">
+                    <span class="fact-label">Views</span>
+                    <span class="fact-val">2 recorded views</span>
+                  </div>
+                  <div class="fact-row">
+                    <span class="fact-label">Memory</span>
+                    <span class="fact-val">Shared ReID</span>
+                  </div>
+                  <div class="fact-row">
+                    <span class="fact-label">Timestamps</span>
+                    <span class="fact-val">Recorded Monotonic</span>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Pipeline Parameters -->
+              <details id="settings" class="settings-collapsible">
+                <summary>Pipeline parameters</summary>
+                <div class="settings-body">
+                  <label for="performance">Processing mode</label>
+                  <select id="performance" class="form-select full">
+                    <option value="fast" selected>Tracking / IDs and object boxes</option>
+                    <option value="balanced">Balanced / tracking + scheduled landmarks</option>
+                    <option value="detailed">Detailed / body, hands and masks</option>
+                  </select>
+                  <p id="performance-help" class="hint">Tracking prioritizes FPS and keeps ReID, phantom recovery and shared memory. Landmarks and mask outlines are skipped.</p>
+                  <label for="limit">Maximum processed frames</label>
+                  <input id="limit" type="number" value="600" min="1" max="3000" class="form-input full">
+                  <label class="check-modern">
+                    <input id="pose" type="checkbox" checked disabled>
+                    <span>Whole-body landmarks</span>
+                  </label>
+                  <p id="pose-device" class="hint"></p>
+                  <label for="rotation">Overhead recovery probe</label>
+                  <select id="rotation" class="form-select full">
+                    <option value="off">Off / fastest</option>
+                    <option value="memory">Memory-triggered probe</option>
+                    <option value="weak">Weak-view probe</option>
+                    <option value="always">All orientations / diagnostic</option>
+                  </select>
+                  <div id="offsets"></div>
+                  <label for="capture-fps">Browser camera rate</label>
+                  <select id="capture-fps" class="form-select full">
+                    <option value="5">5 frames/s</option>
+                    <option value="10" selected>10 frames/s</option>
+                    <option value="15">15 frames/s</option>
+                    <option value="30">30 frames/s</option>
+                  </select>
+                </div>
+              </details>
+            </div>
+
+            <div class="source-card-footer">
+              <button id="start" class="btn-dark full">Re-analyse sample</button>
+            </div>
+          </section>
+
+          <!-- Person Memory Roster Card -->
+          <section class="efferd-card memory-roster-card" aria-label="Identity Memory Roster">
+            <div class="card-header borderless">
+              <div>
+                <h2 class="card-title-sm">Person Memory Roster</h2>
+                <p id="memory-summary" class="card-subtitle-sm">Original ownership, phantom and warm-memory states</p>
+              </div>
+            </div>
+            <div id="people" class="people-grid-container">
+              <p class="hint">Person memory follows the displayed observations.</p>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- Row 3: Telemetry & Pipeline Latency Breakdown -->
+      <section class="efferd-card telemetry-card" aria-label="Pipeline Performance">
+        <div class="card-header borderless">
+          <div>
+            <h2 class="card-title-sm">Pipeline Latency Breakdown</h2>
+            <p id="stage-times" class="card-subtitle-sm">Open the demo to review existing observations. Start analysis to measure this computer.</p>
+          </div>
+          <div class="telemetry-actions">
+            <a id="full-review" href="/research/combined/" class="btn-secondary-sm">Full annotation review ↗</a>
+          </div>
+        </div>
+
+        <div class="stage-telemetry-grid">
+          <div class="telemetry-item">
+            <div class="telemetry-item-header">
+              <span class="telemetry-stage-name">Object Detection</span>
+              <span class="telemetry-tech">YOLO26n-seg</span>
+            </div>
+            <div class="telemetry-bar-wrap"><div id="bar-det" class="telemetry-bar" style="width: 38%"></div></div>
+          </div>
+          <div class="telemetry-item">
+            <div class="telemetry-item-header">
+              <span class="telemetry-stage-name">Whole-body Pose</span>
+              <span class="telemetry-tech">RTMW-x 133 Keypoints</span>
+            </div>
+            <div class="telemetry-bar-wrap"><div id="bar-pose" class="telemetry-bar" style="width: 52%"></div></div>
+          </div>
+          <div class="telemetry-item">
+            <div class="telemetry-item-header">
+              <span class="telemetry-stage-name">ReID &amp; Association</span>
+              <span class="telemetry-tech">Cosine Arbitration</span>
+            </div>
+            <div class="telemetry-bar-wrap"><div id="bar-reid" class="telemetry-bar" style="width: 18%"></div></div>
+          </div>
+        </div>
+        <p id="timing" class="timing-footer-note">Recorded observations; camera views are not assumed hardware-synchronized.</p>
+      </section>
+    </main>
+  </div>
+</div>
+</body>
+</html>

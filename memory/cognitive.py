@@ -386,6 +386,10 @@ class CognitiveMemory:
             "gallery":      list(identity["gallery"]),
         }
 
+    def forget_identity_embeddings(self, track_id):
+        """Evict feature prototypes without changing any global identity allocator."""
+        self._active_identities.pop(track_id, None)
+
     # ═════════════════════════════════════════════════════════════════
     #  3. WARM MEMORY STORAGE — The graveyard of lost identities
     # ═════════════════════════════════════════════════════════════════

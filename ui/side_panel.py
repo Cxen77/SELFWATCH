@@ -31,7 +31,7 @@ class SidePanel(ctk.CTkFrame):
         lbl_perf.pack(pady=(25, 5), padx=10, anchor="w")
         
         self.lbl_inference_fps = ctk.CTkLabel(self, text="Inference FPS: --", anchor="w",
-                                               text_color="#4CAF50", font=ctk.CTkFont(size=13, weight="bold"))
+                                               text_color="#10b981", font=ctk.CTkFont(size=13, weight="bold"))
         self.lbl_inference_fps.pack(pady=2, padx=15, fill="x")
         
         self.lbl_profiling = ctk.CTkLabel(self, text="Det: -- | ReID: --", anchor="w", text_color="gray")
