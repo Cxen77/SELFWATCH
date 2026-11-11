@@ -73,3 +73,12 @@ Phase 2 closeout is in E23 of `docs/PROJECT_LOG.md`. Reproduce the frozen
 person operating point with `docs/phase2-final-protocol.json` and
 `scripts.validate_phase2`. The fresh pair reached 22/24 recall targets with
 zero false positives and 7.3–8.0 processed FPS per view. Stage 3 is next.
+
+Phase 3 reference rig completed on 11 November. E24 in
+`docs/PROJECT_LOG.md` records the CPU geometry and timing contract, 36
+verified WILDTRACK frames, 17 usable manually marked contacts, 10 zone
+and abstention checks and 156 passing tests. Keep the marked contacts and
+frozen JSON report. Store calibration needs measured floor targets, shared
+timing events and installed camera metadata. Use the geometry evidence in
+Phase 4 to test links and false merges before enabling it in the live tracker.
+No smaller AI was dispatched for this milestone.

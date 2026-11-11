@@ -2,9 +2,9 @@
 
 **Updated: 11 November 2026**
 
-**Current stage: 3**
+**Current stage: 4**
 
-**Status summary:** Stage 2 passed the scoped retail person perception gate. The frozen two-view replay measured 22 of 24 labelled people at 7.3–8.0 processed frames per second per view. Stage 3 is camera calibration and timing. Gate C still requires independent multi-camera identity validation.
+**Status summary:** Stage 3 reference-rig milestone is complete on three WILDTRACK views. Store commissioning is pending a floor survey and measured camera timing. Stage 4 is global identity memory. Gate C still requires independent multi-camera identity validation.
 
 This is the living record for the project. Update its checkboxes, stage table
 and experiment notes after work is verified. Mark a stage complete only when
@@ -38,8 +38,8 @@ table from this file.
 | 0 | Freeze and inventory | Done | Original commit preserved; hardware, dependencies, fuzzy checkpoint and old modules inventoried. |
 | 1 | Replay and contracts | Done | Timestamped camera/epoch observations, bounded ordered replay, durable idempotent store and regression checks implemented. |
 | 2 | Perception pilot | Done | Gate B passed for the declared two-view retail replay. Visibility, optional landmarks and scheduling evidence are in E23. |
-| 3 | Camera geometry | In progress | Public WILDTRACK geometry pilot exists. Complete actual-camera calibration, zones/topology, clock-skew measurement and independent geometric error checks. |
-| 4 | Global identity memory | Partly implemented early | Shared authority and old cognitive protections restored; complete only with independently measured handoff coverage, false merges and recovery quality. |
+| 3 | Camera geometry | Done (reference rig) | Three public views and replay timing verified, with CPU floor projection, overlap topology, commissioning tools and simulated zones. E24 records error and remaining site measurements. |
+| 4 | Global identity memory | In progress | Shared authority and old cognitive protections restored. Next validate uncertainty-aware linking, handoff coverage, false merges and recovery quality. |
 | 5 | Item and interaction evidence | Not started | Needs supported products, causal take/put/transfer evidence and annotated interaction evaluation. |
 | 6 | Revisable custody | Not started | Needs event dependencies, candidate ownership, bounded retention and verified rollback/recompute after corrections. |
 | 7 | Exit / POS integration | Not started | Needs directional zones, simulated transactions and late/canceled/group-payment scenarios with evidence-backed review. |
@@ -99,11 +99,12 @@ table from this file.
 ### Stage 3 — camera geometry
 
 - [x] Verify published WILDTRACK calibration and run a frozen, offline floor-plus-appearance linking experiment on a separate time segment.
-- [ ] Establish actual camera models, view layout and measurable clock offsets.
-- [ ] Calibrate lens distortion and intrinsics/extrinsics or floor homographies.
-- [ ] Define aisle, shelf, checkout and directional exit zones on valid geometry.
-- [ ] Project appropriate foot contacts to a common floor map with uncertainty.
-- [ ] Measure independent-point error and handle missing/uncertain cameras.
+- [x] Pin the three public camera views, native dimensions, published time basis and replay validity window.
+- [x] Load verified published intrinsics/extrinsics and implement surveyed floor fitting with optional pinhole distortion correction.
+- [x] Define and test aisle, shelf, checkout and directional exit zones on the reference map.
+- [x] Project visible foot contacts with uncertainty. Withhold clipped, out-of-footprint, stale and uncalibrated observations.
+- [x] Validate the surveyed-target and measured-clock code with separate synthetic fit/check data. Retain the real-frame footpoint and cross-view diagnostic.
+- [ ] **Store commissioning** — record installed camera models and view layout, survey independent physical check targets, capture shared sync events, and verify the actual aisle, shelf, checkout and exit geometry. Required before enabling store geometry decisions.
 
 ### Stage 4 — global identity memory
 
@@ -1046,3 +1047,80 @@ python -m scripts.phase2_visibility
 Stage 3 starts with actual-camera floor mapping, clock offsets and validation
 against known floor points. Stage 4 will use that evidence for multi-view
 identity linking and measure continuity on independently labelled views.
+
+### E24 — Phase 3 camera geometry, 11 November 2026
+
+**Scope.** Qualified the offline reference path on WILDTRACK views C1, C3 and
+C5. Verified 36 native 1920 × 1080 frames, in 12 bundles at 2 Hz, and verified
+the supplied camera calibration hashes. The intersection of the labelled floor
+region and each camera's projected image defines its nominal footprint. All
+three pairs have geometric overlap. Occluders can reduce actual shared
+visibility. The authors report about 50 ms synchronization. The replay uses
+published frame index divided by 10, a conservative assumed 50 ms uncertainty
+per view, and a 150 ms pair gate. The original per-camera timing residuals
+were unavailable. [Dataset and calibration](https://www.epfl.ch/labs/cvlab/data/data-wildtrack/), [CVPR paper](https://openaccess.thecvf.com/content_cvpr_2018/html/Chavdarova_WILDTRACK_A_Multi-Camera_CVPR_2018_paper.html).
+
+**Visible-foot diagnostic.** Marked 20 selected contacts in frame 1300 at
+1280 × 720, then scaled to native pixels before scoring. Three marks were
+withheld by the footprint check. Published person IDs were displayed to
+establish correspondence. The published world labels were themselves
+derived with the source camera calibration. This is a small, single-frame
+consistency check without an independent physical ground survey. Reported
+reference contact radii express sensitivity to a six-pixel input perturbation.
+
+| Comparison | Contacts or pairs | Median | P95 | Maximum |
+|---|---:|---:|---:|---:|
+| C1 to published ground position | 6 | 0.24 m | 0.34 m | 0.36 m |
+| C3 to published ground position | 5 | 0.26 m | 0.62 m | 0.67 m |
+| C5 to published ground position | 6 | 0.17 m | 0.76 m | 0.94 m |
+| Same subject in overlapping cameras | 7 | 0.22 m | 0.75 m | 0.91 m |
+
+The reported residuals include every accepted projection. Phase 4 needs
+separate evidence before using small distance thresholds or merging a global
+ID on geometry. The existing offline linking results remain in E20.
+
+**Implementation.** `selfwatch_v2/camera_geometry.py` runs on CPU without
+additional inference. A calibrated camera and stream epoch produce a metric
+foot contact, a pixel-sensitivity plus held-out residual radius, and aligned
+capture time with an uncertainty interval. Pair coverage requires compatible
+epochs, shared floor coverage and bounded timing disagreement. Zone membership
+requires the uncertainty disk to clear its boundary. The directional gate
+requires two confirmed observations from one track, with clearance on each
+side, plausible speed and elapsed time, and passage through the finite
+segment. The reference layout is simulated on the plaza map. Its ten checks
+cover checkout membership, boundary abstention, direction, missing contacts,
+clipping, missing cameras, a reset epoch and stale timing. The production
+tracker and alert path are unchanged pending Phase 4 linking validation.
+
+**Reproduce the reference and commission a measured rig.**
+
+```powershell
+python -m scripts.validate_phase3 reference datasets/wildtrack-geometry-evaluation-v1 docs/phase3-wildtrack-footpoints.json runs/phase3-reference-v1/results.json
+python -m unittest tests_v2.test_camera_geometry
+python -m scripts.validate_phase3 survey store-survey.json runs/store-survey/results.json
+```
+
+The frozen report is in `docs/phase3-reference-results.json`. The survey
+input has schema version 1, a revision-specific `floor_id`, a `cameras` list,
+and a `layout` with `zones` and `exit_gates`. Each camera records
+`camera_id`, `stream_epoch`, `model`, `view`, native `size`, and a `lens`
+with `input` set to `undistorted` or `raw`. Raw input requires a measured
+`pinhole` matrix and `distortion` coefficients. Its `survey` pairs
+`fit_px` with `fit_m` and `check_px` with `check_m`, with a declared
+`max_error_m`. Use at least four fit targets and three different measured
+check targets distributed within the same flat footprint. Its `clock` holds
+`fit_events` and `check_events` as [camera seconds, rig seconds] pairs,
+`quantization_s`, and `max_error_s`. Capture three or more fit events and two
+separate check events within the fit time window. Each zone has a name, kind
+and `boundary_m`. Each exit has a name, `start_m`, `end_m`, `hysteresis_m`,
+`max_gap_s` and `max_speed_m_s`. A fixture in
+`tests_v2/test_camera_geometry.py` shows the full structure.
+
+The survey validator emits held-out spatial and timing residuals, the fitted
+offset/drift and per-camera coverage. Recommission after a changed camera
+position, crop or stream epoch. Record the actual site measurements and
+chosen tolerances before any store geometry alert is enabled.
+
+The synthetic survey passed the command-line check. All 156 v2 regression
+tests passed. Phase 4 can use the reference coverage and timing contract
+while collecting independent evidence for global ID continuity.

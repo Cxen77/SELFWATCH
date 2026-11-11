@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "frame_index": 1300,
+  "pixel_error": 6,
+  "protocol": "Marked visible shoe-floor contact or midpoint of two clear contacts on a 1280x720 review image. Published subject labels were shown for correspondence. Coordinates were marked before computing residuals, scaled to native 1920x1080 pixels. Includes selected clearly visible, unobstructed feet on the plaza plane. This convenience sample is a consistency diagnostic.",
+  "marks": [
+    {"camera": "C1", "subject": 147, "xy_px": [177, 387]},
+    {"camera": "C1", "subject": 353, "xy_px": [876, 480]},
+    {"camera": "C1", "subject": 198, "xy_px": [1015.5, 463.5]},
+    {"camera": "C1", "subject": 177, "xy_px": [1126.5, 448.5]},
+    {"camera": "C1", "subject": 115, "xy_px": [1287, 388.5]},
+    {"camera": "C1", "subject": 572, "xy_px": [1012.5, 966]},
+    {"camera": "C1", "subject": 617, "xy_px": [1824, 462]},
+    {"camera": "C3", "subject": 572, "xy_px": [316.5, 339]},
+    {"camera": "C3", "subject": 115, "xy_px": [819, 477]},
+    {"camera": "C3", "subject": 196, "xy_px": [1093.5, 403.5]},
+    {"camera": "C3", "subject": 592, "xy_px": [1654.5, 625.5]},
+    {"camera": "C3", "subject": 147, "xy_px": [1278, 231]},
+    {"camera": "C3", "subject": 16, "xy_px": [982.5, 270]},
+    {"camera": "C3", "subject": 245, "xy_px": [165, 892.5]},
+    {"camera": "C5", "subject": 115, "xy_px": [864, 511.5]},
+    {"camera": "C5", "subject": 196, "xy_px": [1195.5, 622.5]},
+    {"camera": "C5", "subject": 177, "xy_px": [1354.5, 513]},
+    {"camera": "C5", "subject": 563, "xy_px": [1423.5, 519]},
+    {"camera": "C5", "subject": 198, "xy_px": [1539, 526.5]},
+    {"camera": "C5", "subject": 559, "xy_px": [1668, 573]}
+  ]
+}
