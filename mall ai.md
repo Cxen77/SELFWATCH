@@ -52,7 +52,7 @@ were checked. The verified screenshot and throughput figure are in
 in `docs/TRACKING_STABILITY_AND_FPS.md`, not a new detector replacement.
 Latest verified recovery checkpoint: `runs/research-checkpoint-20261108-tracking-v2/`.
 It contains the source archive, model hashes and selected experiment evidence;
-retain existing datasets and weights in place. Phase 2 is still open.
+retain existing datasets and weights in place. Phase 2 passed its scoped perception gate on 11 November.
 
 The continuous MOT17 study is recorded in E22 of `docs/PROJECT_LOG.md`. Native
 frames and labels are in `datasets/mot17-continuity-native-v1/`. The frozen
@@ -68,3 +68,8 @@ It produced 88 → 79 switches and 39.69% → 40.32% IDF1. The two offline repla
 rates were 13.48 and 15.88 observations/s in a single fixed-order comparison.
 Use E22 for reproduction commands and compare future results against both the
 cached and scheduled runs.
+
+Phase 2 closeout is in E23 of `docs/PROJECT_LOG.md`. Reproduce the frozen
+person operating point with `docs/phase2-final-protocol.json` and
+`scripts.validate_phase2`. The fresh pair reached 22/24 recall targets with
+zero false positives and 7.3–8.0 processed FPS per view. Stage 3 is next.

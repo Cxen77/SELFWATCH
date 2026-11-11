@@ -1,0 +1,578 @@
+{
+  "clips": [
+    "000398",
+    "000996"
+  ],
+  "indices": [
+    2,
+    7,
+    12,
+    17,
+    22,
+    27
+  ],
+  "min_recall": 0.8,
+  "min_precision": 0.85,
+  "min_fps_each_view": 5.0,
+  "minimum_people": 20,
+  "confidence": 0.25,
+  "iou": 0.5,
+  "model": "weights/v2/yolo26n-seg.pt",
+  "hand_interval_s": 0.5,
+  "hand_max_rois": 1,
+  "hand_cutoff": 0.35,
+  "rotations": {
+    "000398": {
+      "rank0": 270,
+      "rank1": 0
+    },
+    "000996": {
+      "rank0": 180,
+      "rank1": 180
+    }
+  },
+  "min_view_recall": 0.6666666666666666,
+  "selection_order": [
+    "native",
+    "oriented"
+  ],
+  "scope": "Two fixed paired retail replay clips, one clearly recognizable shopper per labelled view. Manual image-only boxes. Box perception in tracking mode, with pose studied separately.",
+  "frames": [
+    {
+      "key": "000398-rank0-02",
+      "clip": "000398",
+      "camera": "rank0",
+      "index": 2,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "396abeb1f6711b3a14f92e48e2ee203e19b332a2e4bc8278181f20ec87314caf",
+      "boxes": [
+        [
+          44.0,
+          150.0,
+          310.0,
+          372.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "000398-rank1-02",
+      "clip": "000398",
+      "camera": "rank1",
+      "index": 2,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "fa8ceeba66e59fb0897bfb0750c75862fa35d412be7ac99d82ffbc45fe758747",
+      "boxes": [
+        [
+          318.0,
+          94.0,
+          546.0,
+          478.0
+        ]
+      ],
+      "view": "oblique",
+      "visibility": "partly_hidden"
+    },
+    {
+      "key": "000398-rank0-07",
+      "clip": "000398",
+      "camera": "rank0",
+      "index": 7,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "9c114dfe93cb6d821e6d93a346fc90f4c2521ce6d60e1360b7185112cb23bc69",
+      "boxes": [
+        [
+          138.0,
+          176.0,
+          454.0,
+          450.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "000398-rank1-07",
+      "clip": "000398",
+      "camera": "rank1",
+      "index": 7,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "68e5aa34dbd43c047bd0fc42cd3f1d4b6892c010c84ec63270b083d528b9f3b5",
+      "boxes": [
+        [
+          176.0,
+          148.0,
+          462.0,
+          494.0
+        ]
+      ],
+      "view": "oblique",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "000398-rank0-12",
+      "clip": "000398",
+      "camera": "rank0",
+      "index": 12,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "f081fda24ad5b51ef0b7c906bb0526468e0ba346272cc395ed93bb3ddeeb555e",
+      "boxes": [
+        [
+          124.0,
+          188.0,
+          460.0,
+          442.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "000398-rank1-12",
+      "clip": "000398",
+      "camera": "rank1",
+      "index": 12,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "d02b71df601d511fb97c5b5137c3c68efa331dbf1e6f03099fdcb0665b2477b2",
+      "boxes": [
+        [
+          178.0,
+          152.0,
+          440.0,
+          496.0
+        ]
+      ],
+      "view": "oblique",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "000398-rank0-17",
+      "clip": "000398",
+      "camera": "rank0",
+      "index": 17,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "489bce87fcdf25a98c89cb2b10c8bdd0cf92600b0ad735860584a5d775ff0d8e",
+      "boxes": [
+        [
+          128.0,
+          164.0,
+          460.0,
+          396.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "000398-rank1-17",
+      "clip": "000398",
+      "camera": "rank1",
+      "index": 17,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "93bce8bc84f1d8d9d4a4c97778aa44a9f60e96eebb0dbef48225b8010bdfe850",
+      "boxes": [
+        [
+          174.0,
+          156.0,
+          444.0,
+          502.0
+        ]
+      ],
+      "view": "oblique",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "000398-rank0-22",
+      "clip": "000398",
+      "camera": "rank0",
+      "index": 22,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "a15ac6de03192201b1bcc2bad234c825082703e1f72bd108bf9f5a27b460dc0e",
+      "boxes": [
+        [
+          90.0,
+          160.0,
+          448.0,
+          366.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "000398-rank1-22",
+      "clip": "000398",
+      "camera": "rank1",
+      "index": 22,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "de3630816fb972c04fe040e4442fcfd767093d665d455c155faeb1ff78b7962e",
+      "boxes": [
+        [
+          194.0,
+          136.0,
+          476.0,
+          500.0
+        ]
+      ],
+      "view": "oblique",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "000398-rank0-27",
+      "clip": "000398",
+      "camera": "rank0",
+      "index": 27,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "2bffb7f0e40b0bf24292039203fb1fbd2937b6dd0afb5841d72a727c9c22df93",
+      "boxes": [
+        [
+          84.0,
+          156.0,
+          366.0,
+          392.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "000398-rank1-27",
+      "clip": "000398",
+      "camera": "rank1",
+      "index": 27,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "e6dc35d25abc7faf5849d5cf86176b4304e1fe87a6824602f734119267c423be",
+      "boxes": [
+        [
+          238.0,
+          104.0,
+          502.0,
+          468.0
+        ]
+      ],
+      "view": "oblique",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "000996-rank0-02",
+      "clip": "000996",
+      "camera": "rank0",
+      "index": 2,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "7823f2f2445b8e5417cc93bfeaf9d83b293e19f402decde708ce06b0caab633a",
+      "boxes": [
+        [
+          106.0,
+          248.0,
+          322.0,
+          480.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "000996-rank1-02",
+      "clip": "000996",
+      "camera": "rank1",
+      "index": 2,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "b6ca37804f1d84c292985a138e1b1ce4e95e1f98bb6c19ff42e7a807d2c7d946",
+      "boxes": [
+        [
+          284.0,
+          152.0,
+          486.0,
+          388.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "000996-rank0-07",
+      "clip": "000996",
+      "camera": "rank0",
+      "index": 7,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "d6fe4d2f29850501ecc45411d471c86f5936984651888aa5eeda7ad549eb77ea",
+      "boxes": [
+        [
+          72.0,
+          218.0,
+          312.0,
+          410.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "000996-rank1-07",
+      "clip": "000996",
+      "camera": "rank1",
+      "index": 7,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "7944a7cea8f107b7a0287a76d05ca63c21e60edb3b78bcb8b4500310a79b3209",
+      "boxes": [
+        [
+          196.0,
+          220.0,
+          432.0,
+          426.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "000996-rank0-12",
+      "clip": "000996",
+      "camera": "rank0",
+      "index": 12,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "e5f846fef9add5b29569fe1c67c73734a10c8221edefe7b227845d1f14fa2a98",
+      "boxes": [
+        [
+          210.0,
+          170.0,
+          476.0,
+          334.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "000996-rank1-12",
+      "clip": "000996",
+      "camera": "rank1",
+      "index": 12,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "6b9f28a57d3c47d2c99865eab718bf2ceb25ba1cc920866396c0def3ae1ebc8c",
+      "boxes": [
+        [
+          142.0,
+          246.0,
+          368.0,
+          424.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "000996-rank0-17",
+      "clip": "000996",
+      "camera": "rank0",
+      "index": 17,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "0d6056dba660dd976d69862a54d28ea85a1a39989c76575c6e5e3d86f3392220",
+      "boxes": [
+        [
+          222.0,
+          174.0,
+          474.0,
+          330.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "000996-rank1-17",
+      "clip": "000996",
+      "camera": "rank1",
+      "index": 17,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "b4eef31052df0233da48182b4bca4eb9f2c1fde254881a583e759e6542d81b01",
+      "boxes": [
+        [
+          134.0,
+          240.0,
+          366.0,
+          448.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "000996-rank0-22",
+      "clip": "000996",
+      "camera": "rank0",
+      "index": 22,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "9b24131d346249e23ab9688f4de79eb21a17874de03302268731b361db2e67f0",
+      "boxes": [
+        [
+          124.0,
+          170.0,
+          486.0,
+          340.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "000996-rank1-22",
+      "clip": "000996",
+      "camera": "rank1",
+      "index": 22,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "f0a5f8be533d0eb819207b2b53e5ac814d023c47e74d8b236cfa8a1e7e7d4a77",
+      "boxes": [
+        [
+          140.0,
+          232.0,
+          346.0,
+          452.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "000996-rank0-27",
+      "clip": "000996",
+      "camera": "rank0",
+      "index": 27,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "b39561e5c3f31365cdb894ee69929534bf47774a1a8c7014f701a3175d626ad6",
+      "boxes": [
+        [
+          176.0,
+          180.0,
+          436.0,
+          396.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "000996-rank1-27",
+      "clip": "000996",
+      "camera": "rank1",
+      "index": 27,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "0a626db6ef91ffb5952910707a014598278a539ec8e183c4414e79c64d38b15b",
+      "boxes": [
+        [
+          178.0,
+          218.0,
+          404.0,
+          454.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    }
+  ],
+  "pose_view_labels": {
+    "elevated": [
+      559348,
+      460333,
+      153797,
+      374982,
+      144003,
+      25096,
+      341921,
+      489924
+    ],
+    "roughly_level": [
+      71877,
+      439180,
+      463918,
+      89697,
+      250282,
+      109900,
+      180751,
+      163257,
+      567640,
+      135604,
+      311002,
+      369503
+    ],
+    "uncertain": [
+      73533,
+      424521,
+      41990,
+      562229
+    ]
+  }
+}

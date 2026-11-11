@@ -32,7 +32,7 @@ def convert_result(result, frame, model, elapsed_ms, task, keypoint_schema=None,
 
 
 class YoloPerception:
-    def __init__(self, weights, device="cpu", imgsz=640, confidence=0.25, keypoint_schema=None):
+    def __init__(self, weights, device="cpu", imgsz=640, confidence=0.25, keypoint_schema=None, half=False):
         from ultralytics import YOLO
         weights = Path(weights).resolve()
         if not weights.is_file():
@@ -45,15 +45,17 @@ class YoloPerception:
         if self.model.task == "pose" and not keypoint_schema:
             raise ValueError("Pose requires --keypoint-schema matching the checkpoint")
         self.device, self.imgsz, self.confidence = device, imgsz, confidence
+        self.half = half
         self.include_masks=True
         self.keypoint_schema = keypoint_schema
         self.provenance = {"checkpoint": str(weights), "sha256": sha256(weights.read_bytes()).hexdigest(),
-                           "task": self.model.task, "names": self.model.names}
+                           "task": self.model.task, "names": self.model.names, "half": half}
 
     def predict(self, frame, image):
         start = time.perf_counter()
+        precision = {'quantize': 16} if self.half else {}
         result = self.model.predict(image, device=self.device, imgsz=self.imgsz,
-                                    conf=self.confidence, verbose=False)[0]
+                                    conf=self.confidence, verbose=False, **precision)[0]
         # Materialize GPU tensors before stopping the timer (includes transfers).
         observation = convert_result(result, frame, self.provenance["sha256"], 0,
                                      'detect' if self.model.task=='segment' and not self.include_masks else self.model.task,

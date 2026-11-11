@@ -1,0 +1,537 @@
+{
+  "clips": [
+    "001078",
+    "001844"
+  ],
+  "min_recall": 0.8,
+  "min_precision": 0.85,
+  "min_fps_each_view": 5.0,
+  "minimum_people": 20,
+  "confidence": 0.25,
+  "iou": 0.5,
+  "model": "weights/v2/yolo26n-seg.pt",
+  "hand_interval_s": 0.5,
+  "hand_max_rois": 1,
+  "hand_cutoff": 0.35,
+  "rotations": {
+    "001078": {
+      "rank0": 90,
+      "rank1": 270
+    },
+    "001844": {
+      "rank0": 90,
+      "rank1": 0
+    }
+  },
+  "min_view_recall": 0.6666666666666666,
+  "selection_order": [
+    "oriented"
+  ],
+  "scope": "Separate qualification clips selected before inference. Fixed cardinal orientation read from image layout. One clearly recognizable shopper per view. Same predeclared quality and replay speed floors.",
+  "frames": [
+    {
+      "key": "001078-rank0-00",
+      "clip": "001078",
+      "camera": "rank0",
+      "index": 0,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "9be2e9fa1804b9aceb50c98d0772b16fe0c7c197a2fca01af9e455abefb0682e",
+      "boxes": [
+        [
+          112.0,
+          0.0,
+          544.0,
+          372.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "edge_clipped"
+    },
+    {
+      "key": "001078-rank1-00",
+      "clip": "001078",
+      "camera": "rank1",
+      "index": 0,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "180db1dd836a25b2e9e6ea4733a1fc3abf12ab6efa25a18fcaa39be9ea8df42f",
+      "boxes": [
+        [
+          0.0,
+          42.0,
+          472.0,
+          374.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "edge_clipped"
+    },
+    {
+      "key": "001078-rank0-02",
+      "clip": "001078",
+      "camera": "rank0",
+      "index": 2,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "d2a1a0bc3a2db6be3e89e3261707934522f88ded242e0e98b2f1ee26b534cc4a",
+      "boxes": [
+        [
+          88.0,
+          34.0,
+          534.0,
+          376.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "001078-rank1-02",
+      "clip": "001078",
+      "camera": "rank1",
+      "index": 2,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "6839fec192025d776ee357fb6d0563fb289e55ca3a2c791b0d185bcd7ed76b29",
+      "boxes": [
+        [
+          82.0,
+          74.0,
+          526.0,
+          428.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "001078-rank0-04",
+      "clip": "001078",
+      "camera": "rank0",
+      "index": 4,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "cc8005746f18f200aa880ffba2309044715986ef7e635d2dd19bf9197ba065a6",
+      "boxes": [
+        [
+          48.0,
+          74.0,
+          530.0,
+          422.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "001078-rank1-04",
+      "clip": "001078",
+      "camera": "rank1",
+      "index": 4,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "5d4cc54051e2051cf036ad08e18dfc005b6ffff1c09261f4469b3dd2429fb72b",
+      "boxes": [
+        [
+          80.0,
+          124.0,
+          572.0,
+          436.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "001078-rank0-06",
+      "clip": "001078",
+      "camera": "rank0",
+      "index": 6,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "c1e5ef2c3400ef4ac25ee2c2718cf5d9b4593b33a3684662900adf2eba6cbe1a",
+      "boxes": [
+        [
+          0.0,
+          100.0,
+          520.0,
+          450.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "edge_clipped"
+    },
+    {
+      "key": "001078-rank1-06",
+      "clip": "001078",
+      "camera": "rank1",
+      "index": 6,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "1964cf077af6f87efc5f8f20b21fc17e9919588b8aae82a685f57fa62334af4e",
+      "boxes": [
+        [
+          96.0,
+          154.0,
+          600.0,
+          482.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "edge_clipped"
+    },
+    {
+      "key": "001078-rank0-08",
+      "clip": "001078",
+      "camera": "rank0",
+      "index": 8,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "d7e27d91406e3533517d0e0f32bed0345fe60f637f95ddfad9b9143645b3c4e7",
+      "boxes": [
+        [
+          0.0,
+          136.0,
+          514.0,
+          462.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "edge_clipped"
+    },
+    {
+      "key": "001078-rank1-08",
+      "clip": "001078",
+      "camera": "rank1",
+      "index": 8,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "846b154d8d65ab0ba8a3e83d048302bbe315efb14a1d0974c7a2a2f706d72a68",
+      "boxes": [
+        [
+          130.0,
+          172.0,
+          600.0,
+          490.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "edge_clipped"
+    },
+    {
+      "key": "001078-rank0-09",
+      "clip": "001078",
+      "camera": "rank0",
+      "index": 9,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "3466d3f42470eecafc0c08c821a677b8fcc67a73cad71d9b294b44c09711a673",
+      "boxes": [
+        [
+          0.0,
+          150.0,
+          530.0,
+          514.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "edge_clipped"
+    },
+    {
+      "key": "001078-rank1-09",
+      "clip": "001078",
+      "camera": "rank1",
+      "index": 9,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "d9177e154d7f9bd49b313e4a100d7b25ca0fdcdca201750069b389ce8391f8ef",
+      "boxes": [
+        [
+          130.0,
+          170.0,
+          600.0,
+          488.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "edge_clipped"
+    },
+    {
+      "key": "001844-rank0-02",
+      "clip": "001844",
+      "camera": "rank0",
+      "index": 2,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "f9cdae4b3fc21b1d9f2885f4ac9366a51c03b84a6777677bfdc243f2e7cca6d3",
+      "boxes": [
+        [
+          202.0,
+          224.0,
+          548.0,
+          476.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "001844-rank1-02",
+      "clip": "001844",
+      "camera": "rank1",
+      "index": 2,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "d78228ec9856dd346f1940e6597246a10918d62f08ce08cb42de4d58026f2a85",
+      "boxes": [
+        [
+          230.0,
+          162.0,
+          468.0,
+          390.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "001844-rank0-07",
+      "clip": "001844",
+      "camera": "rank0",
+      "index": 7,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "73044dbfdad4bacc8e6015f6c5d411ae3bb9195244cb7cc5c15472706437407b",
+      "boxes": [
+        [
+          146.0,
+          216.0,
+          498.0,
+          458.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "001844-rank1-07",
+      "clip": "001844",
+      "camera": "rank1",
+      "index": 7,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "13108eb3f6e97b512c40465b19d51a6348a57f9efa4a3687f03e0a195744cedc",
+      "boxes": [
+        [
+          154.0,
+          206.0,
+          432.0,
+          394.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "001844-rank0-12",
+      "clip": "001844",
+      "camera": "rank0",
+      "index": 12,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "1c1db0442b076fa2389fcaa4a567593f11c880a9f60f94faa64e5218c1c8207c",
+      "boxes": [
+        [
+          108.0,
+          188.0,
+          420.0,
+          392.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "001844-rank1-12",
+      "clip": "001844",
+      "camera": "rank1",
+      "index": 12,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "0e9a3f452387085cf444b671b7cdc2e6c7c6d9fe6b095c49655a1610b2017230",
+      "boxes": [
+        [
+          152.0,
+          214.0,
+          420.0,
+          428.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "001844-rank0-17",
+      "clip": "001844",
+      "camera": "rank0",
+      "index": 17,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "c01c05d336ff8edd5ce4fc420e309c22f35aee7066e7e33199dfd3fa1a79d216",
+      "boxes": [
+        [
+          98.0,
+          152.0,
+          404.0,
+          390.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "001844-rank1-17",
+      "clip": "001844",
+      "camera": "rank1",
+      "index": 17,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "603973aeaae28d56aead8e9ba5d6e0358f886521e19d4531056940cf4a300df9",
+      "boxes": [
+        [
+          140.0,
+          192.0,
+          410.0,
+          420.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "001844-rank0-22",
+      "clip": "001844",
+      "camera": "rank0",
+      "index": 22,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "6aadc56e87767e78a760c4bc66984d9ba88bf61b290bf755c089e55c80d69ee2",
+      "boxes": [
+        [
+          108.0,
+          152.0,
+          404.0,
+          394.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "001844-rank1-22",
+      "clip": "001844",
+      "camera": "rank1",
+      "index": 22,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "f3cae3010a9bdf1c2f78f4072c7879246b3345ec403bd1003d60a08d7ec766a6",
+      "boxes": [
+        [
+          146.0,
+          196.0,
+          416.0,
+          440.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "001844-rank0-27",
+      "clip": "001844",
+      "camera": "rank0",
+      "index": 27,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "377c5ba4c83546c689fd974970cc138e468389fd382802d56afea8d3cc965f9b",
+      "boxes": [
+        [
+          78.0,
+          196.0,
+          410.0,
+          442.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    },
+    {
+      "key": "001844-rank1-27",
+      "clip": "001844",
+      "camera": "rank1",
+      "index": 27,
+      "wh": [
+        600,
+        600
+      ],
+      "sha256": "3c627d97ffc83fbb78553144c0e5fb91c70d8ddaf57e18568a805e5cd477654b",
+      "boxes": [
+        [
+          136.0,
+          192.0,
+          430.0,
+          460.0
+        ]
+      ],
+      "view": "steep_elevated",
+      "visibility": "recognizable_body_extent"
+    }
+  ]
+}
