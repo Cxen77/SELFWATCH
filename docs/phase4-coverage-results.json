@@ -1,0 +1,186 @@
+{
+  "wildtrack": {
+    "all_detections": {
+      "matched_person_boxes": 1120,
+      "same_person_possible": 1860,
+      "same_person_both_matched": 532,
+      "same_person_shared_id": 0,
+      "different_person_pairs": 12329,
+      "different_person_shared_id": 0,
+      "episode_observability": {
+        "nonoverlap_view_transitions": {
+          "opportunities": 0,
+          "anchor_available": 0,
+          "destination_matched": 0
+        },
+        "same_view_returns": {
+          "opportunities": 0,
+          "anchor_available": 0,
+          "destination_matched": 0
+        }
+      },
+      "same_view_returns_recovered": 0
+    },
+    "camera_local": {
+      "matched_person_boxes": 859,
+      "IDF1": 0.3488215488215488,
+      "sampled_global_id_changes": 41,
+      "same_person_possible": 1860,
+      "same_person_both_matched": 276,
+      "same_person_shared_id": 0,
+      "different_person_pairs": 7345,
+      "different_person_shared_id": 0,
+      "episode_observability": {
+        "nonoverlap_view_transitions": {
+          "opportunities": 0,
+          "anchor_available": 0,
+          "destination_matched": 0
+        },
+        "same_view_returns": {
+          "opportunities": 0,
+          "anchor_available": 0,
+          "destination_matched": 0
+        }
+      },
+      "same_view_returns_recovered": 0
+    },
+    "motion_iou": {
+      "matched_person_boxes": 1120,
+      "IDF1": 0.25984035232590147,
+      "sampled_global_id_changes": 161,
+      "same_person_possible": 1860,
+      "same_person_both_matched": 532,
+      "same_person_shared_id": 0,
+      "different_person_pairs": 12329,
+      "different_person_shared_id": 0,
+      "episode_observability": {
+        "nonoverlap_view_transitions": {
+          "opportunities": 0,
+          "anchor_available": 0,
+          "destination_matched": 0
+        },
+        "same_view_returns": {
+          "opportunities": 0,
+          "anchor_available": 0,
+          "destination_matched": 0
+        }
+      },
+      "same_view_returns_recovered": 0
+    },
+    "bytetrack": {
+      "matched_person_boxes": 672,
+      "IDF1": 0.29121278140885987,
+      "sampled_global_id_changes": 42,
+      "same_person_possible": 1860,
+      "same_person_both_matched": 186,
+      "same_person_shared_id": 0,
+      "different_person_pairs": 4380,
+      "different_person_shared_id": 0,
+      "episode_observability": {
+        "nonoverlap_view_transitions": {
+          "opportunities": 0,
+          "anchor_available": 0,
+          "destination_matched": 0
+        },
+        "same_view_returns": {
+          "opportunities": 0,
+          "anchor_available": 0,
+          "destination_matched": 0
+        }
+      },
+      "same_view_returns_recovered": 0
+    }
+  },
+  "icsens": {
+    "all_detections": {
+      "matched_person_boxes": 574,
+      "same_person_possible": 204,
+      "same_person_both_matched": 107,
+      "same_person_shared_id": 0,
+      "different_person_pairs": 1689,
+      "different_person_shared_id": 0,
+      "episode_observability": {
+        "nonoverlap_view_transitions": {
+          "opportunities": 9,
+          "anchor_available": 3,
+          "destination_matched": 4
+        },
+        "same_view_returns": {
+          "opportunities": 34,
+          "anchor_available": 16,
+          "destination_matched": 24
+        }
+      },
+      "same_view_returns_recovered": 0
+    },
+    "camera_local": {
+      "matched_person_boxes": 405,
+      "IDF1": 0.2973180076628352,
+      "sampled_global_id_changes": 121,
+      "same_person_possible": 204,
+      "same_person_both_matched": 69,
+      "same_person_shared_id": 0,
+      "different_person_pairs": 791,
+      "different_person_shared_id": 0,
+      "episode_observability": {
+        "nonoverlap_view_transitions": {
+          "opportunities": 9,
+          "anchor_available": 1,
+          "destination_matched": 2
+        },
+        "same_view_returns": {
+          "opportunities": 34,
+          "anchor_available": 6,
+          "destination_matched": 14
+        }
+      },
+      "same_view_returns_recovered": 2
+    },
+    "motion_iou": {
+      "matched_person_boxes": 574,
+      "IDF1": 0.2692063492063492,
+      "sampled_global_id_changes": 220,
+      "same_person_possible": 204,
+      "same_person_both_matched": 107,
+      "same_person_shared_id": 0,
+      "different_person_pairs": 1689,
+      "different_person_shared_id": 0,
+      "episode_observability": {
+        "nonoverlap_view_transitions": {
+          "opportunities": 9,
+          "anchor_available": 3,
+          "destination_matched": 4
+        },
+        "same_view_returns": {
+          "opportunities": 34,
+          "anchor_available": 16,
+          "destination_matched": 24
+        }
+      },
+      "same_view_returns_recovered": 6
+    },
+    "bytetrack": {
+      "matched_person_boxes": 166,
+      "IDF1": 0.12427184466019417,
+      "sampled_global_id_changes": 86,
+      "same_person_possible": 204,
+      "same_person_both_matched": 5,
+      "same_person_shared_id": 0,
+      "different_person_pairs": 123,
+      "different_person_shared_id": 0,
+      "episode_observability": {
+        "nonoverlap_view_transitions": {
+          "opportunities": 9,
+          "anchor_available": 1,
+          "destination_matched": 0
+        },
+        "same_view_returns": {
+          "opportunities": 34,
+          "anchor_available": 1,
+          "destination_matched": 3
+        }
+      },
+      "same_view_returns_recovered": 1
+    }
+  }
+}

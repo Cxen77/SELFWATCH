@@ -4,7 +4,7 @@
 
 **Current stage: 4**
 
-**Status summary:** Stage 3 reference-rig milestone is complete on three WILDTRACK views. Store commissioning is pending a floor survey and measured camera timing. Stage 4 is global identity memory. Gate C still requires independent multi-camera identity validation.
+**Status summary:** Stage 4 overlap replay improved IDF1 and reduced false cross-view links compared with immediate matching. The frozen holdout missed the coverage target. Gate C remains open. Store commissioning is pending a floor survey and measured camera timing.
 
 This is the living record for the project. Update its checkboxes, stage table
 and experiment notes after work is verified. Mark a stage complete only when
@@ -39,7 +39,7 @@ table from this file.
 | 1 | Replay and contracts | Done | Timestamped camera/epoch observations, bounded ordered replay, durable idempotent store and regression checks implemented. |
 | 2 | Perception pilot | Done | Gate B passed for the declared two-view retail replay. Visibility, optional landmarks and scheduling evidence are in E23. |
 | 3 | Camera geometry | Done (reference rig) | Three public views and replay timing verified, with CPU floor projection, overlap topology, commissioning tools and simulated zones. E24 records error and remaining site measurements. |
-| 4 | Global identity memory | In progress | Shared authority and old cognitive protections restored. Next validate uncertainty-aware linking, handoff coverage, false merges and recovery quality. |
+| 4 | Global identity memory | In progress | Reversible overlap replay evaluated. E25 records the holdout coverage failure and handoff evidence. |
 | 5 | Item and interaction evidence | Not started | Needs supported products, causal take/put/transfer evidence and annotated interaction evaluation. |
 | 6 | Revisable custody | Not started | Needs event dependencies, candidate ownership, bounded retention and verified rollback/recompute after corrections. |
 | 7 | Exit / POS integration | Not started | Needs directional zones, simulated transactions and late/canceled/group-payment scenarios with evidence-backed review. |
@@ -119,9 +119,12 @@ table from this file.
 - [x] Compare geometry-only and geometry-plus-appearance controls while preserving online assignments and recording sampled ID changes.
 - [x] Implement a CPU replay policy using calibrated time/coverage, floor uncertainty, appearance and prospective link revocations.
 - [ ] Obtain complete independently reviewed identities across crowded synchronized views.
-- [ ] Measure false merges, handoff precision/coverage, IDF1 and recovery delay.
-- [ ] Add validated geometry/time constraints from Stage 3.
-- [ ] Compare uncertainty retention and revisions to simpler association baselines; pass Gate C.
+- [x] Measure false cross-view pair matches and online IDF1 on a temporal holdout.
+- [x] Apply Stage 3 geometry and time constraints in the fixed-input replay.
+- [x] Score labelled handoff and return opportunities on a separate public camera pair and measure the local-tracker bottleneck.
+- [x] Compare immediate, confirmed, interval and revisable association with fixed perception.
+- [ ] Verify adequate cross-camera handoff coverage and recovery delay on independently labelled footage.
+- [ ] Pass Gate C with sufficient verified links and coverage on a fresh holdout.
 
 ### Stages 5–7 — interaction, custody and POS
 
@@ -1162,3 +1165,83 @@ require a sampled disappearance from all previous views and appearance in a
 different view within two seconds. Same-view returns require a 0.5–2 s labelled
 absence. Missing anchor or destination matches count against recovery. The
 public data and sampled transitions bound the scope of the results.
+
+The sealed WILDTRACK replay processed 96 observations across three cameras
+and 32 timestamps. All policies used the same original tracker outputs and
+fixed crops. The appearance-only legacy arm used the same local track engine.
+IDF1 uses online outputs. Pair counts are evaluated among box matches at
+IoU .50.
+
+| Policy | IDF1 | Correct shared pairs | Incorrect shared pairs | Sampled global-ID changes |
+|---|---:|---:|---:|---:|
+| Camera-local | 34.88% | 0 | 0 | 41 |
+| Existing shared memory | 35.15% | 0 | 2 | 43 |
+| Earlier floor and appearance | 39.39% | 61 | 4 | 47 |
+| Immediate point match | 47.61% | 197 | 35 | 53 |
+| Confirmed point match | 42.36% | 125 | 24 | 61 |
+| Confirmed interval | 40.61% | 79 | 2 | 50 |
+| Revisable interval | 38.92% | 58 | 2 | 52 |
+
+The revisable arm achieved 96.67% pair precision at 21.01% coverage among
+both-matched pairs (58/276), or 3.12% recall across all 1,860 labelled pairs.
+Five accepted links had two verified endpoints and were correct at acceptance.
+Two more accepted links could not be verified. Five links were revoked.
+Revocation did not improve the measured false pair count on this holdout and
+reduced coverage versus keeping confirmed interval links. Mean CPU update time
+was 3.9 ms per three-view bundle after precomputing projected contacts and
+embeddings. This excludes capture, projection, inference and rendering.
+
+**Gate C remains open.** The frozen minimums include 95% pair precision, 35%
+both-matched pair coverage and ten verifiable accepted links. The latter two
+failed. The WILDTRACK holdout contained zero qualifying non-overlap transitions
+and zero qualifying same-view returns. Do not deploy the replay policy as the
+live identity authority on the basis of these results.
+
+Reproduction from the repository root with the existing v2 environment and
+weights. The frozen policy is `docs/phase4-link-policy.json`.
+
+```powershell
+python -m scripts.download_wildtrack_pilot --identity-holdout
+python -m selfwatch_v2.wildtrack_tracking --dataset datasets/wildtrack-identity-holdout-v1 --output runs/wildtrack-identity-holdout-v1
+python -m scripts.validate_phase4 evaluate --run runs/wildtrack-identity-holdout-v1 --calibration datasets/wildtrack-identity-holdout-v1 --policy docs/phase4-link-policy.json --output runs/phase4-repeat/holdout.json
+```
+
+**Independent handoff and return audit.** The i.c.sens sequence 0000 left
+images from views 1 and 2 provide independently published 2D boxes and common
+person IDs. The run used every fifth frame, 94 observations and 837 pedestrian
+boxes. Maximum paired timestamp difference was 12.9 ms. The detector excluded
+no outputs based on the labels, and extra predictions are charged. The audit
+compares the existing appearance memory with camera-local owners because this
+run lacks a validated common-floor transform for the new overlap policy.
+[i.c.sens dataset and labels](https://doi.org/10.25835/0082741).
+
+Existing shared memory scored 30.19% IDF1 versus 29.73% for camera-local IDs.
+Both recovered zero of nine labelled view transitions and two of 34 same-view
+returns. Two recovered returns had zero sampled delay. The camera-local arm
+had an anchor ID for one of nine transitions and six of 34 returns. Matching
+all detector boxes before local-tracker filtering increased those counts to
+three and 16. Shared memory produced zero correct and four incorrect
+cross-view pair matches among the labelled box matches.
+
+The fixed-input local tracker controls isolated a second bottleneck. On
+WILDTRACK, 532 of 1,860 labelled cross-view pairs had both detector boxes
+matched before tracking, and only 276 had two matched original local owners.
+Motion/IoU retained all 532 but increased sampled ID changes from 41 to 161.
+The sparse-cadence ByteTrack control retained 186 with 42 changes. On i.c.sens,
+motion/IoU recovered six of 34 returns with 220 sampled changes, compared
+with the original tracker's two of 34 and 121 changes. The ByteTrack control
+recovered one return and output substantially fewer matched boxes. These
+controls use the same detections at 2 Hz and do not measure native-rate
+performance. The next development target is retaining more observed local
+owners without increasing ID switches, followed by an independent handoff
+test with sufficient transitions and surveyed topology.
+
+```powershell
+python -m scripts.download_icsens_identity datasets/icsens-identity-v1
+python -m scripts.validate_icsens_identity datasets/icsens-identity-v1 runs/phase4-icsens-v1
+python -m scripts.audit_phase4_coverage --wildtrack runs/wildtrack-identity-holdout-v1 --icsens runs/phase4-icsens-v1 --output runs/phase4-repeat/coverage.json
+```
+
+The frozen reports are `docs/phase4-holdout-results.json`,
+`docs/phase4-icsens-results.json` and `docs/phase4-coverage-results.json`.
+All 162 v2 regression tests passed.

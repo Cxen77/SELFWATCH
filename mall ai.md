@@ -87,3 +87,10 @@ Phase 4 research checkpoint is recorded in E25 of `docs/PROJECT_LOG.md`.
 The new overlap-memory replay preserves the local owner and can revoke a
 link prospectively. Use the frozen protocol and retain both false-link counts
 and coverage. No smaller AI was dispatched.
+
+The sealed WILDTRACK report and independent i.c.sens handoff audit are now
+recorded in E25. The revisable policy reached 96.67% pair precision but only
+21.01% both-matched coverage. Existing shared memory recovered 0/9 i.c.sens
+view transitions and 2/34 same-view returns. Gate C remains open. The coverage
+controls show why the next run should focus on observed local owners and ID
+stability before cross-camera tuning. Retain the frozen policy and results.

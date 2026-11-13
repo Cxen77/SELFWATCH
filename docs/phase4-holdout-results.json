@@ -1,0 +1,1745 @@
+{
+  "scope": "Temporal outdoor holdout within one recording; box-bottom proxies and published projected labels.",
+  "mode": "evaluate",
+  "frames": 96,
+  "dataset_manifest_sha256": "260052d95bf013efed587b1f74903c437fb1aecf81aa031ea0a747bef9781e45",
+  "predictions_sha256": "e10b3fc9a835f54febda3a953c74e0ece32c0813888f38232369382350a504ef",
+  "annotations_sha256": "93ab939da9ee9fc710a1c6eaaa4acf82c654cf56668556096a74a036c1f9f3d7",
+  "features_sha256": "c253d67ab2028b94518f42ba804917f78e44ef9c8c3879952f3b539fe85104d2",
+  "policy_sha256": "a359a29de9b7d974aeca18a9d00b8bc64ee43d2a44d34e1078ed772abcebace6",
+  "arms": {
+    "camera_local": {
+      "IDF1": 0.3488215488215488,
+      "same_person_possible": 1860,
+      "same_person_both_matched": 276,
+      "same_person_shared_id": 0,
+      "different_person_shared_id": 0,
+      "matched_pair_precision": null,
+      "sampled_global_id_changes": 41,
+      "sampled_local_id_changes": 41,
+      "pair_coverage": 0.0,
+      "pair_recall_all": 0.0,
+      "link_events": {
+        "correct": 0,
+        "wrong": 0,
+        "unverified": 0,
+        "revoked": 0,
+        "precision": null
+      },
+      "nonoverlap_view_transitions": {
+        "opportunities": 0,
+        "anchor_available": 0,
+        "destination_matched": 0,
+        "recovered": 0,
+        "coverage": null,
+        "median_delay_s": null,
+        "p95_delay_s": null
+      },
+      "same_view_returns": {
+        "opportunities": 0,
+        "anchor_available": 0,
+        "destination_matched": 0,
+        "recovered": 0,
+        "coverage": null,
+        "median_delay_s": null,
+        "p95_delay_s": null
+      }
+    },
+    "existing_shared_memory": {
+      "IDF1": 0.3515151515151515,
+      "same_person_possible": 1860,
+      "same_person_both_matched": 276,
+      "same_person_shared_id": 0,
+      "different_person_shared_id": 2,
+      "matched_pair_precision": 0.0,
+      "sampled_global_id_changes": 43,
+      "sampled_local_id_changes": 41,
+      "pair_coverage": 0.0,
+      "pair_recall_all": 0.0,
+      "link_events": {
+        "correct": 0,
+        "wrong": 0,
+        "unverified": 0,
+        "revoked": 0,
+        "precision": null
+      },
+      "nonoverlap_view_transitions": {
+        "opportunities": 0,
+        "anchor_available": 0,
+        "destination_matched": 0,
+        "recovered": 0,
+        "coverage": null,
+        "median_delay_s": null,
+        "p95_delay_s": null
+      },
+      "same_view_returns": {
+        "opportunities": 0,
+        "anchor_available": 0,
+        "destination_matched": 0,
+        "recovered": 0,
+        "coverage": null,
+        "median_delay_s": null,
+        "p95_delay_s": null
+      }
+    },
+    "existing_floor_appearance": {
+      "IDF1": 0.3939393939393939,
+      "same_person_possible": 1860,
+      "same_person_both_matched": 276,
+      "same_person_shared_id": 61,
+      "different_person_shared_id": 4,
+      "matched_pair_precision": 0.9384615384615385,
+      "sampled_global_id_changes": 47,
+      "sampled_local_id_changes": 41,
+      "pair_coverage": 0.2210144927536232,
+      "pair_recall_all": 0.032795698924731186,
+      "link_events": {
+        "correct": 0,
+        "wrong": 0,
+        "unverified": 0,
+        "revoked": 0,
+        "precision": null
+      },
+      "nonoverlap_view_transitions": {
+        "opportunities": 0,
+        "anchor_available": 0,
+        "destination_matched": 0,
+        "recovered": 0,
+        "coverage": null,
+        "median_delay_s": null,
+        "p95_delay_s": null
+      },
+      "same_view_returns": {
+        "opportunities": 0,
+        "anchor_available": 0,
+        "destination_matched": 0,
+        "recovered": 0,
+        "coverage": null,
+        "median_delay_s": null,
+        "p95_delay_s": null
+      }
+    },
+    "immediate_point": {
+      "IDF1": 0.47609427609427607,
+      "same_person_possible": 1860,
+      "same_person_both_matched": 276,
+      "same_person_shared_id": 197,
+      "different_person_shared_id": 35,
+      "matched_pair_precision": 0.8491379310344828,
+      "sampled_global_id_changes": 53,
+      "sampled_local_id_changes": 41,
+      "pair_coverage": 0.7137681159420289,
+      "pair_recall_all": 0.10591397849462365,
+      "link_events": {
+        "correct": 18,
+        "wrong": 0,
+        "unverified": 3,
+        "revoked": 7,
+        "precision": 1.0
+      },
+      "nonoverlap_view_transitions": {
+        "opportunities": 0,
+        "anchor_available": 0,
+        "destination_matched": 0,
+        "recovered": 0,
+        "coverage": null,
+        "median_delay_s": null,
+        "p95_delay_s": null
+      },
+      "same_view_returns": {
+        "opportunities": 0,
+        "anchor_available": 0,
+        "destination_matched": 0,
+        "recovered": 0,
+        "coverage": null,
+        "median_delay_s": null,
+        "p95_delay_s": null
+      }
+    },
+    "confirmed_point": {
+      "IDF1": 0.4235690235690236,
+      "same_person_possible": 1860,
+      "same_person_both_matched": 276,
+      "same_person_shared_id": 125,
+      "different_person_shared_id": 24,
+      "matched_pair_precision": 0.8389261744966443,
+      "sampled_global_id_changes": 61,
+      "sampled_local_id_changes": 41,
+      "pair_coverage": 0.4528985507246377,
+      "pair_recall_all": 0.06720430107526881,
+      "link_events": {
+        "correct": 12,
+        "wrong": 0,
+        "unverified": 2,
+        "revoked": 4,
+        "precision": 1.0
+      },
+      "nonoverlap_view_transitions": {
+        "opportunities": 0,
+        "anchor_available": 0,
+        "destination_matched": 0,
+        "recovered": 0,
+        "coverage": null,
+        "median_delay_s": null,
+        "p95_delay_s": null
+      },
+      "same_view_returns": {
+        "opportunities": 0,
+        "anchor_available": 0,
+        "destination_matched": 0,
+        "recovered": 0,
+        "coverage": null,
+        "median_delay_s": null,
+        "p95_delay_s": null
+      }
+    },
+    "confirmed_interval": {
+      "IDF1": 0.40606060606060607,
+      "same_person_possible": 1860,
+      "same_person_both_matched": 276,
+      "same_person_shared_id": 79,
+      "different_person_shared_id": 2,
+      "matched_pair_precision": 0.9753086419753086,
+      "sampled_global_id_changes": 50,
+      "sampled_local_id_changes": 41,
+      "pair_coverage": 0.286231884057971,
+      "pair_recall_all": 0.04247311827956989,
+      "link_events": {
+        "correct": 5,
+        "wrong": 0,
+        "unverified": 2,
+        "revoked": 1,
+        "precision": 1.0
+      },
+      "nonoverlap_view_transitions": {
+        "opportunities": 0,
+        "anchor_available": 0,
+        "destination_matched": 0,
+        "recovered": 0,
+        "coverage": null,
+        "median_delay_s": null,
+        "p95_delay_s": null
+      },
+      "same_view_returns": {
+        "opportunities": 0,
+        "anchor_available": 0,
+        "destination_matched": 0,
+        "recovered": 0,
+        "coverage": null,
+        "median_delay_s": null,
+        "p95_delay_s": null
+      }
+    },
+    "revisable_interval": {
+      "IDF1": 0.38922558922558925,
+      "same_person_possible": 1860,
+      "same_person_both_matched": 276,
+      "same_person_shared_id": 58,
+      "different_person_shared_id": 2,
+      "matched_pair_precision": 0.9666666666666667,
+      "sampled_global_id_changes": 52,
+      "sampled_local_id_changes": 41,
+      "pair_coverage": 0.21014492753623187,
+      "pair_recall_all": 0.03118279569892473,
+      "link_events": {
+        "correct": 5,
+        "wrong": 0,
+        "unverified": 2,
+        "revoked": 5,
+        "precision": 1.0
+      },
+      "nonoverlap_view_transitions": {
+        "opportunities": 0,
+        "anchor_available": 0,
+        "destination_matched": 0,
+        "recovered": 0,
+        "coverage": null,
+        "median_delay_s": null,
+        "p95_delay_s": null
+      },
+      "same_view_returns": {
+        "opportunities": 0,
+        "anchor_available": 0,
+        "destination_matched": 0,
+        "recovered": 0,
+        "coverage": null,
+        "median_delay_s": null,
+        "p95_delay_s": null
+      }
+    }
+  },
+  "evidence": {
+    "immediate_point": {
+      "counts": {
+        "sightings": 978,
+        "projected": 859,
+        "geometry_alternatives": 487,
+        "ambiguous_alternatives": 201,
+        "mean_link_update_ms": 0.7361781390500255
+      },
+      "events": [
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              6
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              7
+            ]
+          ],
+          "distance_lower_m": 0.3918145237450437,
+          "distance_upper_m": 0.3918145237450437,
+          "cosine": 0.6802518139102671,
+          "cost_lower": 1.191184988969376,
+          "cost_upper": 1.191184988969376,
+          "separated": true,
+          "event": "link",
+          "time_s": 180.0,
+          "confirmations": 1
+        },
+        {
+          "pair": [
+            [
+              "C3",
+              "wildtrack-pilot",
+              5
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              2
+            ]
+          ],
+          "distance_lower_m": 0.3111641039559426,
+          "distance_upper_m": 0.3111641039559426,
+          "cosine": 0.5368660825997629,
+          "cost_lower": 1.4689988974565353,
+          "cost_upper": 1.4689988974565353,
+          "separated": true,
+          "event": "link",
+          "time_s": 180.0,
+          "confirmations": 1
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              1
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              4
+            ]
+          ],
+          "distance_lower_m": 0.606787420505712,
+          "distance_upper_m": 0.606787420505712,
+          "cosine": 0.5599011913501486,
+          "cost_lower": 1.7070344421303405,
+          "cost_upper": 1.7070344421303405,
+          "separated": true,
+          "event": "link",
+          "time_s": 180.0,
+          "confirmations": 1
+        },
+        {
+          "pair": [
+            [
+              "C3",
+              "wildtrack-pilot",
+              2
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              10
+            ]
+          ],
+          "distance_lower_m": 0.3311472790530194,
+          "distance_upper_m": 0.3311472790530194,
+          "cosine": 0.6484751973804064,
+          "cost_lower": 1.2099592856020034,
+          "cost_upper": 1.2099592856020034,
+          "separated": true,
+          "event": "link",
+          "time_s": 180.5,
+          "confirmations": 1
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              7
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              9
+            ]
+          ],
+          "distance_lower_m": 0.223876642992958,
+          "distance_upper_m": 0.223876642992958,
+          "cosine": 0.6525943044877047,
+          "cost_lower": 1.0923908817736963,
+          "cost_upper": 1.0923908817736963,
+          "separated": true,
+          "event": "link",
+          "time_s": 181.0,
+          "confirmations": 1
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              7
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              5
+            ]
+          ],
+          "distance_lower_m": 0.3176107690927679,
+          "distance_upper_m": 0.3176107690927679,
+          "cosine": 0.4775866667974837,
+          "cost_lower": 1.6236441020990586,
+          "cost_upper": 1.6236441020990586,
+          "separated": true,
+          "event": "link",
+          "time_s": 181.0,
+          "confirmations": 1
+        },
+        {
+          "pair": [
+            [
+              "C3",
+              "wildtrack-pilot",
+              1
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              6
+            ]
+          ],
+          "distance_lower_m": 0.5733821017068081,
+          "distance_upper_m": 0.5733821017068081,
+          "cosine": 0.5329354391726427,
+          "cost_lower": 1.7410435037752012,
+          "cost_upper": 1.7410435037752012,
+          "separated": true,
+          "event": "link",
+          "time_s": 181.5,
+          "confirmations": 1
+        },
+        {
+          "pair": [
+            [
+              "C3",
+              "wildtrack-pilot",
+              6
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              1
+            ]
+          ],
+          "distance_lower_m": 0.49700173119375307,
+          "distance_upper_m": 0.49700173119375307,
+          "cosine": 0.4500962150343498,
+          "cost_lower": 1.8717611936078786,
+          "cost_upper": 1.8717611936078786,
+          "separated": true,
+          "event": "link",
+          "time_s": 181.5,
+          "confirmations": 1
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              4
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              3
+            ]
+          ],
+          "distance_lower_m": 0.5323215271183915,
+          "distance_upper_m": 0.5323215271183915,
+          "cosine": 0.7961976437435188,
+          "cost_lower": 1.0418274177595945,
+          "cost_upper": 1.0418274177595945,
+          "separated": true,
+          "event": "link",
+          "time_s": 182.5,
+          "confirmations": 1
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              3
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              10
+            ]
+          ],
+          "distance_lower_m": 0.9849987401241136,
+          "distance_upper_m": 0.9849987401241136,
+          "cosine": 0.5946748394148397,
+          "cost_lower": 1.9983116415870144,
+          "cost_upper": 1.9983116415870144,
+          "separated": true,
+          "event": "link",
+          "time_s": 183.5,
+          "confirmations": 1
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              5
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              12
+            ]
+          ],
+          "distance_lower_m": 0.3653239272129878,
+          "distance_upper_m": 0.3653239272129878,
+          "cosine": 0.4563521997345127,
+          "cost_lower": 1.724443427876706,
+          "cost_upper": 1.724443427876706,
+          "separated": true,
+          "event": "link",
+          "time_s": 184.0,
+          "confirmations": 1
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              1
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              11
+            ]
+          ],
+          "distance_lower_m": 0.35606804142598836,
+          "distance_upper_m": 0.35606804142598836,
+          "cosine": 0.5134960443450243,
+          "cost_lower": 1.5723279305634277,
+          "cost_upper": 1.5723279305634277,
+          "separated": true,
+          "event": "link",
+          "time_s": 185.5,
+          "confirmations": 1
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              11
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              11
+            ]
+          ],
+          "distance_lower_m": 0.17778663393282806,
+          "distance_upper_m": 0.17778663393282806,
+          "cosine": 0.6994240927410125,
+          "cost_lower": 0.9292264020802969,
+          "cost_upper": 0.9292264020802969,
+          "separated": true,
+          "event": "link",
+          "time_s": 187.0,
+          "confirmations": 1
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              10
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              13
+            ]
+          ],
+          "distance_lower_m": 0.5226675556147068,
+          "distance_upper_m": 0.5226675556147068,
+          "cosine": 0.535137367627903,
+          "cost_lower": 1.6848241365449494,
+          "cost_upper": 1.6848241365449494,
+          "separated": true,
+          "event": "link",
+          "time_s": 187.5,
+          "confirmations": 1
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              9
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              14
+            ]
+          ],
+          "distance_lower_m": 0.46885758644766573,
+          "distance_upper_m": 0.46885758644766573,
+          "cosine": 0.46125768394338457,
+          "cost_lower": 1.8157133765892044,
+          "cost_upper": 1.8157133765892044,
+          "separated": true,
+          "event": "link",
+          "time_s": 188.5,
+          "confirmations": 1
+        },
+        {
+          "event": "revoke",
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              7
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              5
+            ]
+          ],
+          "reason": "owner_expired",
+          "time_s": 189.0
+        },
+        {
+          "pair": [
+            [
+              "C3",
+              "wildtrack-pilot",
+              16
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              13
+            ]
+          ],
+          "distance_lower_m": 0.5247237068734458,
+          "distance_upper_m": 0.5247237068734458,
+          "cosine": 0.4976707003660311,
+          "cost_lower": 1.780546955958368,
+          "cost_upper": 1.780546955958368,
+          "separated": true,
+          "event": "link",
+          "time_s": 189.5,
+          "confirmations": 1
+        },
+        {
+          "pair": [
+            [
+              "C3",
+              "wildtrack-pilot",
+              18
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              15
+            ]
+          ],
+          "distance_lower_m": 0.22542450271444772,
+          "distance_upper_m": 0.22542450271444772,
+          "cosine": 0.6131492954243498,
+          "cost_lower": 1.1925512641535732,
+          "cost_upper": 1.1925512641535732,
+          "separated": true,
+          "event": "link",
+          "time_s": 190.5,
+          "confirmations": 1
+        },
+        {
+          "event": "revoke",
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              3
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              10
+            ]
+          ],
+          "reason": "owner_expired",
+          "time_s": 191.0
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              14
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              12
+            ]
+          ],
+          "distance_lower_m": 0.28731239348642806,
+          "distance_upper_m": 0.28731239348642806,
+          "cosine": 0.46768474824955136,
+          "cost_lower": 1.6181005228625496,
+          "cost_upper": 1.6181005228625496,
+          "separated": true,
+          "event": "link",
+          "time_s": 191.5,
+          "confirmations": 1
+        },
+        {
+          "event": "revoke",
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              1
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              4
+            ]
+          ],
+          "reason": "owner_expired",
+          "time_s": 192.5
+        },
+        {
+          "event": "revoke",
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              4
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              3
+            ]
+          ],
+          "reason": "owner_expired",
+          "time_s": 192.5
+        },
+        {
+          "event": "revoke",
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              1
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              11
+            ]
+          ],
+          "reason": "owner_expired",
+          "time_s": 192.5
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              3
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              10
+            ]
+          ],
+          "distance_lower_m": 0.7673447637086691,
+          "distance_upper_m": 0.7673447637086691,
+          "cosine": 0.5105815562517941,
+          "cost_lower": 1.9908908730791839,
+          "cost_upper": 1.9908908730791839,
+          "separated": true,
+          "event": "link",
+          "time_s": 192.5,
+          "confirmations": 1
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              4
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              19
+            ]
+          ],
+          "distance_lower_m": 0.473587064603239,
+          "distance_upper_m": 0.473587064603239,
+          "cosine": 0.6564122501098988,
+          "cost_lower": 1.332556439328492,
+          "cost_upper": 1.332556439328492,
+          "separated": true,
+          "event": "link",
+          "time_s": 193.0,
+          "confirmations": 1
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              13
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              23
+            ]
+          ],
+          "distance_lower_m": 1.1917709174001563,
+          "distance_upper_m": 1.1917709174001563,
+          "cosine": 0.5951268696646349,
+          "cost_lower": 2.2039537432385687,
+          "cost_upper": 2.2039537432385687,
+          "separated": true,
+          "event": "link",
+          "time_s": 193.0,
+          "confirmations": 1
+        },
+        {
+          "event": "revoke",
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              9
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              14
+            ]
+          ],
+          "reason": "owner_expired",
+          "time_s": 194.0
+        },
+        {
+          "event": "revoke",
+          "pair": [
+            [
+              "C3",
+              "wildtrack-pilot",
+              18
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              15
+            ]
+          ],
+          "reason": "owner_expired",
+          "time_s": 195.0
+        }
+      ]
+    },
+    "confirmed_point": {
+      "counts": {
+        "sightings": 978,
+        "projected": 859,
+        "geometry_alternatives": 487,
+        "ambiguous_alternatives": 201,
+        "mean_link_update_ms": 3.819434394245036
+      },
+      "events": [
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              6
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              7
+            ]
+          ],
+          "distance_lower_m": 0.41739023318174934,
+          "distance_upper_m": 0.41739023318174934,
+          "cosine": 0.650610511772317,
+          "cost_lower": 1.290863953750957,
+          "cost_upper": 1.290863953750957,
+          "separated": true,
+          "event": "link",
+          "time_s": 180.5,
+          "confirmations": 2
+        },
+        {
+          "pair": [
+            [
+              "C3",
+              "wildtrack-pilot",
+              5
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              2
+            ]
+          ],
+          "distance_lower_m": 0.4085500641227962,
+          "distance_upper_m": 0.4085500641227962,
+          "cosine": 0.5227575015405399,
+          "cost_lower": 1.6016563102714463,
+          "cost_upper": 1.6016563102714463,
+          "separated": true,
+          "event": "link",
+          "time_s": 180.5,
+          "confirmations": 2
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              7
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              9
+            ]
+          ],
+          "distance_lower_m": 0.8918074758748542,
+          "distance_upper_m": 0.8918074758748542,
+          "cosine": 0.6051448516494203,
+          "cost_lower": 1.8789453467513033,
+          "cost_upper": 1.8789453467513033,
+          "separated": true,
+          "event": "link",
+          "time_s": 181.5,
+          "confirmations": 2
+        },
+        {
+          "pair": [
+            [
+              "C3",
+              "wildtrack-pilot",
+              1
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              6
+            ]
+          ],
+          "distance_lower_m": 0.2262808861645286,
+          "distance_upper_m": 0.2262808861645286,
+          "cosine": 0.4779178788354575,
+          "cost_lower": 1.531486189075885,
+          "cost_upper": 1.531486189075885,
+          "separated": true,
+          "event": "link",
+          "time_s": 182.0,
+          "confirmations": 2
+        },
+        {
+          "pair": [
+            [
+              "C3",
+              "wildtrack-pilot",
+              9
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              5
+            ]
+          ],
+          "distance_lower_m": 0.2844618058135444,
+          "distance_upper_m": 0.2844618058135444,
+          "cosine": 0.46203699003223797,
+          "cost_lower": 1.6293693307329495,
+          "cost_upper": 1.6293693307329495,
+          "separated": true,
+          "event": "link",
+          "time_s": 182.0,
+          "confirmations": 2
+        },
+        {
+          "pair": [
+            [
+              "C3",
+              "wildtrack-pilot",
+              8
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              10
+            ]
+          ],
+          "distance_lower_m": 0.4702130092372475,
+          "distance_upper_m": 0.4702130092372475,
+          "cosine": 0.5089335931626839,
+          "cost_lower": 1.6978790263305377,
+          "cost_upper": 1.6978790263305377,
+          "separated": true,
+          "event": "link",
+          "time_s": 182.5,
+          "confirmations": 2
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              4
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              3
+            ]
+          ],
+          "distance_lower_m": 0.6042226600246148,
+          "distance_upper_m": 0.6042226600246148,
+          "cosine": 0.7027913421067337,
+          "cost_lower": 1.3472443047577807,
+          "cost_upper": 1.3472443047577807,
+          "separated": true,
+          "event": "link",
+          "time_s": 183.0,
+          "confirmations": 2
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              1
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              4
+            ]
+          ],
+          "distance_lower_m": 0.3984922245864004,
+          "distance_upper_m": 0.3984922245864004,
+          "cosine": 0.5772512566835906,
+          "cost_lower": 1.4553640828774241,
+          "cost_upper": 1.4553640828774241,
+          "separated": true,
+          "event": "link",
+          "time_s": 183.0,
+          "confirmations": 2
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              11
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              11
+            ]
+          ],
+          "distance_lower_m": 0.15999274419255738,
+          "distance_upper_m": 0.15999274419255738,
+          "cosine": 0.5037500271500243,
+          "cost_lower": 1.4006176763174967,
+          "cost_upper": 1.4006176763174967,
+          "separated": true,
+          "event": "link",
+          "time_s": 187.5,
+          "confirmations": 2
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              10
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              13
+            ]
+          ],
+          "distance_lower_m": 0.34715508361014225,
+          "distance_upper_m": 0.34715508361014225,
+          "cosine": 0.5336521299031031,
+          "cost_lower": 1.5130247588523846,
+          "cost_upper": 1.5130247588523846,
+          "separated": true,
+          "event": "link",
+          "time_s": 188.0,
+          "confirmations": 2
+        },
+        {
+          "event": "revoke",
+          "pair": [
+            [
+              "C3",
+              "wildtrack-pilot",
+              9
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              5
+            ]
+          ],
+          "reason": "owner_expired",
+          "time_s": 189.0
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              9
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              14
+            ]
+          ],
+          "distance_lower_m": 0.29208222139312434,
+          "distance_upper_m": 0.29208222139312434,
+          "cosine": 0.5800463876951507,
+          "cost_lower": 1.3419662521552476,
+          "cost_upper": 1.3419662521552476,
+          "separated": true,
+          "event": "link",
+          "time_s": 189.0,
+          "confirmations": 2
+        },
+        {
+          "pair": [
+            [
+              "C3",
+              "wildtrack-pilot",
+              6
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              11
+            ]
+          ],
+          "distance_lower_m": 0.3926588334911601,
+          "distance_upper_m": 0.3926588334911601,
+          "cosine": 0.4992718593110068,
+          "cost_lower": 1.6444791852136431,
+          "cost_upper": 1.6444791852136431,
+          "separated": true,
+          "event": "link",
+          "time_s": 189.5,
+          "confirmations": 2
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              5
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              12
+            ]
+          ],
+          "distance_lower_m": 0.3729107914134379,
+          "distance_upper_m": 0.3729107914134379,
+          "cosine": 0.47762431882217893,
+          "cost_lower": 1.6788499943579906,
+          "cost_upper": 1.6788499943579906,
+          "separated": true,
+          "event": "link",
+          "time_s": 189.5,
+          "confirmations": 2
+        },
+        {
+          "pair": [
+            [
+              "C3",
+              "wildtrack-pilot",
+              16
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              13
+            ]
+          ],
+          "distance_lower_m": 0.34718593702232764,
+          "distance_upper_m": 0.34718593702232764,
+          "cosine": 0.47166773490280267,
+          "cost_lower": 1.668016599765321,
+          "cost_upper": 1.668016599765321,
+          "separated": true,
+          "event": "link",
+          "time_s": 190.0,
+          "confirmations": 2
+        },
+        {
+          "event": "revoke",
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              4
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              3
+            ]
+          ],
+          "reason": "owner_expired",
+          "time_s": 192.5
+        },
+        {
+          "event": "revoke",
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              1
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              4
+            ]
+          ],
+          "reason": "owner_expired",
+          "time_s": 192.5
+        },
+        {
+          "event": "revoke",
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              9
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              14
+            ]
+          ],
+          "reason": "owner_expired",
+          "time_s": 194.0
+        }
+      ]
+    },
+    "confirmed_interval": {
+      "counts": {
+        "sightings": 978,
+        "projected": 859,
+        "geometry_alternatives": 721,
+        "ambiguous_alternatives": 565,
+        "mean_link_update_ms": 4.169503110460937
+      },
+      "events": [
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              6
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              7
+            ]
+          ],
+          "distance_lower_m": 0.0,
+          "distance_upper_m": 0.8683821254052635,
+          "cosine": 0.650610511772317,
+          "cost_lower": 0.8734737205692076,
+          "cost_upper": 1.741855845974471,
+          "separated": true,
+          "event": "link",
+          "time_s": 180.5,
+          "confirmations": 2
+        },
+        {
+          "pair": [
+            [
+              "C3",
+              "wildtrack-pilot",
+              5
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              2
+            ]
+          ],
+          "distance_lower_m": 0.0,
+          "distance_upper_m": 0.8565248411942121,
+          "cosine": 0.5227575015405399,
+          "cost_lower": 1.1931062461486501,
+          "cost_upper": 2.0496310873428625,
+          "separated": true,
+          "event": "link",
+          "time_s": 180.5,
+          "confirmations": 2
+        },
+        {
+          "pair": [
+            [
+              "C3",
+              "wildtrack-pilot",
+              1
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              6
+            ]
+          ],
+          "distance_lower_m": 0.0,
+          "distance_upper_m": 0.860906422744963,
+          "cosine": 0.4943620396885609,
+          "cost_lower": 1.264094900778598,
+          "cost_upper": 2.125001323523561,
+          "separated": true,
+          "event": "link",
+          "time_s": 182.5,
+          "confirmations": 2
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              11
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              11
+            ]
+          ],
+          "distance_lower_m": 0.0,
+          "distance_upper_m": 0.5955435558472115,
+          "cosine": 0.5037500271500243,
+          "cost_lower": 1.2406249321249394,
+          "cost_upper": 1.836168487972151,
+          "separated": true,
+          "event": "link",
+          "time_s": 187.5,
+          "confirmations": 2
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              9
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              14
+            ]
+          ],
+          "distance_lower_m": 0.0,
+          "distance_upper_m": 0.845108955788339,
+          "cosine": 0.5800463876951507,
+          "cost_lower": 1.049884030762123,
+          "cost_upper": 1.894992986550462,
+          "separated": true,
+          "event": "link",
+          "time_s": 189.0,
+          "confirmations": 2
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              5
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              12
+            ]
+          ],
+          "distance_lower_m": 0.0,
+          "distance_upper_m": 0.810310373552144,
+          "cosine": 0.47762431882217893,
+          "cost_lower": 1.3059392029445527,
+          "cost_upper": 2.1162495764966964,
+          "separated": true,
+          "event": "link",
+          "time_s": 189.5,
+          "confirmations": 2
+        },
+        {
+          "event": "revoke",
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              9
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              14
+            ]
+          ],
+          "reason": "owner_expired",
+          "time_s": 194.0
+        },
+        {
+          "pair": [
+            [
+              "C3",
+              "wildtrack-pilot",
+              6
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              19
+            ]
+          ],
+          "distance_lower_m": 0.04646144240614486,
+          "distance_upper_m": 0.7729446574301115,
+          "cosine": 0.5803032083416241,
+          "cost_lower": 1.0957034215520847,
+          "cost_upper": 1.8221866365760513,
+          "separated": true,
+          "event": "link",
+          "time_s": 195.0,
+          "confirmations": 2
+        }
+      ]
+    },
+    "revisable_interval": {
+      "counts": {
+        "sightings": 978,
+        "projected": 859,
+        "geometry_alternatives": 721,
+        "ambiguous_alternatives": 565,
+        "mean_link_update_ms": 3.91283436329104
+      },
+      "events": [
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              6
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              7
+            ]
+          ],
+          "distance_lower_m": 0.0,
+          "distance_upper_m": 0.8683821254052635,
+          "cosine": 0.650610511772317,
+          "cost_lower": 0.8734737205692076,
+          "cost_upper": 1.741855845974471,
+          "separated": true,
+          "event": "link",
+          "time_s": 180.5,
+          "confirmations": 2
+        },
+        {
+          "pair": [
+            [
+              "C3",
+              "wildtrack-pilot",
+              5
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              2
+            ]
+          ],
+          "distance_lower_m": 0.0,
+          "distance_upper_m": 0.8565248411942121,
+          "cosine": 0.5227575015405399,
+          "cost_lower": 1.1931062461486501,
+          "cost_upper": 2.0496310873428625,
+          "separated": true,
+          "event": "link",
+          "time_s": 180.5,
+          "confirmations": 2
+        },
+        {
+          "pair": [
+            [
+              "C3",
+              "wildtrack-pilot",
+              1
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              6
+            ]
+          ],
+          "distance_lower_m": 0.0,
+          "distance_upper_m": 0.860906422744963,
+          "cosine": 0.4943620396885609,
+          "cost_lower": 1.264094900778598,
+          "cost_upper": 2.125001323523561,
+          "separated": true,
+          "event": "link",
+          "time_s": 182.5,
+          "confirmations": 2
+        },
+        {
+          "event": "revoke",
+          "pair": [
+            [
+              "C3",
+              "wildtrack-pilot",
+              5
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              2
+            ]
+          ],
+          "reason": "contradictory_geometry",
+          "time_s": 184.5
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              11
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              11
+            ]
+          ],
+          "distance_lower_m": 0.0,
+          "distance_upper_m": 0.5955435558472115,
+          "cosine": 0.5037500271500243,
+          "cost_lower": 1.2406249321249394,
+          "cost_upper": 1.836168487972151,
+          "separated": true,
+          "event": "link",
+          "time_s": 187.5,
+          "confirmations": 2
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              9
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              14
+            ]
+          ],
+          "distance_lower_m": 0.0,
+          "distance_upper_m": 0.845108955788339,
+          "cosine": 0.5800463876951507,
+          "cost_lower": 1.049884030762123,
+          "cost_upper": 1.894992986550462,
+          "separated": true,
+          "event": "link",
+          "time_s": 189.0,
+          "confirmations": 2
+        },
+        {
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              5
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              12
+            ]
+          ],
+          "distance_lower_m": 0.0,
+          "distance_upper_m": 0.810310373552144,
+          "cosine": 0.47762431882217893,
+          "cost_lower": 1.3059392029445527,
+          "cost_upper": 2.1162495764966964,
+          "separated": true,
+          "event": "link",
+          "time_s": 189.5,
+          "confirmations": 2
+        },
+        {
+          "event": "revoke",
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              6
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              7
+            ]
+          ],
+          "reason": "support_expired",
+          "time_s": 192.5
+        },
+        {
+          "event": "revoke",
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              9
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              14
+            ]
+          ],
+          "reason": "support_expired",
+          "time_s": 193.5
+        },
+        {
+          "event": "revoke",
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              5
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              12
+            ]
+          ],
+          "reason": "support_expired",
+          "time_s": 194.0
+        },
+        {
+          "event": "revoke",
+          "pair": [
+            [
+              "C1",
+              "wildtrack-pilot",
+              11
+            ],
+            [
+              "C3",
+              "wildtrack-pilot",
+              11
+            ]
+          ],
+          "reason": "support_expired",
+          "time_s": 195.0
+        },
+        {
+          "pair": [
+            [
+              "C3",
+              "wildtrack-pilot",
+              6
+            ],
+            [
+              "C5",
+              "wildtrack-pilot",
+              19
+            ]
+          ],
+          "distance_lower_m": 0.04646144240614486,
+          "distance_upper_m": 0.7729446574301115,
+          "cosine": 0.5803032083416241,
+          "cost_lower": 1.0957034215520847,
+          "cost_upper": 1.8221866365760513,
+          "separated": true,
+          "event": "link",
+          "time_s": 195.0,
+          "confirmations": 2
+        }
+      ]
+    }
+  },
+  "gate": {
+    "pair_precision": true,
+    "pair_coverage": false,
+    "link_precision": true,
+    "verified_links": false,
+    "better_IDF1": true,
+    "handoff_support": false,
+    "handoff_coverage": false,
+    "return_support": false,
+    "return_coverage": false
+  },
+  "passed": false
+}
