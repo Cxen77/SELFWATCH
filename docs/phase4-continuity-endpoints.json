@@ -1,0 +1,32 @@
+{
+  "scope": "Post-holdout detector diagnostic; i.c.sens 0006, IoU .50.",
+  "scores": {
+    "640": {
+      "matched_boxes": 283,
+      "handoff_opportunities": 11,
+      "source_detected": 6,
+      "destination_detected": 5,
+      "both_detected": 3,
+      "same_person_possible": 117,
+      "same_person_both_matched": 51,
+      "same_person_shared_id": 0,
+      "different_person_pairs": 797,
+      "different_person_shared_id": 0
+    },
+    "960": {
+      "matched_boxes": 334,
+      "handoff_opportunities": 11,
+      "source_detected": 6,
+      "destination_detected": 5,
+      "both_detected": 3,
+      "same_person_possible": 117,
+      "same_person_both_matched": 66,
+      "same_person_shared_id": 0,
+      "different_person_pairs": 1116,
+      "different_person_shared_id": 0
+    }
+  },
+  "labels_sha256": "1a27e11d4ae75faef168c13601f52e85a8141558d1ea81acc894f9deebab1961",
+  "baseline_predictions_sha256": "c8b11bd44702b95fdf8683d7d1fccde3035d56090b1fd2df2402ecd93a22f3eb",
+  "high_resolution_predictions_sha256": "c846e8f7ffc01a7e90b90b89fcf726554420277f890a5aa459bfdc9d15b41487"
+}

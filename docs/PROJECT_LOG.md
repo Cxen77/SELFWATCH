@@ -4,7 +4,7 @@
 
 **Current stage: 4**
 
-**Status summary:** Stage 4 overlap replay improved IDF1 and reduced false cross-view links compared with immediate matching. The frozen holdout missed the coverage target. Gate C remains open. Store commissioning is pending a floor survey and measured camera timing.
+**Status summary:** Stage 4's second frozen overlap replay cleared the pair precision and coverage targets. Gate C remains open on verified-link count, non-overlap handoffs and same-view recovery. Store commissioning is pending a floor survey and measured camera timing.
 
 This is the living record for the project. Update its checkboxes, stage table
 and experiment notes after work is verified. Mark a stage complete only when
@@ -39,7 +39,7 @@ table from this file.
 | 1 | Replay and contracts | Done | Timestamped camera/epoch observations, bounded ordered replay, durable idempotent store and regression checks implemented. |
 | 2 | Perception pilot | Done | Gate B passed for the declared two-view retail replay. Visibility, optional landmarks and scheduling evidence are in E23. |
 | 3 | Camera geometry | Done (reference rig) | Three public views and replay timing verified, with CPU floor projection, overlap topology, commissioning tools and simulated zones. E24 records error and remaining site measurements. |
-| 4 | Global identity memory | In progress | Reversible overlap replay evaluated. E25 records the holdout coverage failure and handoff evidence. |
+| 4 | Global identity memory | In progress | E25 and E26 record the frozen overlap tests and independent handoff evidence. |
 | 5 | Item and interaction evidence | Not started | Needs supported products, causal take/put/transfer evidence and annotated interaction evaluation. |
 | 6 | Revisable custody | Not started | Needs event dependencies, candidate ownership, bounded retention and verified rollback/recompute after corrections. |
 | 7 | Exit / POS integration | Not started | Needs directional zones, simulated transactions and late/canceled/group-payment scenarios with evidence-backed review. |
@@ -123,6 +123,8 @@ table from this file.
 - [x] Apply Stage 3 geometry and time constraints in the fixed-input replay.
 - [x] Score labelled handoff and return opportunities on a separate public camera pair and measure the local-tracker bottleneck.
 - [x] Compare immediate, confirmed, interval and revisable association with fixed perception.
+- [x] Measure local owner preservation and a dormant handoff candidate on fresh public sequences.
+- [x] Meet overlap pair precision and coverage targets on the second frozen three-camera test.
 - [ ] Verify adequate cross-camera handoff coverage and recovery delay on independently labelled footage.
 - [ ] Pass Gate C with sufficient verified links and coverage on a fresh holdout.
 
@@ -1197,8 +1199,8 @@ failed. The WILDTRACK holdout contained zero qualifying non-overlap transitions
 and zero qualifying same-view returns. Do not deploy the replay policy as the
 live identity authority on the basis of these results.
 
-Reproduction from the repository root with the existing v2 environment and
-weights. The frozen policy is `docs/phase4-link-policy.json`.
+Reproduction from checkpoint `bcde816` with the existing v2 environment and
+weights. The frozen policy hashes that checkpoint's runner sources.
 
 ```powershell
 python -m scripts.download_wildtrack_pilot --identity-holdout
@@ -1282,3 +1284,40 @@ transitions before enabling the replay policy in the live identity authority.
 
 All 166 v2 regression tests passed, including measured returns, reconnects,
 departure-only handoff, ambiguity and prospective alias revocation.
+
+The frozen three-camera holdout completed on 72 observations. IDF1 was
+29.35% for the original camera-local IDs and 46.08% for calibrated overlap.
+The overlap arm linked 177 of 261 both-matched pairs and produced four
+incorrect pair matches, yielding 67.82% coverage and 97.79% precision.
+The local preserving arm alone changed IDs 19 times versus 21 for the
+original. The overlap arm reported 30 changes, including shared-ID
+reassignments. All nine accepted links had verified endpoints at acceptance,
+and two links were later revoked. Mean CPU linking time was 2.79 ms per
+three-view bundle with cached contacts and appearance features. It excludes
+capture, projection, detector, ReID and rendering.
+
+The post-holdout resolution diagnostic increased matched pedestrian boxes
+from 283 at 640 to 334 at 960 on i.c.sens 0006. Both resolutions supplied
+matched boxes at both ends of exactly three of the 11 handoffs, so this
+change alone could not meet the handoff target on this recording.
+
+The overlap arm cleared the 95% pair-precision and 35% pair-coverage floors.
+It fell one short of ten verified links. The independent handoff and return
+tests had enough labelled episodes but missed their recovery floors. Gate C
+therefore remains open and the replay policies have no live promotion.
+
+```powershell
+python -m scripts.download_wildtrack_pilot --identity-continuity-holdout
+python -m selfwatch_v2.wildtrack_tracking --dataset datasets/wildtrack-phase4b-holdout-v1 --output runs/wildtrack-phase4b-holdout-v1
+python -m scripts.download_icsens_identity datasets/icsens-phase4b-holdout-v1 --sequence 6
+python -m scripts.validate_icsens_identity datasets/icsens-phase4b-holdout-v1 runs/phase4b-icsens-holdout --sequence 6
+python -m scripts.validate_phase4_continuity evaluate --wildtrack runs/wildtrack-phase4b-holdout-v1 --calibration datasets/wildtrack-phase4b-holdout-v1 --icsens runs/phase4b-icsens-holdout --policy docs/phase4-continuity-policy.json --output runs/phase4b-repeat/holdout.json
+python -m scripts.audit_phase4_resolution datasets/icsens-phase4b-holdout-v1 runs/phase4b-icsens-holdout runs/phase4b-repeat/endpoint-ceiling.json
+```
+
+Retained reports: `docs/phase4-continuity-results.json` and
+`docs/phase4-continuity-endpoints.json`. The next evaluation should use
+native-rate, labelled transitions with independently verified visibility at
+both ends. The supplied public reference geometry covers the overlapping
+WILDTRACK views. Disjoint-camera qualification needs documented topology
+and sufficient observations at the entry and departure of each route.

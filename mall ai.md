@@ -94,3 +94,9 @@ recorded in E25. The revisable policy reached 96.67% pair precision but only
 view transitions and 2/34 same-view returns. Gate C remains open. The coverage
 controls show why the next run should focus on observed local owners and ID
 stability before cross-camera tuning. Retain the frozen policy and results.
+
+E26 records the follow-up. Frozen WILDTRACK overlap cleared 97.79% precision
+and 67.82% coverage, with nine verified accepted links against ten required.
+Independent i.c.sens sequence 0006 gave zero of 11 handoffs and four of 29
+same-view returns for the candidate. The 640 detector supplied both endpoints
+on only three of those 11 handoffs. Gate C remains open.

@@ -1,0 +1,469 @@
+{
+  "gate": {
+    "pair_precision": true,
+    "pair_coverage": true,
+    "link_precision": true,
+    "verified_links": false,
+    "better_IDF1": true,
+    "handoff_support": true,
+    "handoff_coverage": false,
+    "return_support": true,
+    "return_coverage": false
+  },
+  "passed": false,
+  "timing": {
+    "sightings": 702,
+    "projected": 523,
+    "geometry_alternatives": 639,
+    "ambiguous_alternatives": 440,
+    "mean_link_update_ms": 2.791820860390241
+  },
+  "wildtrack_baseline": {
+    "IDF1": 0.2935444579780755,
+    "same_person_possible": 728,
+    "same_person_both_matched": 261,
+    "same_person_shared_id": 0,
+    "different_person_shared_id": 0,
+    "matched_pair_precision": null,
+    "sampled_global_id_changes": 21,
+    "sampled_local_id_changes": 21,
+    "pair_coverage": 0.0,
+    "pair_recall_all": 0.0,
+    "link_events": {
+      "correct": 0,
+      "wrong": 0,
+      "unverified": 0,
+      "revoked": 0,
+      "precision": null
+    },
+    "nonoverlap_view_transitions": {
+      "opportunities": 0,
+      "anchor_available": 0,
+      "destination_matched": 0,
+      "recovered": 0,
+      "coverage": null,
+      "median_delay_s": null,
+      "p95_delay_s": null
+    },
+    "same_view_returns": {
+      "opportunities": 0,
+      "anchor_available": 0,
+      "destination_matched": 0,
+      "recovered": 0,
+      "coverage": null,
+      "median_delay_s": null,
+      "p95_delay_s": null
+    }
+  },
+  "wildtrack_new_local": {
+    "IDF1": 0.29422492401215805,
+    "same_person_possible": 728,
+    "same_person_both_matched": 261,
+    "same_person_shared_id": 0,
+    "different_person_shared_id": 0,
+    "matched_pair_precision": null,
+    "sampled_global_id_changes": 19,
+    "sampled_local_id_changes": 19,
+    "pair_coverage": 0.0,
+    "pair_recall_all": 0.0,
+    "link_events": {
+      "correct": 0,
+      "wrong": 0,
+      "unverified": 0,
+      "revoked": 0,
+      "precision": null
+    },
+    "nonoverlap_view_transitions": {
+      "opportunities": 0,
+      "anchor_available": 0,
+      "destination_matched": 0,
+      "recovered": 0,
+      "coverage": null,
+      "median_delay_s": null,
+      "p95_delay_s": null
+    },
+    "same_view_returns": {
+      "opportunities": 0,
+      "anchor_available": 0,
+      "destination_matched": 0,
+      "recovered": 0,
+      "coverage": null,
+      "median_delay_s": null,
+      "p95_delay_s": null
+    }
+  },
+  "wildtrack_overlap": {
+    "IDF1": 0.460790273556231,
+    "same_person_possible": 728,
+    "same_person_both_matched": 261,
+    "same_person_shared_id": 177,
+    "different_person_shared_id": 4,
+    "matched_pair_precision": 0.9779005524861878,
+    "sampled_global_id_changes": 30,
+    "sampled_local_id_changes": 19,
+    "pair_coverage": 0.6781609195402298,
+    "pair_recall_all": 0.24313186813186813,
+    "link_events": {
+      "correct": 9,
+      "wrong": 0,
+      "unverified": 0,
+      "revoked": 2,
+      "precision": 1.0
+    },
+    "nonoverlap_view_transitions": {
+      "opportunities": 0,
+      "anchor_available": 0,
+      "destination_matched": 0,
+      "recovered": 0,
+      "coverage": null,
+      "median_delay_s": null,
+      "p95_delay_s": null
+    },
+    "same_view_returns": {
+      "opportunities": 0,
+      "anchor_available": 0,
+      "destination_matched": 0,
+      "recovered": 0,
+      "coverage": null,
+      "median_delay_s": null,
+      "p95_delay_s": null
+    }
+  },
+  "icsens_baseline": {
+    "IDF1": 0.27728613569321536,
+    "changes": 60,
+    "same_person_possible": 117,
+    "same_person_both_matched": 30,
+    "same_person_shared_id": 0,
+    "different_person_pairs": 383,
+    "different_person_shared_id": 0,
+    "nonoverlap_view_transitions": {
+      "opportunities": 11,
+      "anchor_available": 5,
+      "destination_matched": 4,
+      "recovered": 0,
+      "coverage": 0.0,
+      "median_delay_s": null,
+      "p95_delay_s": null
+    },
+    "same_view_returns": {
+      "opportunities": 29,
+      "anchor_available": 6,
+      "destination_matched": 9,
+      "recovered": 1,
+      "coverage": 0.034482758620689655,
+      "median_delay_s": 1.5,
+      "p95_delay_s": 1.5
+    }
+  },
+  "icsens_new_local": {
+    "IDF1": 0.36675461741424803,
+    "changes": 37,
+    "same_person_possible": 117,
+    "same_person_both_matched": 47,
+    "same_person_shared_id": 0,
+    "different_person_pairs": 693,
+    "different_person_shared_id": 0,
+    "nonoverlap_view_transitions": {
+      "opportunities": 11,
+      "anchor_available": 6,
+      "destination_matched": 5,
+      "recovered": 0,
+      "coverage": 0.0,
+      "median_delay_s": null,
+      "p95_delay_s": null
+    },
+    "same_view_returns": {
+      "opportunities": 29,
+      "anchor_available": 9,
+      "destination_matched": 14,
+      "recovered": 4,
+      "coverage": 0.13793103448275862,
+      "median_delay_s": 0.0,
+      "p95_delay_s": 0.4249999999999998
+    }
+  },
+  "icsens_transit": {
+    "IDF1": 0.35356200527704484,
+    "changes": 39,
+    "same_person_possible": 117,
+    "same_person_both_matched": 47,
+    "same_person_shared_id": 0,
+    "different_person_pairs": 693,
+    "different_person_shared_id": 0,
+    "nonoverlap_view_transitions": {
+      "opportunities": 11,
+      "anchor_available": 6,
+      "destination_matched": 5,
+      "recovered": 0,
+      "coverage": 0.0,
+      "median_delay_s": null,
+      "p95_delay_s": null
+    },
+    "same_view_returns": {
+      "opportunities": 29,
+      "anchor_available": 9,
+      "destination_matched": 14,
+      "recovered": 4,
+      "coverage": 0.13793103448275862,
+      "median_delay_s": 0.0,
+      "p95_delay_s": 0.4249999999999998
+    }
+  },
+  "inputs_sha256": {
+    "wildtrack": {
+      "predictions.json": "9300bb4723d7a979d88bb98c3e852a7c066b7e1661839d6bbae04fd64ab080ce",
+      "annotations.json": "dc80c99bcc3d59807d7d2dcf90a41925baaed607e4a6243a13c0ba5b256c65e5",
+      "features.npz": "e7babd3d22342e59247ee9e2768b36621bc2153b01bbb2dece22bf44a507fcc9"
+    },
+    "icsens": {
+      "predictions.json": "c8b11bd44702b95fdf8683d7d1fccde3035d56090b1fd2df2402ecd93a22f3eb",
+      "annotations.json": "1a27e11d4ae75faef168c13601f52e85a8141558d1ea81acc894f9deebab1961",
+      "features.npz": "11f0a4d01e5b0676a8d14bbeb2f8bf17eeb37cc6d1c77b63f14ccf5860159234"
+    }
+  },
+  "policy_sha256": "0bbdb36918eb83ae0698f1564f5621fff6a322926832131838b52b81bf1f724d",
+  "events": [
+    {
+      "pair": [
+        [
+          "C1",
+          "wildtrack-pilot",
+          6
+        ],
+        [
+          "C5",
+          "wildtrack-pilot",
+          5
+        ]
+      ],
+      "distance_lower_m": 0.004996703626584165,
+      "distance_upper_m": 0.9153304333676087,
+      "cosine": 0.6886920583749851,
+      "cost_lower": 0.7832665576891213,
+      "cost_upper": 1.693600287430146,
+      "separated": true,
+      "event": "link",
+      "time_s": 150.5,
+      "confirmations": 2
+    },
+    {
+      "pair": [
+        [
+          "C1",
+          "wildtrack-pilot",
+          2
+        ],
+        [
+          "C5",
+          "wildtrack-pilot",
+          7
+        ]
+      ],
+      "distance_lower_m": 0.0,
+      "distance_upper_m": 0.9105267896002561,
+      "cosine": 0.6755382725638845,
+      "cost_lower": 0.8111543185902886,
+      "cost_upper": 1.7216811081905448,
+      "separated": true,
+      "event": "link",
+      "time_s": 150.5,
+      "confirmations": 2
+    },
+    {
+      "pair": [
+        [
+          "C1",
+          "wildtrack-pilot",
+          6
+        ],
+        [
+          "C3",
+          "wildtrack-pilot",
+          9
+        ]
+      ],
+      "distance_lower_m": 0.27035500296405135,
+      "distance_upper_m": 1.068650829510362,
+      "cosine": 0.731908989660619,
+      "cost_lower": 0.9405825288125038,
+      "cost_upper": 1.7388783553588145,
+      "separated": true,
+      "event": "link",
+      "time_s": 150.5,
+      "confirmations": 2
+    },
+    {
+      "pair": [
+        [
+          "C1",
+          "wildtrack-pilot",
+          2
+        ],
+        [
+          "C3",
+          "wildtrack-pilot",
+          8
+        ]
+      ],
+      "distance_lower_m": 0.11961811105180675,
+      "distance_upper_m": 0.9903515371869199,
+      "cosine": 0.5391815542945116,
+      "cost_lower": 1.2716642253155275,
+      "cost_upper": 2.142397651450641,
+      "separated": true,
+      "event": "link",
+      "time_s": 150.5,
+      "confirmations": 2
+    },
+    {
+      "pair": [
+        [
+          "C1",
+          "wildtrack-pilot",
+          5
+        ],
+        [
+          "C3",
+          "wildtrack-pilot",
+          2
+        ]
+      ],
+      "distance_lower_m": 0.0,
+      "distance_upper_m": 0.5815036726752999,
+      "cosine": 0.6594371360134884,
+      "cost_lower": 0.8514071599662789,
+      "cost_upper": 1.432910832641579,
+      "separated": true,
+      "event": "link",
+      "time_s": 151.0,
+      "confirmations": 2
+    },
+    {
+      "pair": [
+        [
+          "C1",
+          "wildtrack-pilot",
+          4
+        ],
+        [
+          "C5",
+          "wildtrack-pilot",
+          6
+        ]
+      ],
+      "distance_lower_m": 0.0,
+      "distance_upper_m": 0.7419606301427437,
+      "cosine": 0.5865790823624115,
+      "cost_lower": 1.0335522940939712,
+      "cost_upper": 1.775512924236715,
+      "separated": true,
+      "event": "link",
+      "time_s": 151.5,
+      "confirmations": 2
+    },
+    {
+      "pair": [
+        [
+          "C3",
+          "wildtrack-pilot",
+          16
+        ],
+        [
+          "C5",
+          "wildtrack-pilot",
+          2
+        ]
+      ],
+      "distance_lower_m": 0.0,
+      "distance_upper_m": 0.7869767572294137,
+      "cosine": 0.5277408473998322,
+      "cost_lower": 1.1806478815004195,
+      "cost_upper": 1.9676246387298333,
+      "separated": true,
+      "event": "link",
+      "time_s": 153.0,
+      "confirmations": 2
+    },
+    {
+      "pair": [
+        [
+          "C1",
+          "wildtrack-pilot",
+          5
+        ],
+        [
+          "C5",
+          "wildtrack-pilot",
+          14
+        ]
+      ],
+      "distance_lower_m": 0.0,
+      "distance_upper_m": 0.8767219297412749,
+      "cosine": 0.6553080660522081,
+      "cost_lower": 0.8617298348694796,
+      "cost_upper": 1.7384517646107547,
+      "separated": true,
+      "event": "link",
+      "time_s": 157.0,
+      "confirmations": 2
+    },
+    {
+      "pair": [
+        [
+          "C3",
+          "wildtrack-pilot",
+          27
+        ],
+        [
+          "C5",
+          "wildtrack-pilot",
+          12
+        ]
+      ],
+      "distance_lower_m": 0.0,
+      "distance_upper_m": 0.844315569438753,
+      "cosine": 0.5799374262521939,
+      "cost_lower": 1.0501564343695153,
+      "cost_upper": 1.8944720038082683,
+      "separated": true,
+      "event": "link",
+      "time_s": 157.5,
+      "confirmations": 2
+    },
+    {
+      "event": "revoke",
+      "pair": [
+        [
+          "C3",
+          "wildtrack-pilot",
+          16
+        ],
+        [
+          "C5",
+          "wildtrack-pilot",
+          2
+        ]
+      ],
+      "reason": "owner_expired",
+      "time_s": 158.0
+    },
+    {
+      "event": "revoke",
+      "pair": [
+        [
+          "C1",
+          "wildtrack-pilot",
+          2
+        ],
+        [
+          "C3",
+          "wildtrack-pilot",
+          8
+        ]
+      ],
+      "reason": "contradictory_geometry",
+      "time_s": 161.0
+    }
+  ]
+}
