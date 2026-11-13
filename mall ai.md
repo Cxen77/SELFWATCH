@@ -82,3 +82,8 @@ frozen JSON report. Store calibration needs measured floor targets, shared
 timing events and installed camera metadata. Use the geometry evidence in
 Phase 4 to test links and false merges before enabling it in the live tracker.
 No smaller AI was dispatched for this milestone.
+
+Phase 4 research checkpoint is recorded in E25 of `docs/PROJECT_LOG.md`.
+The new overlap-memory replay preserves the local owner and can revoke a
+link prospectively. Use the frozen protocol and retain both false-link counts
+and coverage. No smaller AI was dispatched.

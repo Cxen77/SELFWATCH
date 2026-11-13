@@ -107,8 +107,8 @@ def _clip_polygon(vertices, line):
     return np.asarray(result)
 
 
-def _reference_cameras(cameras):
-    clock = CameraClock(0, 0, 1, EVALUATION[0] / 10, EVALUATION[-1] / 10, .05)
+def reference_cameras(cameras, indices=EVALUATION, epoch=REFERENCE_EPOCH):
+    clock = CameraClock(0, 0, 1, indices[0] / 10, indices[-1] / 10, .05)
     for name, camera in cameras.items():
         image = np.linalg.inv(camera.floor_from_image)
         x, y, depth = image
@@ -118,7 +118,7 @@ def _reference_cameras(cameras):
             footprint = _clip_polygon(footprint, plane)
         floor = FloorMap((camera.width, camera.height), camera.floor_from_image,
                          footprint, residual_m=0)
-        yield CameraCalibration(name, REFERENCE_EPOCH, REFERENCE_FLOOR_ID, floor, clock)
+        yield CameraCalibration(name, epoch, REFERENCE_FLOOR_ID, floor, clock)
 
 
 def _reference_frame(camera, index):
@@ -216,7 +216,7 @@ def _layout_exercise(rig):
 
 def reference_report(dataset, marks_path):
     cameras, calibration_hash = load_cameras(dataset)
-    rig = CameraRig(REFERENCE_FLOOR_ID, list(_reference_cameras(cameras)))
+    rig = CameraRig(REFERENCE_FLOOR_ID, list(reference_cameras(cameras)))
     manifest_path = dataset / "manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     if manifest["etag"] != ARCHIVE[1] or tuple(manifest["frames"]) != EVALUATION:

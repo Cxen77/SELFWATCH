@@ -1,6 +1,6 @@
 # SELFWATCH master plan and research log
 
-**Updated: 11 November 2026**
+**Updated: 14 November 2026**
 
 **Current stage: 4**
 
@@ -117,6 +117,7 @@ table from this file.
 - [x] Add an online IDF1 evaluator that rejects incomplete ground truth and future-alias leakage.
 - [x] Score a bounded, independently labelled three-camera WILDTRACK pilot with a camera-local control.
 - [x] Compare geometry-only and geometry-plus-appearance controls while preserving online assignments and recording sampled ID changes.
+- [x] Implement a CPU replay policy using calibrated time/coverage, floor uncertainty, appearance and prospective link revocations.
 - [ ] Obtain complete independently reviewed identities across crowded synchronized views.
 - [ ] Measure false merges, handoff precision/coverage, IDF1 and recovery delay.
 - [ ] Add validated geometry/time constraints from Stage 3.
@@ -1124,3 +1125,40 @@ chosen tolerances before any store geometry alert is enabled.
 The synthetic survey passed the command-line check. All 156 v2 regression
 tests passed. Phase 4 can use the reference coverage and timing contract
 while collecting independent evidence for global ID continuity.
+
+### E25 — reversible global identity replay, 14 November 2026
+
+The CPU replay uses fixed local owners from the original cognitive tracker and
+clean OSNet crops. It scores overlapping views only when the calibrated
+footprints and capture-time intervals support comparison. Uncertainty enters
+the association cost through a lower and upper distance. A missing appearance
+crop remains a plausible competing match. A link needs repeated mutual evidence
+and cannot give two local owners in the same camera one global ID. Sustained
+incompatible geometry or expiration can revoke a link prospectively. Earlier
+outputs remain as recorded. This is a replay implementation for overlapping
+views. The existing shared memory provides the dormant appearance comparator.
+
+WILDTRACK frames 1700–1785 supplied development. The first development-only
+geometry-margin variant linked 5 of 200 both-matched pairs. A second variant
+incorporated appearance into the candidate ranking and retained its best-case
+cost for missing crops. It linked 69 of 200 pairs correctly with 3 incorrect
+pair matches. The development sweep and frozen settings are retained. The
+reference geometry uses box bottoms and a size-scaled pixel error envelope.
+That envelope does not estimate occlusion or physical calibration error.
+
+The already-used 1300–1355 diagnostic gave 75 correct and 6 incorrect pair
+matches with immediate point linking. Two confirmations gave 61 correct and
+zero incorrect. Adding the distance interval gave 57 correct and zero
+incorrect. Revocation had no effect on this short diagnostic. IDF1 rose from
+33.83% with camera-local IDs to 42.67% with revisable intervals, with sampled
+global-ID changes increasing from 10 to 14. WILDTRACK provides shared labels
+within its annotated ground region. [WILDTRACK source](https://www.epfl.ch/labs/cvlab/data/data-wildtrack/).
+
+The numeric gate and replay code are frozen before the 1800–1955 holdout.
+Same-person pair coverage uses the both-matched denominator and also reports
+recall over all labelled pairs. Link-event precision excludes events without
+two matchable labels, which are counted separately. Non-overlap transitions
+require a sampled disappearance from all previous views and appearance in a
+different view within two seconds. Same-view returns require a 0.5–2 s labelled
+absence. Missing anchor or destination matches count against recovery. The
+public data and sampled transitions bound the scope of the results.

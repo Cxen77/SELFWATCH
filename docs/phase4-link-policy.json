@@ -1,0 +1,77 @@
+{
+  "provenance": {
+    "calibration_sha256": "43d45b2d4c5ced50088170a5655734139783954e5f2acd37b95a4c220e00edf8",
+    "code_sha256": {
+      "scripts/validate_phase4.py": "b7b0c623e9d785b826b4ab2338b68d080fadf8bd5ad01030302a2b721a9272c2",
+      "scripts/validate_phase3.py": "87259f2f369292a56478c7d9f01d4e614c957f448a5e26e5936865635b55b5ff",
+      "selfwatch_v2/camera_geometry.py": "4d77f5fde0e49bff283a97465fce1ea0819fef5dbe68d47a4ee8c20160b57537",
+      "selfwatch_v2/overlap_memory.py": "a3ab63951e100f4910bd6a9d4f18526b8f444d765a5d65771ab93b9cd07c44d5",
+      "selfwatch_v2/evaluate_tracking.py": "6d0f739f59d1f19d5ec71fa39f97a79ca68d14ccf55392502b80577ec72e4dab",
+      "selfwatch_v2/wildtrack_geometry.py": "2c385905fe1f72fc9c1db1fe644f9c4883a3d3672f90e4c23011bda26e3704d9",
+      "selfwatch_v2/wildtrack_tracking.py": "d0799361b680f7035362c7a03cfd7a413111b8d4ae97908c2361112177d8638c"
+    },
+    "detector_sha256": "361fbfabab285c3237700b6bb91d7ecfa602cd945fffda8dbe1242829b71e73f",
+    "reid_sha256": "48df972f72887b95cf3b43b3a07c3a7d2398381aea0f9cae64a7ef11d512b727"
+  },
+  "gate": {
+    "min_pair_precision": 0.95,
+    "min_pair_coverage": 0.35,
+    "min_link_precision": 0.95,
+    "min_verified_links": 10,
+    "min_handoff_opportunities": 10,
+    "min_handoff_coverage": 0.5,
+    "min_returns": 10,
+    "min_return_coverage": 0.65
+  },
+  "selected": {
+    "policy": {
+      "radius_m": 1.2,
+      "margin_m": 0.04,
+      "min_cosine": 0.45,
+      "pair_tolerance_s": 0.15,
+      "confirmations": 2,
+      "contradictions": 2,
+      "max_gap_s": 0.75,
+      "memory_s": 4.0,
+      "appearance_weight_m": 2.5
+    },
+    "score": {
+      "IDF1": 0.48338368580060426,
+      "same_person_possible": 686,
+      "same_person_both_matched": 200,
+      "same_person_shared_id": 69,
+      "different_person_shared_id": 3,
+      "matched_pair_precision": 0.9583333333333334,
+      "sampled_global_id_changes": 21,
+      "sampled_local_id_changes": 9,
+      "pair_coverage": 0.345,
+      "pair_recall_all": 0.10058309037900874,
+      "link_events": {
+        "correct": 8,
+        "wrong": 0,
+        "unverified": 1,
+        "revoked": 2,
+        "precision": 1.0
+      },
+      "nonoverlap_view_transitions": {
+        "opportunities": 0,
+        "anchor_available": 0,
+        "destination_matched": 0,
+        "recovered": 0,
+        "coverage": null,
+        "median_delay_s": null,
+        "p95_delay_s": null
+      },
+      "same_view_returns": {
+        "opportunities": 0,
+        "anchor_available": 0,
+        "destination_matched": 0,
+        "recovered": 0,
+        "coverage": null,
+        "median_delay_s": null,
+        "p95_delay_s": null
+      }
+    }
+  },
+  "development_predictions_sha256": "a04b81e83aff0c6c27e86dd1e0d5002094975b83d3181b13e0d9a6c073a38962"
+}

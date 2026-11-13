@@ -12,6 +12,7 @@ URL='https://documents.epfl.ch/groups/c/cv/cvlab-unit/www/data/Wildtrack/Wildtra
 SOURCE='https://www.epfl.ch/labs/cvlab/data/data-wildtrack/'
 CAMERAS=(1,3,5)
 FRAMES=tuple(range(1700,1790,5))
+IDENTITY_HOLDOUT=tuple(range(1800,1960,5))
 ROOT=Path('datasets/wildtrack-pilot-v1')
 PREFIX='Wildtrack_dataset/'
 ARCHIVE=(6807496358,'"5b86d551-195c226a6"')
@@ -58,13 +59,13 @@ def member(reader,info,offsets=None):
     raise ValueError('No matching local header for '+info.filename)
 
 
-def download(root,frames,calibration=False):
+def download(root,frames,calibration=False, *, max_mib=224, scope=None):
     root.mkdir(parents=True,exist_ok=True)
     manifest=root/'manifest.json'
     if manifest.exists():
         raise FileExistsError('Frozen pilot already exists')
     records=[]
-    with HTTPRangeReader(URL,max_bytes=224*1024**2,block_size=4*1024**2) as reader, zipfile.ZipFile(reader) as archive:
+    with HTTPRangeReader(URL,max_bytes=max_mib*1024**2,block_size=4*1024**2) as reader, zipfile.ZipFile(reader) as archive:
         if (reader.size,reader.etag)!=ARCHIVE:
             raise ValueError('WILDTRACK archive differs from the inspected revision')
         paths=list(CALIBRATION_FILES) if calibration else []
@@ -88,7 +89,7 @@ def download(root,frames,calibration=False):
         data=dict(schema_version=1,dataset='WILDTRACK',source=SOURCE,url=URL,etag=reader.etag,
             archive_bytes=reader.size,transfer_bytes=reader.bytes_read,cameras=CAMERAS,frames=frames,
             capture_time='Annotated frame index / 10; annotations every five frames (2 Hz).',
-            scope=('Separate temporal evaluation segment from the same outdoor recording.' if calibration else
+            scope=scope or ('Separate temporal evaluation segment from the same outdoor recording.' if calibration else
                    'Single outdoor development pilot, fixed C1/C3/C5 and consecutive labelled timestamps selected before model inference.'),files=records)
     manifest.write_text(json.dumps(data,indent=2),encoding='utf-8')
     print('WILDTRACK pilot complete',flush=True)
@@ -97,9 +98,14 @@ def download(root,frames,calibration=False):
 def main():
     import argparse
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--geometry-evaluation',action='store_true')
+    mode=parser.add_mutually_exclusive_group()
+    mode.add_argument('--geometry-evaluation',action='store_true')
+    mode.add_argument('--identity-holdout',action='store_true')
     args=parser.parse_args()
-    if args.geometry_evaluation:
+    if args.identity_holdout:
+        download(Path('datasets/wildtrack-identity-holdout-v1'),IDENTITY_HOLDOUT,calibration=True,
+                 max_mib=416,scope='Phase 4 temporal holdout from the same outdoor recording.')
+    elif args.geometry_evaluation:
         download(Path('datasets/wildtrack-geometry-evaluation-v1'),tuple(range(1300,1360,5)),calibration=True)
     else:
         download(ROOT,FRAMES)
