@@ -67,7 +67,7 @@ def main():
     import torch
     from .appearance import AppearanceEncoder
     from .yolo import YoloPerception
-    from scripts.download_wildtrack_pilot import CALIBRATION_FILES, IDENTITY_HOLDOUT
+    from scripts.download_wildtrack_pilot import CALIBRATION_FILES, IDENTITY_CONTINUITY_HOLDOUT, IDENTITY_HOLDOUT
     torch.set_num_threads(2)
     manifest_path=args.dataset/'manifest.json'
     manifest=json.loads(manifest_path.read_text())
@@ -75,11 +75,12 @@ def main():
     development=frames==list(range(1700,1790,5))
     evaluation=frames==list(range(1300,1360,5))
     holdout=frames==list(IDENTITY_HOLDOUT)
-    if cameras!=[1,3,5] or not (development or evaluation or holdout):
+    continuity_holdout=frames==list(IDENTITY_CONTINUITY_HOLDOUT)
+    if cameras!=[1,3,5] or not (development or evaluation or holdout or continuity_holdout):
         raise ValueError('Unexpected camera or timestamp selection')
     expected={f'annotations_positions/{f:08d}.json' for f in frames}
     expected.update(f'Image_subsets/C{c}/{f:08d}.png' for c in cameras for f in frames)
-    if evaluation or holdout:
+    if evaluation or holdout or continuity_holdout:
         expected.update(CALIBRATION_FILES)
     files=manifest['files']
     if len(files)!=len(expected) or {r['path'] for r in files}!=expected:
@@ -147,7 +148,8 @@ def main():
             continue
         scores[case]=dict(result,**pair_scores(annotations,result['frame_matches']))
     report=dict(scope=SCOPE,dataset_manifest_sha256=digest(manifest_path),source=manifest['source'],
-        dataset_partition='development' if development else 'identity_holdout' if holdout else 'evaluation',
+        dataset_partition=('development' if development else 'identity_continuity_holdout' if continuity_holdout
+                           else 'identity_holdout' if holdout else 'evaluation'),
         detector=detector.provenance,reid=encoder.provenance,counts=dict(counts),scores=scores,
         feature_policy='Same detector and eligible OSNet crops across policies; refresh scheduling disabled in this fixed-input diagnostic.',
         predictions_sha256=digest(args.output/'predictions.json'),annotations_sha256=digest(args.output/'annotations.json'),

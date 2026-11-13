@@ -1245,3 +1245,40 @@ python -m scripts.audit_phase4_coverage --wildtrack runs/wildtrack-identity-hold
 The frozen reports are `docs/phase4-holdout-results.json`,
 `docs/phase4-icsens-results.json` and `docs/phase4-coverage-results.json`.
 All 162 v2 regression tests passed.
+
+### E26 — local continuity and dormant handoff follow-up, 14 November 2026
+
+The CPU replay compares a motion-and-appearance local tracker with a variant
+that preserves observed owners from the original cognitive engine. The
+preserving variant can extend a recent owner onto a currently measured
+detection when the original tracker leaves it unassigned. It cannot override
+an original observed owner or re-emit a detection the engine explicitly
+suppressed. The separate dormant handoff candidate uses configured directional
+routes, an appearance margin, a bounded time window and repeat confirmation.
+If both sides later appear together, it restores the conflicting owner to its
+original local identity. The route test uses two public views and has no
+surveyed entry or exit zones. The new association code remains a replay arm.
+
+Frozen development used WILDTRACK 1700–1785 and i.c.sens sequence 0000.
+Holdout inputs were WILDTRACK 1500–1615 and i.c.sens sequence 0006. The
+i.c.sens sequence was selected using annotation availability and episode
+counts before scoring any candidate on its images. On WILDTRACK development,
+preserving owners retained 201 pairs versus 200 at the same nine sampled
+changes. The calibrated overlap arm reached 72 correct and three incorrect
+pairs, or 96% precision at 35.82% both-matched coverage. On the i.c.sens
+holdout, the selected local motion-and-appearance arm improved IDF1 from
+27.73% to 36.68%, reduced changes from 60 to 37, and recovered four of 29
+same-view returns versus one. Dormant handoff linking recovered zero of 11
+labelled transitions and lowered IDF1 to 35.36%.
+
+The 640 detector supplied an eligible box on both ends of only three of
+the 11 sampled handoff episodes under the declared matching window. Even an
+oracle association on those fixed detections could therefore recover at most
+27.27% of those episodes against the 50% gate. The motion-and-appearance local
+arm preserved those three opportunities. This bound concerns the sampled
+recording, detector inputs and evaluation window. The project must still
+demonstrate recovery with stronger observations and sufficient independent
+transitions before enabling the replay policy in the live identity authority.
+
+All 166 v2 regression tests passed, including measured returns, reconnects,
+departure-only handoff, ambiguity and prospective alias revocation.

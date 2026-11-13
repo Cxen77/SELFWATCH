@@ -5,7 +5,7 @@ from pathlib import Path
 import subprocess
 import zipfile
 
-from scripts.validate_icsens_identity import GT_SHA256, INDEXES
+from scripts.validate_icsens_identity import GT_SHA256, HANDOFF_INDEXES, INDEXES
 from selfwatch_v2.http_range import HTTPRangeReader
 from selfwatch_v2.identity_study import digest
 
@@ -16,7 +16,7 @@ GT_URL = (DATA + "/dataset/733e368e-a481-4f85-8aac-2abcc35a0673/"
 VIEW_BYTES = {1: 11072806117, 2: 5489599806}
 
 
-def fetch_view(root, camera, names):
+def fetch_view(root, camera, names, sequence=0):
     url = f"{DATA}/vault/icsens/nguyen/multi-view-pedestrian-tracking/view{camera}.zip"
     destination = root / f"view{camera}"
     destination.mkdir(exist_ok=True)
@@ -29,7 +29,7 @@ def fetch_view(root, camera, names):
         if reader.size != VIEW_BYTES[camera]:
             raise ValueError("Unexpected i.c.sens video archive size")
         for name, target in pending:
-            item = archive.getinfo(f"view{camera}/0000/{name}")
+            item = archive.getinfo(f"view{camera}/{sequence:04}/{name}")
             if not 0 < item.file_size <= 12 * 1024**2:
                 raise ValueError("Unexpected i.c.sens member size")
             data = archive.read(item)
@@ -42,8 +42,15 @@ def fetch_view(root, camera, names):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("output", type=Path)
+    parser.add_argument("--sequence", type=int, choices=(0, 6), default=0)
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
+    partition = args.output / "sequence.txt"
+    if partition.exists() and partition.read_text().strip() != str(args.sequence):
+        raise ValueError("Choose a different output folder for a different sequence")
+    if not partition.exists() and args.sequence != 0 and any(args.output.glob("view*")):
+        raise ValueError("A new sequence requires a fresh output folder")
+    partition.write_text(f"{args.sequence}\n")
     labels = args.output / "ground_truth.zip"
     if not labels.is_file():
         part = labels.with_suffix(".part")
@@ -56,9 +63,10 @@ def main():
     if digest(labels) != GT_SHA256:
         raise ValueError("i.c.sens labels differ from the pinned archive")
 
-    names = ["time_stamp.csv", *(f"left/{index:06}.png" for index in INDEXES)]
+    indices = HANDOFF_INDEXES if args.sequence == 6 else INDEXES
+    names = ["time_stamp.csv", *(f"left/{index:06}.png" for index in indices)]
     with ThreadPoolExecutor(max_workers=8) as pool:
-        jobs = [pool.submit(fetch_view, args.output, camera, names[i:i + 12])
+        jobs = [pool.submit(fetch_view, args.output, camera, names[i:i + 12], args.sequence)
                 for camera in VIEW_BYTES for i in range(0, len(names), 12)]
         for job in jobs:
             job.result()

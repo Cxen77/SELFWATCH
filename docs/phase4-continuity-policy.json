@@ -1,0 +1,192 @@
+{
+  "local": {
+    "policy": {
+      "cosine": 0.48,
+      "birth_score": 0.27,
+      "appearance_weight": 1.4,
+      "max_gap_s": 1.0
+    },
+    "preserve_owners": true,
+    "score": {
+      "IDF1": 0.3936651583710407,
+      "same_person_possible": 686,
+      "same_person_both_matched": 201,
+      "same_person_shared_id": 0,
+      "different_person_shared_id": 0,
+      "matched_pair_precision": null,
+      "sampled_global_id_changes": 9,
+      "sampled_local_id_changes": 9,
+      "pair_coverage": 0.0,
+      "pair_recall_all": 0.0,
+      "link_events": {
+        "correct": 0,
+        "wrong": 0,
+        "unverified": 0,
+        "revoked": 0,
+        "precision": null
+      },
+      "nonoverlap_view_transitions": {
+        "opportunities": 0,
+        "anchor_available": 0,
+        "destination_matched": 0,
+        "recovered": 0,
+        "coverage": null,
+        "median_delay_s": null,
+        "p95_delay_s": null
+      },
+      "same_view_returns": {
+        "opportunities": 0,
+        "anchor_available": 0,
+        "destination_matched": 0,
+        "recovered": 0,
+        "coverage": null,
+        "median_delay_s": null,
+        "p95_delay_s": null
+      }
+    }
+  },
+  "overlap": {
+    "policy": {
+      "radius_m": 1.1,
+      "margin_m": 0.015,
+      "min_cosine": 0.45,
+      "pair_tolerance_s": 0.15,
+      "confirmations": 2,
+      "contradictions": 2,
+      "max_gap_s": 0.75,
+      "memory_s": 4.0,
+      "appearance_weight_m": 2.5
+    },
+    "revise": true,
+    "score": {
+      "IDF1": 0.48717948717948717,
+      "same_person_possible": 686,
+      "same_person_both_matched": 201,
+      "same_person_shared_id": 72,
+      "different_person_shared_id": 3,
+      "matched_pair_precision": 0.96,
+      "sampled_global_id_changes": 21,
+      "sampled_local_id_changes": 9,
+      "pair_coverage": 0.3582089552238806,
+      "pair_recall_all": 0.10495626822157435,
+      "link_events": {
+        "correct": 8,
+        "wrong": 0,
+        "unverified": 1,
+        "revoked": 2,
+        "precision": 1.0
+      },
+      "nonoverlap_view_transitions": {
+        "opportunities": 0,
+        "anchor_available": 0,
+        "destination_matched": 0,
+        "recovered": 0,
+        "coverage": null,
+        "median_delay_s": null,
+        "p95_delay_s": null
+      },
+      "same_view_returns": {
+        "opportunities": 0,
+        "anchor_available": 0,
+        "destination_matched": 0,
+        "recovered": 0,
+        "coverage": null,
+        "median_delay_s": null,
+        "p95_delay_s": null
+      }
+    }
+  },
+  "transit": {
+    "policy": {
+      "cosine": 0.64,
+      "margin": 0.05,
+      "confirmations": 2,
+      "quiet_s": 0.45,
+      "max_transit_s": 2.0
+    },
+    "score": {
+      "IDF1": 0.3692098092643052,
+      "changes": 100,
+      "same_person_possible": 204,
+      "same_person_both_matched": 98,
+      "same_person_shared_id": 0,
+      "different_person_pairs": 1479,
+      "different_person_shared_id": 0,
+      "nonoverlap_view_transitions": {
+        "opportunities": 9,
+        "anchor_available": 3,
+        "destination_matched": 4,
+        "recovered": 0,
+        "coverage": 0.0,
+        "median_delay_s": null,
+        "p95_delay_s": null
+      },
+      "same_view_returns": {
+        "opportunities": 34,
+        "anchor_available": 14,
+        "destination_matched": 23,
+        "recovered": 5,
+        "coverage": 0.14705882352941177,
+        "median_delay_s": 0.0,
+        "p95_delay_s": 0.3999999999999999
+      }
+    }
+  },
+  "transit_local": {
+    "policy": {
+      "cosine": 0.6,
+      "birth_score": 0.36,
+      "appearance_weight": 2.6,
+      "max_gap_s": 1.75
+    },
+    "preserve_owners": false,
+    "score": {
+      "IDF1": 0.3692098092643052,
+      "changes": 100,
+      "same_person_possible": 204,
+      "same_person_both_matched": 98,
+      "same_person_shared_id": 0,
+      "different_person_pairs": 1479,
+      "different_person_shared_id": 0,
+      "nonoverlap_view_transitions": {
+        "opportunities": 9,
+        "anchor_available": 3,
+        "destination_matched": 4,
+        "recovered": 0,
+        "coverage": 0.0,
+        "median_delay_s": null,
+        "p95_delay_s": null
+      },
+      "same_view_returns": {
+        "opportunities": 34,
+        "anchor_available": 14,
+        "destination_matched": 23,
+        "recovered": 5,
+        "coverage": 0.14705882352941177,
+        "median_delay_s": 0.0,
+        "p95_delay_s": 0.3999999999999999
+      }
+    }
+  },
+  "gate": {
+    "min_pair_precision": 0.95,
+    "min_pair_coverage": 0.35,
+    "min_link_precision": 0.95,
+    "min_verified_links": 10,
+    "min_handoff_opportunities": 10,
+    "min_handoff_coverage": 0.5,
+    "min_returns": 10,
+    "min_return_coverage": 0.65
+  },
+  "source_sha256": {
+    "scripts/validate_phase4_continuity.py": "bff4b434444dc47452059b41622286750e566ada0da69dd030fc425b542e815b",
+    "scripts/validate_phase4.py": "b7b0c623e9d785b826b4ab2338b68d080fadf8bd5ad01030302a2b721a9272c2",
+    "scripts/validate_icsens_identity.py": "74c63071ec0de7b05ee6a3bf6d2b602d26e1cc2b8aa3d3aa8ae44dd65236e7d9",
+    "selfwatch_v2/appearance_motion.py": "bc83afd14c6e87ac1bbdb902c8d097b77651881d0ea5d292892608443b5109b8",
+    "selfwatch_v2/transit_memory.py": "e8eef5dcb48b744c28af4fd0a5d1a4f6a9e9da58dedf14ffb48021a712bc8978",
+    "selfwatch_v2/overlap_memory.py": "a3ab63951e100f4910bd6a9d4f18526b8f444d765a5d65771ab93b9cd07c44d5"
+  },
+  "calibration_sha256": "43d45b2d4c5ced50088170a5655734139783954e5f2acd37b95a4c220e00edf8",
+  "wildtrack_development_sha256": "a04b81e83aff0c6c27e86dd1e0d5002094975b83d3181b13e0d9a6c073a38962",
+  "icsens_development_sha256": "30f14a2c8eb44cf5d55f6f1fb8a95728f576b93cef41aa791c65c81fc3e77dc2"
+}

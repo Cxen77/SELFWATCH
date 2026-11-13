@@ -13,6 +13,7 @@ SOURCE='https://www.epfl.ch/labs/cvlab/data/data-wildtrack/'
 CAMERAS=(1,3,5)
 FRAMES=tuple(range(1700,1790,5))
 IDENTITY_HOLDOUT=tuple(range(1800,1960,5))
+IDENTITY_CONTINUITY_HOLDOUT=tuple(range(1500,1620,5))
 ROOT=Path('datasets/wildtrack-pilot-v1')
 PREFIX='Wildtrack_dataset/'
 ARCHIVE=(6807496358,'"5b86d551-195c226a6"')
@@ -101,8 +102,12 @@ def main():
     mode=parser.add_mutually_exclusive_group()
     mode.add_argument('--geometry-evaluation',action='store_true')
     mode.add_argument('--identity-holdout',action='store_true')
+    mode.add_argument('--identity-continuity-holdout',action='store_true')
     args=parser.parse_args()
-    if args.identity_holdout:
+    if args.identity_continuity_holdout:
+        download(Path('datasets/wildtrack-phase4b-holdout-v1'),IDENTITY_CONTINUITY_HOLDOUT,
+                 calibration=True,max_mib=320,scope='Phase 4b temporal holdout, C1/C3/C5, frames 1500–1615.')
+    elif args.identity_holdout:
         download(Path('datasets/wildtrack-identity-holdout-v1'),IDENTITY_HOLDOUT,calibration=True,
                  max_mib=416,scope='Phase 4 temporal holdout from the same outdoor recording.')
     elif args.geometry_evaluation:

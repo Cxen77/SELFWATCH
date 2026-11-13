@@ -8,6 +8,7 @@ from types import SimpleNamespace
 import zipfile
 
 import cv2
+import numpy as np
 import torch
 
 from scripts.validate_phase4 import opportunities
@@ -21,12 +22,13 @@ from selfwatch_v2.yolo import YoloPerception
 
 SOURCE = "official:icsens"
 INDEXES = tuple(range(0, 231, 5))
+HANDOFF_INDEXES = tuple(range(0, 111, 5))
 GT_SHA256 = "10e36036ceb02de4bf9dfcdaa285e136251777982197d6c376bc9b7dd9af9e00"
 
 
-def read_marks(archive, camera):
+def read_marks(archive, camera, sequence=0):
     result = defaultdict(list)
-    rows = archive.read(f"ground_truth/view{camera}/0000.txt").decode().splitlines()
+    rows = archive.read(f"ground_truth/view{camera}/{sequence:04}.txt").decode().splitlines()
     for line in rows:
         if not line.strip():
             continue
@@ -39,21 +41,22 @@ def read_marks(archive, camera):
     return result
 
 
-def audit(root, output):
+def audit(root, output, *, sequence=0):
+    indices = HANDOFF_INDEXES if sequence == 6 else INDEXES
     gt = root / "ground_truth.zip"
     if digest(gt) != GT_SHA256:
         raise ValueError("i.c.sens labels differ from the pinned archive")
     with zipfile.ZipFile(gt) as archive:
-        labels = {c: read_marks(archive, c) for c in (1, 2)}
+        labels = {c: read_marks(archive, c, sequence) for c in (1, 2)}
     clocks = {c: list(map(float, (root / f"view{c}/time_stamp.csv").read_text().splitlines()))
               for c in labels}
-    if any(len(times) != 231 or any(b <= a for a, b in zip(times, times[1:]))
+    if any(len(times) != indices[-1] + 1 or any(b <= a for a, b in zip(times, times[1:]))
            for times in clocks.values()):
         raise ValueError("Unexpected i.c.sens timing")
-    skew = max(abs(clocks[1][i] - clocks[2][i]) for i in INDEXES)
+    skew = max(abs(clocks[1][i] - clocks[2][i]) for i in indices)
     if skew > .05:
         raise ValueError("Paired camera timestamps differ by over 50 ms")
-    frames = sorted((clocks[c][i], c, i) for c in labels for i in INDEXES)
+    frames = sorted((clocks[c][i], c, i) for c in labels for i in indices)
     origin = frames[0][0]
     source = [SimpleNamespace(camera_id=f"view{c}") for c in labels]
     torch.set_num_threads(2)
@@ -61,8 +64,8 @@ def audit(root, output):
     detector.include_masks = False
     encoder = AppearanceEncoder("weights/osnet/osnet_x1_0_msmt17.pth")
     output.mkdir(parents=True, exist_ok=False)
-    run_id = "icsens:0000:stride5"
-    raw, annotations, image_hashes = [], [], {}
+    run_id = f"icsens:{sequence:04}:stride5"
+    raw, annotations, image_hashes, vectors = [], [], {}, {}
     trial = Trial("legacy", source)
     try:
         with (output / "engine.log").open("w", encoding="utf-8") as log:
@@ -74,7 +77,7 @@ def audit(root, output):
                 if image is None:
                     raise ValueError(f"Unreadable image {relative}")
                 height, width = image.shape[:2]
-                frame = FrameRef(f"view{c}", "icsens-0000", index, capture - origin, capture - origin,
+                frame = FrameRef(f"view{c}", f"icsens-{sequence:04}", index, capture - origin, capture - origin,
                                  width, height, relative, "published timestamp")
                 with redirect_stdout(log):
                     obs, _ = detector.predict(frame, image)
@@ -82,7 +85,9 @@ def audit(root, output):
                     tracks = trial.step(obs, image, features)["tracks"]
                 local = [dict(track, global_id=json.dumps([frame.camera_id, track["local_id"]]))
                          for track in tracks if track.get("global_id") is not None]
-                row = dict(obs.to_dict(), observation_id=frame.observation_id,
+                keys = {str(i): f"f{len(raw)}_i{i}" for i in features}
+                vectors.update({keys[str(i)]: v.copy() for i, v in features.items()})
+                row = dict(obs.to_dict(), observation_id=frame.observation_id, feature_keys=keys,
                            tracks_by_case=dict(camera_local=local, existing_shared_memory=tracks))
                 raw.append(row)
                 marks = []
@@ -121,7 +126,7 @@ def audit(root, output):
             **opportunities({"frames": paired_annotations}, traces),
         )
     report = dict(source="https://doi.org/10.25835/0082741", ground_truth_sha256=GT_SHA256,
-                  scope="Independent outdoor camera pair, sequence 0000, left images at every fifth frame.",
+                  scope=f"Independent outdoor camera pair, sequence {sequence:04}, left images at every fifth frame.",
                   label_policy="Source pedestrian boxes; cyclists excluded from reference. Extra predictions charged.",
                   verified_view_skew_max_s=skew, observations=len(raw), scores=scores,
                   detector=detector.provenance, reid=encoder.provenance,
@@ -129,6 +134,7 @@ def audit(root, output):
                   timestamps_sha256={c: digest(root / f"view{c}/time_stamp.csv") for c in labels})
     for name, content in (("results", report), ("predictions", data), ("annotations", reference)):
         (output / f"{name}.json").write_text(json.dumps(content, indent=2, allow_nan=False), encoding="utf-8")
+    np.savez_compressed(output / "features.npz", **vectors)
     print(json.dumps(scores, indent=2))
 
 
@@ -136,8 +142,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("dataset", type=Path)
     parser.add_argument("output", type=Path)
+    parser.add_argument("--sequence", type=int, choices=(0, 6), default=0)
     args = parser.parse_args()
-    audit(args.dataset, args.output)
+    audit(args.dataset, args.output, sequence=args.sequence)
 
 
 if __name__ == "__main__":
