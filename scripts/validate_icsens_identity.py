@@ -23,7 +23,7 @@ from selfwatch_v2.yolo import YoloPerception
 SOURCE = "official:icsens"
 INDEXES = tuple(range(0, 231, 5))
 HANDOFF_INDEXES = tuple(range(0, 111, 5))
-NETWORK_HOLDOUT_INDEXES = tuple(range(0, 190, 5))
+NETWORK_HOLDOUT_INDEXES = tuple(range(191))
 GT_SHA256 = "10e36036ceb02de4bf9dfcdaa285e136251777982197d6c376bc9b7dd9af9e00"
 
 
@@ -67,7 +67,8 @@ def audit(root, output, *, sequence=0):
     detector.include_masks = False
     encoder = AppearanceEncoder("weights/osnet/osnet_x1_0_msmt17.pth")
     output.mkdir(parents=True, exist_ok=False)
-    run_id = f"icsens:{sequence:04}:stride5"
+    cadence = "native" if sequence == 7 else "stride5"
+    run_id = f"icsens:{sequence:04}:{cadence}"
     raw, annotations, image_hashes, vectors = [], [], {}, {}
     trial = Trial("legacy", source)
     try:
@@ -129,7 +130,7 @@ def audit(root, output, *, sequence=0):
             **opportunities({"frames": paired_annotations}, traces),
         )
     report = dict(source="https://doi.org/10.25835/0082741", ground_truth_sha256=GT_SHA256,
-                  scope=f"Independent outdoor camera pair, sequence {sequence:04}, left images at every fifth frame.",
+                  scope=f"Independent outdoor camera pair, sequence {sequence:04}, {cadence} left images.",
                   label_policy="Source pedestrian boxes; cyclists excluded from reference. Extra predictions charged.",
                   verified_view_skew_max_s=skew, observations=len(raw), scores=scores,
                   detector=detector.provenance, reid=encoder.provenance,

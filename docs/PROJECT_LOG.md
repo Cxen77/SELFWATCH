@@ -39,7 +39,7 @@ table from this file.
 | 1 | Replay and contracts | Done | Timestamped camera/epoch observations, bounded ordered replay, durable idempotent store and regression checks implemented. |
 | 2 | Perception pilot | Done | Gate B passed for the declared two-view retail replay. Visibility, optional landmarks and scheduling evidence are in E23. |
 | 3 | Camera geometry | Done (reference rig) | Three public views and replay timing verified, with CPU floor projection, overlap topology, commissioning tools and simulated zones. E24 records error and remaining site measurements. |
-| 4 | Global identity memory | In progress | E25–E27 record frozen overlap tests and two independent handoff sequences. Gate C remains open. |
+| 4 | Global identity memory | In progress | E25–E28 record frozen overlap tests and sparse/native-rate handoff evidence. Gate C remains open. |
 | 5 | Item and interaction evidence | Not started | Needs supported products, causal take/put/transfer evidence and annotated interaction evaluation. |
 | 6 | Revisable custody | Not started | Needs event dependencies, candidate ownership, bounded retention and verified rollback/recompute after corrections. |
 | 7 | Exit / POS integration | Not started | Needs directional zones, simulated transactions and late/canceled/group-payment scenarios with evidence-backed review. |
@@ -1357,3 +1357,28 @@ to live alerts. The next meaningful step is native-rate labeled footage with
 sufficient detections at both handoff endpoints and measured camera topology.
 At the current sparse cadence and public-footage limitations, further
 threshold tuning is not justified.
+
+### E28 — native-rate independent handoff replay, 17 November 2026
+
+To test whether E27's failures were caused by 0.5-second sampling, the same
+sequence 0007 evaluation was repeated using all 191 timestamps from each camera
+at the source's 10 fps cadence (382 observations and 6,134 labeled pedestrian
+boxes). No policy threshold was tuned on this sequence. The frozen transit
+memory again recovered 0 of 33 non-overlap transitions. Only two episodes had
+an available source identity anchor and eight had a matched destination. It
+recovered 1 of 72 same-view returns (1.39%). The camera-local arm scored 31.77%
+IDF1 with 84 sampled ID changes; the existing shared-memory baseline scored
+29.46% IDF1 with 91 changes, but merged 54 different-person matched pairs.
+The frozen transit overlay did not improve the return or handoff counts.
+
+This native-rate replay rules out sparse sampling as the sole explanation for
+the low handoff coverage on this sequence. It does not establish detector
+failure alone: the current person detector and local association leave only
+two usable source anchors, so detection recall, track continuity, embeddings,
+and event labeling must be separated in the next study. The evaluation report
+is `docs/phase4c-native-handoff-results.json`. Gate C remains open: native-rate
+handoff and return coverage still fail, and the overlapping-view evaluation
+still has nine verified accepted links against ten required. Keep the replay
+memory out of live alerts. Next work should annotate detection/track visibility
+at transition endpoints and compare oracle-box, detector-only, local-track,
+and ReID-conditioned handoff ceilings before changing identity policy.

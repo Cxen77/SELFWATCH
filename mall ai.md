@@ -107,3 +107,9 @@ on only three of those 11 handoffs. Gate C remains open.
 - Fixed selected-frame indexing and camera timestamp validation for the new sequence.
 - Ran a same-sequence 640 versus 960 detector diagnostic and retained the reports at `docs/phase4c-handoff-results.json` and `docs/phase4c-resolution-results.json`.
 - Result: frozen transit recovered 0/25 handoffs and 2/60 same-view returns at the sampled cadence; detector resolution improved box matches but both-end handoff detections stayed at 2/25. Gate C remains open. No identity policy was promoted.
+
+### Small AI / assistant work note — native-rate replay, 17 November 2026
+
+- Downloaded the remaining sequence 0007 frames and ran every timestamp at 10 fps across both views (382 observations).
+- Replayed frozen Phase 4 policy without parameter tuning. It recovered 0/33 handoffs and 1/72 returns; only two episodes had source anchors.
+- Retained `docs/phase4c-native-handoff-results.json`. Sparse sampling alone does not explain the failure. Phase 4 remains open; next measure oracle detection, local-track continuity, and ReID separately.
