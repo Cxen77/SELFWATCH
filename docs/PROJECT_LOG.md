@@ -4,7 +4,7 @@
 
 **Current stage: 4**
 
-**Status summary:** Stage 4's second frozen overlap replay cleared the pair precision and coverage targets. Gate C remains open on verified-link count, non-overlap handoffs and same-view recovery. Store commissioning is pending a floor survey and measured camera timing.
+**Status summary:** Frozen overlap precision and coverage pass on the current reference set, but Gate C does not pass: verified-link count is short, and all tested native-rate identity policies recovered 0/33 labeled handoffs on the available camera sequence. Retain Phase 4 as open and keep replay memory out of live alerts. Store commissioning and a fresh site-specific final set remain required.
 
 This is the living record for the project. Update its checkboxes, stage table
 and experiment notes after work is verified. Mark a stage complete only when
@@ -39,7 +39,7 @@ table from this file.
 | 1 | Replay and contracts | Done | Timestamped camera/epoch observations, bounded ordered replay, durable idempotent store and regression checks implemented. |
 | 2 | Perception pilot | Done | Gate B passed for the declared two-view retail replay. Visibility, optional landmarks and scheduling evidence are in E23. |
 | 3 | Camera geometry | Done (reference rig) | Three public views and replay timing verified, with CPU floor projection, overlap topology, commissioning tools and simulated zones. E24 records error and remaining site measurements. |
-| 4 | Global identity memory | In progress | E25–E28 record frozen overlap tests and sparse/native-rate handoff evidence. Gate C remains open. |
+| 4 | Global identity memory | In progress | E25–E29 record frozen overlap tests, native-rate handoffs and detector adaptation. Gate C remains open and no policy is promoted. |
 | 5 | Item and interaction evidence | Not started | Needs supported products, causal take/put/transfer evidence and annotated interaction evaluation. |
 | 6 | Revisable custody | Not started | Needs event dependencies, candidate ownership, bounded retention and verified rollback/recompute after corrections. |
 | 7 | Exit / POS integration | Not started | Needs directional zones, simulated transactions and late/canceled/group-payment scenarios with evidence-backed review. |
@@ -1382,3 +1382,46 @@ still has nine verified accepted links against ten required. Keep the replay
 memory out of live alerts. Next work should annotate detection/track visibility
 at transition endpoints and compare oracle-box, detector-only, local-track,
 and ReID-conditioned handoff ceilings before changing identity policy.
+
+### E29 — detector adaptation and capacity comparison, 17 November 2026
+
+Separated detector endpoint coverage from local tracking and cross-camera
+memory on the 10 fps i.c.sens sequence 0007. The stock YOLO26n-seg detector at
+640 matched 2,457/6,134 labeled person boxes (40.1% recall at IoU .50) and had
+both detector endpoints on 2/33 handoff episodes. The retained overhead-person
+pilot transferred very poorly: 8/6,134 matches and no both-endpoint episode.
+
+A sequence-separated person-box fine-tune used sequence 0000 for training
+(94 sampled images, 837 boxes) and sequence 0006 for validation (46 images,
+465 boxes). Training stopped after six epochs; the best checkpoint was epoch
+1. On sequence 0007, recall rose to 50.9%, but precision fell to 46.2%, only
+3/33 handoffs had both detector endpoints, raw local IDF1 was 22.13%, and
+sampled ID changes rose to 248. The frozen local continuation raised changes
+to 724 and still recovered 0 handoffs. This checkpoint is rejected.
+
+An official YOLO26s diagnostic at 640 matched 3,051/6,134 boxes (49.7% recall,
+87.0% precision), with both detector endpoints on 3/33 episodes. Raw local
+IDF1 rose to 35.36% versus 31.77% for YOLO26n-seg, but sampled changes rose
+from 84 to 174. The frozen local continuation reached 37.77% IDF1 with 209
+changes; cross-camera handoff recovery remained 0/33 and same-view returns were
+5/72 (6.94%). The existing shared-memory baseline on this model merged 31
+labeled different-person pairs. The candidate's measured detector inference
+averaged 49.3 ms/image, excluding ReID, tracking, storage, capture and display;
+this is not a full-system FPS result. None of these candidate arms passes Gate C.
+
+The reproducible dataset preparation/training and model-specific replay options
+are now in `scripts/prepare_icsens_person_detection.py`,
+`scripts/train_icsens_person_detection.py` and
+`scripts/validate_icsens_identity.py`. Consolidated metrics, checkpoint hashes,
+training lock and inference caveats are in `docs/phase4c-detector-study.json`.
+The trained detector remains in the local ignored `runs/` artifacts and is not
+copied into the live model set. The YOLO26s weights are available locally, but
+are not promoted.
+
+Important evaluation limitation: sequence 0007 has now been used for several
+post-holdout detector and resolution diagnostics. It is useful development
+evidence but is no longer a pristine final test for selecting or claiming a
+model. A new independent store/camera sequence with frame-level visibility,
+known handoff topology and synchronized clocks is necessary for a paper-grade
+final result. Phase 4 remains open; no claim of reliable disjoint-camera ID
+continuity is supported by the current evidence.

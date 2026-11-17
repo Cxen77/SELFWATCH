@@ -42,7 +42,8 @@ def read_marks(archive, camera, sequence=0):
     return result
 
 
-def audit(root, output, *, sequence=0):
+def audit(root, output, *, sequence=0, weights="weights/v2/yolo26n-seg.pt",
+          imgsz=640, confidence=.25):
     indices = {0: INDEXES, 6: HANDOFF_INDEXES, 7: NETWORK_HOLDOUT_INDEXES}[sequence]
     gt = root / "ground_truth.zip"
     if digest(gt) != GT_SHA256:
@@ -63,7 +64,7 @@ def audit(root, output, *, sequence=0):
     origin = frames[0][0]
     source = [SimpleNamespace(camera_id=f"view{c}") for c in labels]
     torch.set_num_threads(2)
-    detector = YoloPerception("weights/v2/yolo26n-seg.pt", "0", 640, .25)
+    detector = YoloPerception(weights, "0", imgsz, confidence)
     detector.include_masks = False
     encoder = AppearanceEncoder("weights/osnet/osnet_x1_0_msmt17.pth")
     output.mkdir(parents=True, exist_ok=False)
@@ -147,8 +148,12 @@ def main():
     parser.add_argument("dataset", type=Path)
     parser.add_argument("output", type=Path)
     parser.add_argument("--sequence", type=int, choices=(0, 6, 7), default=0)
+    parser.add_argument("--weights", default="weights/v2/yolo26n-seg.pt")
+    parser.add_argument("--imgsz", type=int, default=640)
+    parser.add_argument("--confidence", type=float, default=.25)
     args = parser.parse_args()
-    audit(args.dataset, args.output, sequence=args.sequence)
+    audit(args.dataset, args.output, sequence=args.sequence, weights=args.weights,
+          imgsz=args.imgsz, confidence=args.confidence)
 
 
 if __name__ == "__main__":

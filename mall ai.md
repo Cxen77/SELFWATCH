@@ -113,3 +113,11 @@ on only three of those 11 handoffs. Gate C remains open.
 - Downloaded the remaining sequence 0007 frames and ran every timestamp at 10 fps across both views (382 observations).
 - Replayed frozen Phase 4 policy without parameter tuning. It recovered 0/33 handoffs and 1/72 returns; only two episodes had source anchors.
 - Retained `docs/phase4c-native-handoff-results.json`. Sparse sampling alone does not explain the failure. Phase 4 remains open; next measure oracle detection, local-track continuity, and ReID separately.
+
+### Small AI / assistant work note — detector study, 17 November 2026
+
+- Compared the existing YOLO26n-seg, retained overhead-person detector, an i.c.sens sequence-separated fine-tune, and downloaded official YOLO26s on native-rate sequence 0007.
+- YOLO26s had the best measured detector precision/recall and IDF1 among these runs, but handoff recovery remained 0/33 and same-view returns were 5/72; ID changes increased. It is not promoted.
+- Fine-tuning on 0000 and validating on 0006 stopped at epoch 6 with best epoch 1, then reduced holdout local IDF1 and increased switches. Rejected.
+- Added reproducible dataset preparation/training and configurable replay scripts. Metrics and checkpoint hashes: `docs/phase4c-detector-study.json`.
+- Sequence 0007 has been reused for candidate diagnostics and is not a pristine paper test set. Phase 4 is still open.

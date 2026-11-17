@@ -1,0 +1,221 @@
+{
+  "date": "2026-11-17",
+  "scope": "Exploratory native-rate detector and frozen identity-memory comparison on i.c.sens sequence 0007.",
+  "protocol": {
+    "sequence_0000": "training only; 94 sampled images / 837 pedestrian boxes across two cameras",
+    "sequence_0006": "checkpoint validation only; 46 sampled images / 465 pedestrian boxes",
+    "sequence_0007": "382 native-rate images / 6,134 pedestrian boxes; no gradients or threshold fitting, but reused for several candidate diagnostics, so it is no longer a pristine final test",
+    "input": "1920x1216 source images resized to 640 model pixels; confidence 0.25; detector-only person boxes matched at IoU 0.50; existing OSNet and tracker unchanged for identity runs",
+    "label_source": "Pinned official i.c.sens archive; SHA-256 10e36036ceb02de4bf9dfcdaa285e136251777982197d6c376bc9b7dd9af9e00"
+  },
+  "train": {
+    "status": "completed",
+    "started_utc": "2026-11-17T17:40:44.872752+00:00",
+    "ended_utc": "2026-11-17T17:44:45.785341+00:00",
+    "initial_weights": {
+      "path": "weights/v2/yolo26n.pt",
+      "sha256": "9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef"
+    },
+    "best_checkpoint": {
+      "path": "runs\\icsens-person-training-v1\\weights\\best.pt",
+      "sha256": "643c50aa374786e75cb0f1eb1d9ca6ce6803c10454790f8643c4cb4b4a4147bb",
+      "bytes": 5434629
+    },
+    "completed_epochs": 6,
+    "best_validation_epoch": 1,
+    "epoch1_val": {
+      "precision": 0.74084,
+      "recall": 0.53548,
+      "mAP50": 0.62463,
+      "mAP50_95": 0.26033
+    },
+    "note": "Early stopping selected epoch 1. Validation performance was unstable; this checkpoint is not promoted."
+  },
+  "candidates": [
+    {
+      "candidate": "yolo26n-seg-640",
+      "checkpoint": "weights/v2/yolo26n-seg.pt",
+      "checkpoint_sha256": "361fbfabab285c3237700b6bb91d7ecfa602cd945fffda8dbe1242829b71e73f",
+      "imgsz": 640,
+      "confidence": 0.25,
+      "person_predictions": 3175,
+      "matched_person_boxes_iou50": 2457,
+      "detection_precision_iou50": 0.7738582677165354,
+      "detection_recall_iou50": 0.4005542875774372,
+      "handoff_episodes_both_endpoints": 2,
+      "handoff_episodes": 33,
+      "source_endpoint_detected": 3,
+      "destination_endpoint_detected": 12,
+      "camera_local_idf1": 0.31768599093026106,
+      "camera_local_id_changes": 84,
+      "same_person_both_matched": 266,
+      "detector_mean_ms_per_image": 61.22771308834162,
+      "gate_replay": {
+        "passed": false,
+        "gate": {
+          "pair_precision": true,
+          "pair_coverage": true,
+          "link_precision": true,
+          "verified_links": false,
+          "better_IDF1": true,
+          "handoff_support": true,
+          "handoff_coverage": false,
+          "return_support": true,
+          "return_coverage": false
+        },
+        "local_idf1": 0.32057631697433586,
+        "local_id_changes": 187,
+        "transit_handoffs": {
+          "opportunities": 33,
+          "anchor_available": 2,
+          "destination_matched": 10,
+          "recovered": 0,
+          "coverage": 0.0,
+          "median_delay_s": null,
+          "p95_delay_s": null
+        },
+        "transit_returns": {
+          "opportunities": 72,
+          "anchor_available": 4,
+          "destination_matched": 25,
+          "recovered": 2,
+          "coverage": 0.027777777777777776,
+          "median_delay_s": 0.1999999999999993,
+          "p95_delay_s": 0.289999999999999
+        },
+        "wrong_shared_pairs": 0
+      }
+    },
+    {
+      "candidate": "retail-domain-pilot-640",
+      "checkpoint": "weights/v2/person-domain-expanded-v1/detector.pt",
+      "checkpoint_sha256": "2a3a23d5b10a0e431670f9772f27f4e653b1463675222e7b1591adb66dc646f2",
+      "imgsz": 640,
+      "confidence": 0.25,
+      "person_predictions": 462,
+      "matched_person_boxes_iou50": 8,
+      "detection_precision_iou50": 0.017316017316017316,
+      "detection_recall_iou50": 0.0013042060645582002,
+      "handoff_episodes_both_endpoints": 0,
+      "handoff_episodes": 33,
+      "source_endpoint_detected": 0,
+      "destination_endpoint_detected": 0,
+      "camera_local_idf1": 0.0,
+      "camera_local_id_changes": 0,
+      "same_person_both_matched": 0,
+      "detector_mean_ms_per_image": 47.96274110089124,
+      "gate_replay": null
+    },
+    {
+      "candidate": "icsens-finetuned-640",
+      "checkpoint": "runs/icsens-person-training-v1/weights/best.pt",
+      "checkpoint_sha256": "643c50aa374786e75cb0f1eb1d9ca6ce6803c10454790f8643c4cb4b4a4147bb",
+      "imgsz": 640,
+      "confidence": 0.25,
+      "person_predictions": 6766,
+      "matched_person_boxes_iou50": 3124,
+      "detection_precision_iou50": 0.46172036653857523,
+      "detection_recall_iou50": 0.5092924682099772,
+      "handoff_episodes_both_endpoints": 3,
+      "handoff_episodes": 33,
+      "source_endpoint_detected": 5,
+      "destination_endpoint_detected": 14,
+      "camera_local_idf1": 0.2212998361551065,
+      "camera_local_id_changes": 248,
+      "same_person_both_matched": 462,
+      "detector_mean_ms_per_image": 49.20683036551016,
+      "gate_replay": {
+        "passed": false,
+        "gate": {
+          "pair_precision": true,
+          "pair_coverage": true,
+          "link_precision": true,
+          "verified_links": false,
+          "better_IDF1": true,
+          "handoff_support": true,
+          "handoff_coverage": false,
+          "return_support": true,
+          "return_coverage": false
+        },
+        "local_idf1": 0.21040796659171218,
+        "local_id_changes": 724,
+        "transit_handoffs": {
+          "opportunities": 33,
+          "anchor_available": 5,
+          "destination_matched": 16,
+          "recovered": 0,
+          "coverage": 0.0,
+          "median_delay_s": null,
+          "p95_delay_s": null
+        },
+        "transit_returns": {
+          "opportunities": 72,
+          "anchor_available": 9,
+          "destination_matched": 33,
+          "recovered": 3,
+          "coverage": 0.041666666666666664,
+          "median_delay_s": 0.10000000000000142,
+          "p95_delay_s": 0.28000000000000075
+        },
+        "wrong_shared_pairs": 0
+      }
+    },
+    {
+      "candidate": "yolo26s-640",
+      "checkpoint": "weights/v2/yolo26s.pt",
+      "checkpoint_sha256": "646f8bc3fe0a656803d95c294f7852321748cb29d13466a1af8862e2db384a1b",
+      "imgsz": 640,
+      "confidence": 0.25,
+      "person_predictions": 3506,
+      "matched_person_boxes_iou50": 3051,
+      "detection_precision_iou50": 0.8702224757558471,
+      "detection_recall_iou50": 0.4973915878708836,
+      "handoff_episodes_both_endpoints": 3,
+      "handoff_episodes": 33,
+      "source_endpoint_detected": 4,
+      "destination_endpoint_detected": 13,
+      "camera_local_idf1": 0.35360908353609083,
+      "camera_local_id_changes": 174,
+      "same_person_both_matched": 400,
+      "detector_mean_ms_per_image": 49.31931910991879,
+      "gate_replay": {
+        "passed": false,
+        "gate": {
+          "pair_precision": true,
+          "pair_coverage": true,
+          "link_precision": true,
+          "verified_links": false,
+          "better_IDF1": true,
+          "handoff_support": true,
+          "handoff_coverage": false,
+          "return_support": true,
+          "return_coverage": false
+        },
+        "local_idf1": 0.37771161207996595,
+        "local_id_changes": 209,
+        "transit_handoffs": {
+          "opportunities": 33,
+          "anchor_available": 4,
+          "destination_matched": 14,
+          "recovered": 0,
+          "coverage": 0.0,
+          "median_delay_s": null,
+          "p95_delay_s": null
+        },
+        "transit_returns": {
+          "opportunities": 72,
+          "anchor_available": 8,
+          "destination_matched": 29,
+          "recovered": 5,
+          "coverage": 0.06944444444444445,
+          "median_delay_s": 0.09999999999999964,
+          "p95_delay_s": 0.1799999999999997
+        },
+        "wrong_shared_pairs": 0
+      },
+      "checkpoint_source": "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo26s.pt"
+    }
+  ],
+  "conclusion": "YOLO26s improved native-rate box recall and IDF1 versus YOLO26n, but handoff recovery remained 0/33, local ID changes increased, and shared memory made 31 false different-person pair assignments. The fine-tuned detector raised raw box recall slightly but harmed local IDF1 and greatly increased ID changes. The retained overhead checkpoint did not transfer to this camera pair. None passes Gate C; no candidate is enabled in the portal.",
+  "final_test_policy": "Because sequence 0007 was reused across multiple post-holdout diagnostics, future paper claims require a newly captured or otherwise untouched final sequence/store with sufficient visible handoff endpoints."
+}
