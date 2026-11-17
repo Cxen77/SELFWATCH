@@ -1,6 +1,6 @@
 # SELFWATCH master plan and research log
 
-**Updated: 14 November 2026**
+**Updated: 17 November 2026**
 
 **Current stage: 4**
 
@@ -39,7 +39,7 @@ table from this file.
 | 1 | Replay and contracts | Done | Timestamped camera/epoch observations, bounded ordered replay, durable idempotent store and regression checks implemented. |
 | 2 | Perception pilot | Done | Gate B passed for the declared two-view retail replay. Visibility, optional landmarks and scheduling evidence are in E23. |
 | 3 | Camera geometry | Done (reference rig) | Three public views and replay timing verified, with CPU floor projection, overlap topology, commissioning tools and simulated zones. E24 records error and remaining site measurements. |
-| 4 | Global identity memory | In progress | E25 and E26 record the frozen overlap tests and independent handoff evidence. |
+| 4 | Global identity memory | In progress | E25–E27 record frozen overlap tests and two independent handoff sequences. Gate C remains open. |
 | 5 | Item and interaction evidence | Not started | Needs supported products, causal take/put/transfer evidence and annotated interaction evaluation. |
 | 6 | Revisable custody | Not started | Needs event dependencies, candidate ownership, bounded retention and verified rollback/recompute after corrections. |
 | 7 | Exit / POS integration | Not started | Needs directional zones, simulated transactions and late/canceled/group-payment scenarios with evidence-backed review. |
@@ -1321,3 +1321,39 @@ native-rate, labelled transitions with independently verified visibility at
 both ends. The supplied public reference geometry covers the overlapping
 WILDTRACK views. Disjoint-camera qualification needs documented topology
 and sufficient observations at the entry and departure of each route.
+
+### E27 — independent network-handoff holdout and resolution ceiling, 17 November 2026
+
+Added i.c.sens sequence 0007 as a second handoff evaluation set, keeping the
+Phase 4 local, overlap and transit parameter values unchanged. The sequence
+was sampled every fifth frame (nominal 0.5 seconds) and yielded 76 observations
+across two cameras, 1,237 labeled pedestrian boxes, 25 labeled non-overlap
+transitions and 60 same-view returns. At 640 pixels, the detector/local tracker
+produced 19 both-matched same-person pairs, and the frozen transit memory
+recovered 0/25 transitions and 2/60 returns (3.33%). At this cadence only
+3 transitions had an available identity anchor and 10 had a destination match.
+The existing shared-memory baseline recovered 0/25 transitions and 3/60
+returns (5%). Neither approach meets the handoff or return coverage gate.
+
+A post-holdout detector-resolution diagnostic on the same sequence compared
+640 and 960 input sizes. Matched pedestrian boxes rose from 502 to 639 and
+same-person both-matched pairs from 54 to 86, but episodes with detections at
+both handoff endpoints stayed at 2/25. At 960, the local tracker also had more
+sampled ID changes (96 versus 65 at 640); this is a diagnostic, not a candidate
+policy. Higher resolution alone does not fix the limiting cross-camera
+continuity evidence. Results are retained in
+`docs/phase4c-handoff-results.json` and `docs/phase4c-resolution-results.json`.
+
+Sequence 0007 download and audit support was added to the reproducible scripts.
+Timestamp validation now permits unused trailing timestamps while requiring
+equal camera lengths, strictly increasing clocks and valid sampled indices.
+The 960 diagnostic chooses its sequence from the audited baseline. The frozen
+policy's source fingerprints were refreshed after these evaluator changes; all
+numerical policy parameters and development selections remain unchanged.
+Sequence 0007 was used only for independent evaluation. Gate C remains open
+because handoff/return recovery is low and WILDTRACK has nine verified accepted
+links against the ten-link minimum. Do not promote the replay identity policy
+to live alerts. The next meaningful step is native-rate labeled footage with
+sufficient detections at both handoff endpoints and measured camera topology.
+At the current sparse cadence and public-footage limitations, further
+threshold tuning is not justified.

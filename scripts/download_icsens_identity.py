@@ -5,7 +5,9 @@ from pathlib import Path
 import subprocess
 import zipfile
 
-from scripts.validate_icsens_identity import GT_SHA256, HANDOFF_INDEXES, INDEXES
+from scripts.validate_icsens_identity import (
+    GT_SHA256, HANDOFF_INDEXES, INDEXES, NETWORK_HOLDOUT_INDEXES,
+)
 from selfwatch_v2.http_range import HTTPRangeReader
 from selfwatch_v2.identity_study import digest
 
@@ -42,7 +44,7 @@ def fetch_view(root, camera, names, sequence=0):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("output", type=Path)
-    parser.add_argument("--sequence", type=int, choices=(0, 6), default=0)
+    parser.add_argument("--sequence", type=int, choices=(0, 6, 7), default=0)
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     partition = args.output / "sequence.txt"
@@ -63,7 +65,7 @@ def main():
     if digest(labels) != GT_SHA256:
         raise ValueError("i.c.sens labels differ from the pinned archive")
 
-    indices = HANDOFF_INDEXES if args.sequence == 6 else INDEXES
+    indices = {0: INDEXES, 6: HANDOFF_INDEXES, 7: NETWORK_HOLDOUT_INDEXES}[args.sequence]
     names = ["time_stamp.csv", *(f"left/{index:06}.png" for index in indices)]
     with ThreadPoolExecutor(max_workers=8) as pool:
         jobs = [pool.submit(fetch_view, args.output, camera, names[i:i + 12], args.sequence)

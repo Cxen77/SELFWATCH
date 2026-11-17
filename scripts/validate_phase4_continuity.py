@@ -144,7 +144,7 @@ def main():
     data, labels, _ = load_run(args.wildtrack, indices)
     cameras, camera_sha = load_cameras(args.calibration)
     public, public_labels = read(args.icsens)
-    expected = "icsens:0000:stride5" if development else "icsens:0006:stride5"
+    expected = f"icsens:{0 if development else 7:04}:stride5"
     if public["run_id"] != expected:
         raise ValueError("Unexpected handoff partition")
     baseline = score(data, labels, "camera_local")

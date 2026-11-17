@@ -67,6 +67,7 @@ def main():
     parser.add_argument("output", type=Path)
     args = parser.parse_args()
     baseline, labels = read(args.baseline)
+    sequence = int(baseline["run_id"].split(":")[1])
     scores = {"640": endpoint_audit(baseline, labels)}
     detector_factory = icsens.YoloPerception
 
@@ -77,14 +78,14 @@ def main():
         path = Path(temp) / "run"
         try:
             icsens.YoloPerception = at_960
-            icsens.audit(args.dataset, path, sequence=6)
+            icsens.audit(args.dataset, path, sequence=sequence)
         finally:
             icsens.YoloPerception = detector_factory
         data, checked_labels = read(path)
         if checked_labels != labels:
             raise ValueError("The detector comparison must use the same reference annotations")
         scores["960"] = endpoint_audit(data, labels)
-        frozen_write(args.output, dict(scope="Post-holdout detector diagnostic; i.c.sens 0006, IoU .50.",
+        frozen_write(args.output, dict(scope=f"Post-holdout detector diagnostic; i.c.sens {sequence:04}, IoU .50.",
             scores=scores, labels_sha256=digest(args.baseline / "annotations.json"),
             baseline_predictions_sha256=digest(args.baseline / "predictions.json"),
             high_resolution_predictions_sha256=digest(path / "predictions.json")))

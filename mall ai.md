@@ -100,3 +100,10 @@ and 67.82% coverage, with nine verified accepted links against ten required.
 Independent i.c.sens sequence 0006 gave zero of 11 handoffs and four of 29
 same-view returns for the candidate. The 640 detector supplied both endpoints
 on only three of those 11 handoffs. Gate C remains open.
+
+### Small AI / assistant work note — 17 November 2026
+
+- Added and evaluated i.c.sens sequence 0007 as an independent Phase 4 handoff holdout; added reproducible download/audit support.
+- Fixed selected-frame indexing and camera timestamp validation for the new sequence.
+- Ran a same-sequence 640 versus 960 detector diagnostic and retained the reports at `docs/phase4c-handoff-results.json` and `docs/phase4c-resolution-results.json`.
+- Result: frozen transit recovered 0/25 handoffs and 2/60 same-view returns at the sampled cadence; detector resolution improved box matches but both-end handoff detections stayed at 2/25. Gate C remains open. No identity policy was promoted.

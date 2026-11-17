@@ -23,6 +23,7 @@ from selfwatch_v2.yolo import YoloPerception
 SOURCE = "official:icsens"
 INDEXES = tuple(range(0, 231, 5))
 HANDOFF_INDEXES = tuple(range(0, 111, 5))
+NETWORK_HOLDOUT_INDEXES = tuple(range(0, 190, 5))
 GT_SHA256 = "10e36036ceb02de4bf9dfcdaa285e136251777982197d6c376bc9b7dd9af9e00"
 
 
@@ -42,7 +43,7 @@ def read_marks(archive, camera, sequence=0):
 
 
 def audit(root, output, *, sequence=0):
-    indices = HANDOFF_INDEXES if sequence == 6 else INDEXES
+    indices = {0: INDEXES, 6: HANDOFF_INDEXES, 7: NETWORK_HOLDOUT_INDEXES}[sequence]
     gt = root / "ground_truth.zip"
     if digest(gt) != GT_SHA256:
         raise ValueError("i.c.sens labels differ from the pinned archive")
@@ -50,8 +51,10 @@ def audit(root, output, *, sequence=0):
         labels = {c: read_marks(archive, c, sequence) for c in (1, 2)}
     clocks = {c: list(map(float, (root / f"view{c}/time_stamp.csv").read_text().splitlines()))
               for c in labels}
-    if any(len(times) != indices[-1] + 1 or any(b <= a for a, b in zip(times, times[1:]))
-           for times in clocks.values()):
+    if (len({len(times) for times in clocks.values()}) != 1
+            or any(len(times) <= indices[-1]
+                   or any(b <= a for a, b in zip(times, times[1:]))
+                   for times in clocks.values())):
         raise ValueError("Unexpected i.c.sens timing")
     skew = max(abs(clocks[1][i] - clocks[2][i]) for i in indices)
     if skew > .05:
@@ -142,7 +145,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("dataset", type=Path)
     parser.add_argument("output", type=Path)
-    parser.add_argument("--sequence", type=int, choices=(0, 6), default=0)
+    parser.add_argument("--sequence", type=int, choices=(0, 6, 7), default=0)
     args = parser.parse_args()
     audit(args.dataset, args.output, sequence=args.sequence)
 
